@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtPulse - Badminton Equipment Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-white">
+    <!-- Header -->
+
+    <%- include("../../views/partials/user/header") %>
+
+        <!-- Hero Section -->
+        <section class="bg-gradient-to-r from-purple-600 to-purple-800 text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+                <div class="grid lg:grid-cols-2 gap-8 items-center">
+                    <div class="space-y-6">
+                        <h1 class="text-4xl lg:text-6xl font-bold leading-tight">
+                            Crafted for Champions.<br>
+                            <span class="text-yellow-300">Delivered with Care..!</span>
+                        </h1>
+                        <p class="text-lg lg:text-xl text-purple-100 max-w-lg">
+                            Gear up with top-tier badminton equipment made for performance. From rackets to shuttles,
+                            we've got everything you need to elevate your game.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button
+                                class="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                                Shop Now
+                            </button>
+                            <button
+                                class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition-colors">
+                                Explore →
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <img src="/images/Daco_4450724.png" alt="Badminton Player" class="w-1/2 h-auto mx-auto">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Shop by Category -->
+        <section class="py-16 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-center mb-12">Shop by Category</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6">
+                    <div class="text-center group cursor-pointer">
+                        <div class="bg-white p-6 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-table-tennis text-3xl text-purple-600 mb-3"></i>
+                            <h3 class="font-medium text-gray-800">Racquets</h3>
+                        </div>
+                    </div>
+                    <div class="text-center group cursor-pointer">
+                        <div class="bg-white p-6 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-feather text-3xl text-green-600 mb-3"></i>
+                            <h3 class="font-medium text-gray-800">Shuttle Cocks</h3>
+                        </div>
+                    </div>
+                    <div class="text-center group cursor-pointer">
+                        <div class="bg-white p-6 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-grip-lines text-3xl text-blue-600 mb-3"></i>
+                            <h3 class="font-medium text-gray-800">Strings</h3>
+                        </div>
+                    </div>
+                    <div class="text-center group cursor-pointer">
+                        <div class="bg-white p-6 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-hand-paper text-3xl text-orange-600 mb-3"></i>
+                            <h3 class="font-medium text-gray-800">Grips</h3>
+                        </div>
+                    </div>
+                    <div class="text-center group cursor-pointer">
+                        <div class="bg-white p-6 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-tools text-3xl text-red-600 mb-3"></i>
+                            <h3 class="font-medium text-gray-800">Accessories</h3>
+                        </div>
+                    </div>
+                    <div class="text-center group cursor-pointer">
+                        <div class="bg-white p-6 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-shoe-prints text-3xl text-yellow-600 mb-3"></i>
+                            <h3 class="font-medium text-gray-800">Shoes</h3>
+                        </div>
+                    </div>
+                    <div class="text-center group cursor-pointer">
+                        <div class="bg-white p-6 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                            <i class="fas fa-tshirt text-3xl text-indigo-600 mb-3"></i>
+                            <h3 class="font-medium text-gray-800">Apparel</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Sections -->
+        <section class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Racquets & Strings -->
+                    <div
+                        class="bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl p-8 text-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <h3 class="text-2xl font-bold mb-2">Racquets & Strings</h3>
+                            <p class="text-red-100 mb-6">Up to 50% Off</p>
+                            <button
+                                class="bg-white text-red-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                                Shop Now
+                            </button>
+                        </div>
+                        <div class="absolute right-4 top-4 w-32 h-auto">
+                            <img src="/images/raquet-string.png" alt="Newsletter Illustration"
+                                class="w-full h-auto mx-auto">
+                        </div>
+                    </div>
+
+                    <!-- For Accessories -->
+                    <div
+                        class="bg-gradient-to-r from-orange-400 to-yellow-500 rounded-2xl p-8 text-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <h3 class="text-2xl font-bold mb-2">For Accessories</h3>
+                            <p class="text-orange-100 mb-6">Up to 30% Off</p>
+                            <button
+                                class="bg-white text-orange-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                                Shop Now
+                            </button>
+                        </div>
+                        <div class="absolute right-4 top-4 w-32 h-auto">
+                            <img src="/images/accessories.png" alt="Newsletter Illustration"
+                                class="w-full h-auto mx-auto">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-16 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="bg-white p-6 rounded-lg shadow-sm mb-4">
+                            <i class="fas fa-award text-4xl text-purple-600 mb-4"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Premium Quality Equipment</h3>
+                        <p class="text-gray-600">Get the ultimate badminton and accessories trusted by professionals for
+                            unmatched performance and durability.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-white p-6 rounded-lg shadow-sm mb-4">
+                            <i class="fas fa-tags text-4xl text-green-600 mb-4"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Best Prices & Deals</h3>
+                        <p class="text-gray-600">Enjoy competitive prices with exclusive discounts on sports gear,
+                            shuttle cocks, and accessories.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-white p-6 rounded-lg shadow-sm mb-4">
+                            <i class="fas fa-th-large text-4xl text-blue-600 mb-4"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Wide Product Selection</h3>
+                        <p class="text-gray-600">Explore 1000+ badminton products, from powerful rackets to premium
+                            grips, shoes to professional shuttlecocks.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <i class="fas fa-clock text-4xl text-purple-600 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">Shop Anytime, Anywhere</h3>
+                        <p class="text-gray-600">Browse and purchase your favorite badminton gear 24/7 from the comfort
+                            of your home with our user-friendly online store.</p>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-shipping-fast text-4xl text-green-600 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">Express Delivery</h3>
+                        <p class="text-gray-600">Get your badminton equipment delivered within 24-48 hours with our
+                            express delivery service.</p>
+                    </div>
+                    <div class="text-center">
+                        <i class="fas fa-headset text-4xl text-blue-600 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">24x7 Customer Support</h3>
+                        <p class="text-gray-600">Our dedicated support team is available round the clock to help you
+                            with any queries and ensure the best shopping experience.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter Section -->
+        <section class="bg-gradient-to-r from-purple-600 to-purple-800 py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid lg:grid-cols-2 gap-8 items-center">
+                    <div class="text-white">
+                        <p class="text-purple-200 mb-2">$25 OFF on first purchase</p>
+                        <h2 class="text-3xl lg:text-4xl font-bold mb-4">Get Top Deals, latest trends and more</h2>
+                        <p class="text-purple-100 mb-6">Join Email subscription now and enjoy exclusive offers on your
+                            notifications</p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <input type="email" placeholder="Email"
+                                class="flex-1 px-4 py-3 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:outline-none">
+                            <button
+                                class="bg-yellow-400 text-purple-800 px-8 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition-colors">
+                                Subscribe
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <img src="/images/subscribe.png" alt="Newsletter Illustration"
+                            class="w-full h-auto max-w-sm mx-auto">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <%- include("../../views/partials/user/footer") %>
+
+</body>
+
+</html>

@@ -1,0 +1,170 @@
+<!-- Main Navbar -->
+<header class="bg-white shadow-sm">
+  <!-- Top Navigation Bar -->
+  <div class="border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex-shrink-0">
+          <a href="/" class="text-2xl font-bold text-purple-600">
+            CourtPulse
+          </a>
+        </div>
+
+        <!-- Search Bar (Desktop) -->
+        <div class="hidden md:flex flex-1 max-w-2xl mx-8">
+          <div class="relative w-full">
+            <input type="text" placeholder="Search"
+              class="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all duration-200">
+            <button
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-purple-600 text-white p-2 rounded-md hover:bg-purple-700 transition-colors duration-200">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Side Actions -->
+        <div class="flex items-center space-x-4">
+          <!-- Search Icon (Mobile) -->
+          <button class="md:hidden p-2 text-gray-600 hover:text-purple-600 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+
+          <!-- Wishlist/Heart Icon -->
+          <button class="p-2 text-gray-600 hover:text-purple-600 transition-colors relative">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+              </path>
+            </svg>
+            <!-- Wishlist count badge (optional) -->
+            <span
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">3</span>
+          </button>
+
+          <!-- Shopping Cart Icon -->
+          <button class="p-2 text-gray-600 hover:text-purple-600 transition-colors relative">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3h2l.4 2m.6 3h13l-1.5 6H7L5.5 8m13 10a1 1 0 11-2 0 1 1 0 012 0zm-10 0a1 1 0 11-2 0 1 1 0 012 0z" />
+            </svg>
+            <!-- Cart count badge (optional) -->
+            <span
+              class="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">2</span>
+          </button>
+
+          <!-- SignUp Button -->
+          <a href="/signup"
+            class="bg-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors duration-200">
+            SignUp
+          </a>
+
+          <!-- Mobile Menu Button -->
+          <button class="lg:hidden p-2 text-gray-600 hover:text-purple-600 transition-colors" id="mobile-menu-button">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary Navigation Menu -->
+  <div class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Desktop Navigation -->
+      <nav class="hidden lg:flex space-x-8 py-4">
+        <a href="/" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+          Home
+        </a>
+        <a href="/shop"
+          class="text-gray-700 hover:text-purple-600 px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+          Shop
+        </a>
+        <a href="/deals"
+          class="text-gray-700 hover:text-purple-600 px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+          Deals/Offers
+        </a>
+        <a href="/about"
+          class="text-gray-700 hover:text-purple-600 px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+          About Us
+        </a>
+        <a href="/support"
+          class="text-gray-700 hover:text-purple-600 px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+          Customer Support
+        </a>
+      </nav>
+
+      <!-- Mobile Navigation Menu (Hidden by default) -->
+      <nav class="lg:hidden py-4 hidden" id="mobile-menu">
+        <div class="flex flex-col space-y-2">
+          <a href="/" class="bg-purple-600 text-white px-4 py-3 rounded-lg font-medium">
+            Home
+          </a>
+          <a href="/shop"
+            class="text-gray-700 hover:text-purple-600 px-4 py-3 rounded-lg font-medium transition-colors">
+            Shop
+          </a>
+          <a href="/deals"
+            class="text-gray-700 hover:text-purple-600 px-4 py-3 rounded-lg font-medium transition-colors">
+            Deals/Offers
+          </a>
+          <a href="/about"
+            class="text-gray-700 hover:text-purple-600 px-4 py-3 rounded-lg font-medium transition-colors">
+            About Us
+          </a>
+          <a href="/support"
+            class="text-gray-700 hover:text-purple-600 px-4 py-3 rounded-lg font-medium transition-colors">
+            Customer Support
+          </a>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Mobile Search Bar (Hidden by default) -->
+  <div class="md:hidden bg-white border-t border-gray-100 px-4 py-3 hidden" id="mobile-search">
+    <div class="relative">
+      <input type="text" placeholder="Search"
+        class="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none">
+      <button class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-purple-600 text-white p-2 rounded-md">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    if (mobileMenuButton && mobileMenu) {
+      mobileMenuButton.addEventListener('click', function () {
+        mobileMenu.classList.toggle('hidden');
+      });
+    }
+
+    // Mobile search toggle (if you want to add this functionality)
+    const searchButtons = document.querySelectorAll('.md\\:hidden button');
+    const mobileSearch = document.getElementById('mobile-search');
+
+    if (searchButtons.length > 0 && mobileSearch) {
+      searchButtons[0].addEventListener('click', function () {
+        mobileSearch.classList.toggle('hidden');
+      });
+    }
+  });
+</script>
