@@ -1,5 +1,23 @@
 
 
+const loadLogin = async(req,res)=>{
+    try {
+        return res.render('login')
+    } catch (error) {
+        console.log("Login Page Not Found",error)
+        res.status(500).send("Internal Server Errror")
+    }
+}
+
+const loadSignup = async(req,res)=>{
+    try {
+        return res.render('signup')
+    } catch (error) {
+        console.log("Signup Page Not Fount",error)
+        res.status(500).send("Internal Server Error")
+    }
+}
+
 const pageNotFound = async(req,res)=>{
     try {
         return res.status(200).render('page-404')
@@ -21,5 +39,7 @@ const loadHomepage = async(req,res)=>{
 
 module.exports = {
     loadHomepage,
-    pageNotFound
+    pageNotFound,
+    loadSignup,
+    loadLogin,
 }
