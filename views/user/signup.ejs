@@ -46,23 +46,30 @@
                     </div>
 
                     <!-- Signup Form -->
-                    <form action="/signup" method="POST" class="space-y-4">
+                    <form id="signupForm" action="/signup" method="POST" class="space-y-4" novalidate>
 
                         <!-- Name Fields -->
-                        <input type="text" name="userName" placeholder="Name" required
+                        <input type="text" name="name" id="name" placeholder="Name" required
                             class="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
+                        <small class="error text-red-500 text-sm mt-1 block" id="nameError"></small>
 
                         <!-- Contact Fields -->
-                            <input type="tel" name="phone" placeholder="Phone no" required
-                                class="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
-                            <input type="email" name="email" placeholder="Email id" required
-                                class="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
+                        <input type="tel" name="phone" id="phone" placeholder="Phone no" required
+                            class="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
+                        <small class="error text-red-500 text-sm mt-1 block" id="phoneError"></small>
+
+                        <input type="email" name="email" id="email" placeholder="Email" required
+                            class="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
+                        <small class="error text-red-500 text-sm mt-1 block" id="emailError"></small>
 
                         <!-- Password Fields -->
-                        <input type="password" name="password" placeholder="Password" required
+                        <input type="password" name="password" id="password" placeholder="Password" required
                             class="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
-                        <input type="password" name="confirmPassword" placeholder="Confirm Password" required
+                        <small class="error text-red-500 text-sm mt-1 block" id="passwordError"></small>
+
+                        <input type="password" name="cPassword" id="cPassword" placeholder="Confirm Password" required
                             class="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
+                        <small class="error text-red-500 text-sm mt-1 block" id="cPasswordError"></small>
 
                         <!-- Referral Code -->
                         <input type="text" name="referralCode" placeholder="Referal Code (Optional)"
@@ -95,34 +102,71 @@
     </div>
 
     <script>
-        // Form validation
-        document.querySelector('form').addEventListener('submit', function (e) {
-            const password = document.querySelector('input[name="password"]').value;
-            const confirmPassword = document.querySelector('input[name="confirmPassword"]').value;
 
-            if (password !== confirmPassword) {
-                e.preventDefault();
-                alert('Passwords do not match!');
-                return false;
+
+        document.getElementById("signupForm").addEventListener("submit", function (e) {
+            e.preventDefault(); // Stop form submission
+
+            // Input values
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const password = document.getElementById("password").value;
+            const cPassword = document.getElementById("cPassword").value;
+
+            // Error elements
+            const nameError = document.getElementById("nameError");
+            const emailError = document.getElementById("emailError");
+            const phoneError = document.getElementById("phoneError");
+            const passwordError = document.getElementById("passwordError");
+            const cPasswordError = document.getElementById("cPasswordError");
+
+            // Reset errors
+            nameError.textContent = "";
+            emailError.textContent = "";
+            phoneError.textContent = "";
+            passwordError.textContent = "";
+            cPasswordError.textContent = "";
+
+            let isValid = true;
+
+            // Name validation
+            if (!/^[A-Za-z ]{3,}$/.test(name)) {
+                nameError.textContent = "Name must be at least 3 letters.";
+                isValid = false;
             }
 
-            if (password.length < 6) {
-                e.preventDefault();
-                alert('Password must be at least 6 characters long!');
-                return false;
+            // Email validation
+            if (!/^[^ ]+@[^ ]+\.[a-z]{2,3}$/.test(email)) {
+                emailError.textContent = "Enter a valid email address.";
+                isValid = false;
+            }
+
+            // Phone validation
+            if (!/^\d{10}$/.test(phone)) {
+                phoneError.textContent = "Phone number must be 10 digits.";
+                isValid = false;
+            }
+
+            // Password validation
+            const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+            if (!strongPasswordPattern.test(password)) {
+                passwordError.textContent = "Password must include uppercase, lowercase, number, special character & 6+ chars.";
+                isValid = false;
+            }
+
+            // Confirm password
+            if (password !== cPassword) {
+                cPasswordError.textContent = "Passwords do not match.";
+                isValid = false;
+            }
+
+            // Submit if valid
+            if (isValid) {
+                document.getElementById("signupForm").submit();
             }
         });
 
-        // Phone number formatting
-        document.querySelector('input[name="phone"]').addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 6) {
-                value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-            } else if (value.length >= 3) {
-                value = value.replace(/(\d{3})(\d{0,3})/, '($1) $2');
-            }
-            e.target.value = value;
-        });
     </script>
 </body>
 

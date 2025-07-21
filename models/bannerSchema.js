@@ -4,26 +4,26 @@ const { Schema } = mongoose;
 const bannerSchema = new Schema({
     image: {
         type:String,
-        require: true
+        required: true
     },
     title : {
         type:String,
-        require:true
+        required:true
     },
     description : {
         type:String,
-        require:true
+        required:true
     },
     link : {
         type:String
     },
     startDate : {
         type:Date,
-        require:true
+        required:true
     },
     endDate : {
         type:Date,
-        require:true
+        required:true
     }
 })
 

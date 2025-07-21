@@ -12,11 +12,11 @@ const orderSchema = new Schema({
         product:{
             type:Schema.Types.ObjectId,
             ref:'Product',
-            require:true
+            required:true
         },
         quantity:{
             type:String,
-            require:true
+            required:true
         },
         price:{
             type:Number,
@@ -25,7 +25,7 @@ const orderSchema = new Schema({
     }],
     totalPrice : {
         type:Number,
-        require:true
+        required:true
     },
     discount : {
         type:Number,
@@ -33,25 +33,25 @@ const orderSchema = new Schema({
     },
     finalAmount : {
         type:Number,
-        require:true
+        required:true
     },
     address : {
         type:Schema.Types.ObjectId,
         ref:"Address",
-        require:true
+        required:true
     },
     invoiceDate : {
         type:Date,
     },
     status : {
         type:String,
-        require:true,
+        required:true,
         enum:['Pending','Processing','Shipped','Delivered','Cancelled','Return Request','Returned']
     },
     createdOn : {
         type:Date,
         default:Date.now,
-        require:true
+        required:true
     },
     couponApplied : {
         type:Boolean,

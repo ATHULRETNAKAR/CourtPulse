@@ -5,11 +5,11 @@ const brandSchema = new Schema({
     brandName : {
         type:String,
         unique:true,
-        require:true
+        required:true
     },
     brandImage : {
         type:[String],
-        require:true
+        required:true
     },
     isBlocked : {
         type:Boolean,

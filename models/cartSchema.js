@@ -5,13 +5,13 @@ const cartSchema = new Schema({
     userId : {
         type:Schema.Types.ObjectId,
         ref:"User",
-        require:true
+        required:true
     },
     items : [{
         productId : {
             type:Schema.Types.ObjectId,
             ref:"Product",
-            require:true
+            required:true
         },
         quantity : {
             type:Number,
@@ -19,11 +19,11 @@ const cartSchema = new Schema({
         },
         price : {
             type:Number,
-            require:true
+            required:true
         },
         totalPrice : {
             type:Number,
-            require:true
+            required:true
         },
         status : {
             type:String,

@@ -5,13 +5,13 @@ const wishlistSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
         ref: "User",
-        require: true
+        required: true
     },
     product: [{
         productId : {
             type: Schema.Types.ObjectId,
             ref: "Product",
-            require: true
+            required: true
         },
         addedOn : {
             type:Date,

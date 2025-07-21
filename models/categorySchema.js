@@ -4,12 +4,12 @@ const {Schema} = mongoose;
 const categorySchema = new Schema({
     name : {
         type:String,
-        require:true,
+        required:true,
         unique:true
     },
     descritpion : {
         type:String,
-        require:true
+        required:true
     },
     isListed : {
         type:Boolean,

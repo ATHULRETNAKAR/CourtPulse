@@ -4,28 +4,28 @@ const {Schema} = mongoose;
 const productSchema = new Schema({
     productName : {
         type:String,
-        require:true
+        required:true
     },
     description : {
         type:String,
-        require:true
+        required:true
     },
     brand : {
         type:String,
-        require:true,
+        required:true,
     },
     category : {
         type:Schema.Types.ObjectId,
         ref:"Category",
-        require:true
+        required:true
     },
     regularPrice : {
         type:Number,
-        require:true
+        required:true
     },
     salePrice : {
         type:Number,
-        require:true
+        required:true
     },
     productOffer : {
         type:Number,
@@ -37,11 +37,11 @@ const productSchema = new Schema({
     },
     color : {
         type:String,
-        require:true
+        required:true
     },
     productImage : {
         type:[String],
-        require:true
+        required:true
     },
     isBlocked : {
         type:Boolean,
@@ -50,7 +50,7 @@ const productSchema = new Schema({
     status : {
         type:String,
         enum:["Available","Out of stoke","Discontinued"],
-        require:true,
+        required:true,
         default:"Available"
     }
 },{timestamps:true})

@@ -4,25 +4,25 @@ const {Schema} = mongoose;
 const couponSchema = new Schema({
     name : {
         type:String,
-        require:true,
+        required:true,
         unique:true
     },
     createdOn : {
         type:Date,
         default:Date.now,
-        require:true
+        required:true
     },
     expireOn : {
         type:Date,
-        require:true
+        required:true
     },
     offerPrice : {
         type:Number,
-        require:true
+        required:true
     },
     minimumPrice : {
         type:Number,
-        require:true
+        required:true
     },
     isList : {
         type:Boolean,

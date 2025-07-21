@@ -1,4 +1,17 @@
+const User = require('../../models/userSchema')
 
+const signup = async(req,res)=>{
+    const {name,email,phone,password} = req.body;
+    try {
+        const newUser =  new User({name,email,phone,password})
+        console.log(newUser)
+        await newUser.save()
+        return res.redirect('/signup')
+    } catch (error) {
+        console.error("Error to save new user",error)
+        res.status(500).send("Internal Server Error")
+    }
+}
 
 const loadLogin = async(req,res)=>{
     try {
@@ -42,4 +55,5 @@ module.exports = {
     pageNotFound,
     loadSignup,
     loadLogin,
+    signup,
 }
