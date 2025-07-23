@@ -46,6 +46,13 @@
                         <div class="flex-1 border-t border-gray-300"></div>
                     </div>
 
+                    <!-- Error Message under password, above login button -->
+                    <% if (typeof message !=='undefined' && message) { %>
+                        <div class="text-red-500 text-sm font-bold mt-1 text-center">
+                            <%= message %>
+                        </div>
+                    <% } %>
+
                     <!-- Signup Form -->
                     <form id="signupForm" action="/signup" method="POST" class="space-y-4" novalidate>
 
