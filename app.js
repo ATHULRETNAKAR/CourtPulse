@@ -4,6 +4,7 @@ const path = require("path");
 const env = require("dotenv").config();
 const session = require('express-session')
 const db = require("./config/db");
+const passport = require('./config/passport')
 const userRouter = require("./routes/userRouter")
 const adminRouter = require("./routes/adminRouter")
 db() // dataBase connected
@@ -23,12 +24,14 @@ app.use(session({
         httpOnly:true,
         maxAge:72*60*60*1000
     }
-}))
+}));
 
-app.use('/',userRouter)
-app.use('/admin',adminRouter)
+app.use(passport.initialize());
+app.use(passport.session());
+app.use('/',userRouter);
+app.use('/admin',adminRouter);
 
-app.listen(process.env.PORT,()=>console.log("Server Running....!"))
+app.listen(process.env.PORT,()=>console.log("Server Running....!"));
 
 
 module.exports = app;
