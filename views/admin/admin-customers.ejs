@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CourtPulse - Customer Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+      tailwind.config = {
+          theme: {
+              extend: {
+                  colors: {
+                      primary: '#6366f1',
+                      secondary: '#8b5cf6',
+                  }
+              }
+          }
+      }
+  </script>
+</head>
+<body class="bg-gray-50">
+  <div class="flex h-screen">
+      <!-- Sidebar -->
+      <%- include("../../views/partials/admin/sidebar") %>
+      
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+          <!-- Header -->
+          <%- include("../../views/partials/admin/header") %>
+          
+          <!-- Customer Content -->
+          <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+              <!-- Page Header -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                  <h2 class="text-2xl font-semibold text-gray-900">Customer</h2>
+                  <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <div class="relative">
+                          <input type="text" placeholder="Search here" 
+                                 class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                 value="<%= search %>"> <!-- Set search input value -->
+                          <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                      </div>
+                      <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center space-x-2 transition-colors">
+                          <i class="fas fa-download"></i>
+                          <span>Export</span>
+                      </button>
+                      <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center space-x-2 transition-colors">
+                          <i class="fas fa-filter"></i>
+                          <span>Filters</span>
+                      </button>
+                  </div>
+              </div>
+
+              <!-- Customer Table -->
+              <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div class="overflow-x-auto">
+                      <table class="w-full">
+                          <thead class="bg-primary text-white">
+                              <tr>
+                                  <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Name</th>
+                                  <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Email-ID</th>
+                                  <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Phone</th>
+                                  <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Status</th>
+                                  <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Actions</th>
+                              </tr>
+                          </thead>
+                          <tbody class="divide-y divide-gray-200">
+                              <% if (data && data.length > 0) { %>
+                                  <% for (let i = 0; i < data.length; i++) { %>
+                                  <tr class="hover:bg-gray-50 transition-colors" id="data-row-<%= data[i]._id %>">
+                                      <td class="px-4 md:px-6 py-4">
+                                          <div class="flex items-center space-x-3">
+                                              <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-xs md:text-sm flex-shrink-0">
+                                                  <%= data[i].name ? data[i].name.charAt(0).toUpperCase() : '' %>
+                                              </div>
+                                              <span class="font-medium text-gray-900 text-sm md:text-base truncate">
+                                                  <%= data[i].name %>
+                                              </span>
+                                          </div>
+                                      </td>
+                                      <td class="px-4 md:px-6 py-4 text-gray-700 text-sm">
+                                          <%= data[i].email %>
+                                      </td>
+                                      <td class="px-4 md:px-6 py-4 text-gray-700 text-sm">
+                                          <%= data[i].phone || 'N/A' %> <!-- Display phone or 'N/A' if not available -->
+                                      </td>
+                                      <td class="px-4 md:px-6 py-4">
+                                          <span id="status-badge-<%= data[i]._id %>" class="inline-flex px-2 md:px-3 py-1 text-xs font-medium rounded-full <%= data[i].isBlocked === false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                                              <%= data[i].isBlocked === false ? 'Active' : 'Blocked' %>
+                                          </span>
+                                      </td>
+                                      <td class="px-4 md:px-6 py-4">
+                                          <div class="flex items-center space-x-2">
+                                              <!-- Edit/View Button -->
+                                              <button class="p-1.5 md:p-2 text-gray-400 hover:text-blue-600 transition-colors rounded hover:bg-blue-50" onclick="editData('<%= data[i]._id %>')" title="Edit Customer">
+                                                  <i class="fas fa-edit text-sm"></i>
+                                              </button>
+                                              
+                                              <!-- Block/Unblock Button -->
+                                              <% if (data[i].isBlocked === false) { %>
+                                                  <button class="p-1.5 md:p-2 text-gray-400 hover:text-red-600 transition-colors rounded hover:bg-red-50" 
+                                                          onclick="toggleDataStatus('<%= data[i]._id %>', '<%= data[i].name %>', 'block')" 
+                                                          title="Block Customer"
+                                                          id="action-btn-<%= data[i]._id %>">
+                                                      <i class="fas fa-ban text-sm"></i>
+                                                  </button>
+                                              <% } else { %>
+                                                  <button class="p-1.5 md:p-2 text-gray-400 hover:text-green-600 transition-colors rounded hover:bg-green-50" 
+                                                          onclick="toggleDataStatus('<%= data[i]._id %>', '<%= data[i].name %>', 'unblock')" 
+                                                          title="Unblock Customer"
+                                                          id="action-btn-<%= data[i]._id %>">
+                                                      <i class="fas fa-check-circle text-sm"></i>
+                                                  </button>
+                                              <% } %>
+                                          </div>
+                                      </td>
+                                  </tr>
+                                  <% } %>
+                              <% } else { %>
+                                  <tr>
+                                      <td colspan="5" class="text-center py-8 text-gray-500">No customers found.</td>
+                                  </tr>
+                              <% } %>
+                          </tbody>
+                      </table>
+                  </div>
+
+                  <!-- Pagination -->
+                  <div class="flex flex-col sm:flex-row items-center justify-between px-4 md:px-6 py-4 border-t border-gray-200 gap-4">
+                      <div class="flex items-center space-x-2">
+                          <span class="text-sm text-gray-700">Show result:</span>
+                          <select class="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary" onchange="changePageSize(this.value)">
+                              <option value="2" <%= limit == 2 ? 'selected' : '' %>>2</option>
+                              <option value="5" <%= limit == 5 ? 'selected' : '' %>>5</option>
+                              <option value="10" <%= limit == 10 ? 'selected' : '' %>>10</option>
+                              <option value="20" <%= limit == 20 ? 'selected' : '' %>>20</option>
+                          </select>
+                      </div>
+                      <div class="flex items-center space-x-1 md:space-x-2">
+                          <button class="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 rounded hover:bg-gray-100" <%= currentPage === 1 ? 'disabled' : '' %> onclick="previousPage()" title="Previous Page">
+                              <i class="fas fa-chevron-left text-sm"></i>
+                          </button>
+                          <% for (let i = 1; i <= totalPages; i++) { %>
+                              <button class="px-2 md:px-3 py-1 <%= currentPage === i ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100' %> rounded text-sm" onclick="goToPage(<%= i %>)">
+                                  <%= i %>
+                              </button>
+                          <% } %>
+                          <button class="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100" <%= currentPage === totalPages ? 'disabled' : '' %> onclick="nextPage()" title="Next Page">
+                              <i class="fas fa-chevron-right text-sm"></i>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          </main>
+      </div>
+  </div>
+
+  <!-- Mobile Menu Overlay -->
+  <div id="mobileMenu" class="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden hidden">
+      <div class="w-64 bg-white h-full shadow-lg">
+          <div class="p-6">
+              <div class="flex items-center justify-between">
+                  <h1 class="text-2xl font-bold text-gray-800">CourtPulse</h1>
+                  <button id="closeMobileMenu">
+                      <i class="fas fa-times text-gray-600"></i>
+                  </button>
+              </div>
+          </div>
+          <nav class="mt-6">
+              <div class="px-4 space-y-2">
+                  <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-chart-line mr-3"></i>
+                      <span>Dashboard</span>
+                  </a>
+                  <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-shopping-cart mr-3"></i>
+                      <span>Order</span>
+                  </a>
+                  <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-box mr-3"></i>
+                      <span>Products</span>
+                  </a>
+                  <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-chart-bar mr-3"></i>
+                      <span>Sales report</span>
+                  </a>
+                  <a href="/admin/users" class="flex items-center px-4 py-3 text-white bg-primary rounded-lg">
+                      <i class="fas fa-users mr-3"></i>
+                      <span>Customer</span>
+                  </a>
+                  <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-ticket-alt mr-3"></i>
+                      <span>Coupon</span>
+                  </a>
+                  <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-tags mr-3"></i>
+                      <span>Category</span>
+                  </a>
+                  <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-undo mr-3"></i>
+                      <span>Refund/Return</span>
+                  </a>
+                  <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-image mr-3"></i>
+                      <span>Banner</span>
+                  </a>
+                  <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-star mr-3"></i>
+                      <span>Brand</span>
+                  </a>
+                  <a href="/admin/logout" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+                      <i class="fas fa-sign-out-alt mr-3"></i>
+                      <span>logout</span>
+                  </a>
+              </div>
+          </nav>
+      </div>
+  </div>
+
+  <script>
+      // Customer management functions
+      function editData(dataId) {
+          // Redirect to edit customer page or open modal
+          window.location.href = `/admin/customers/edit/${dataId}`;
+      }
+
+      // Toggle customer status with SweetAlert confirmation
+      function toggleDataStatus(userId, dataName, action) {
+          const isBlocking = action === 'block';
+          const actionText = isBlocking ? 'block' : 'unblock';
+          const actionTextCapitalized = isBlocking ? 'Block' : 'Unblock';
+          
+          Swal.fire({
+              title: `${actionTextCapitalized} User?`,
+              text: `Are you sure you want to ${actionText} ${dataName}?`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: isBlocking ? '#ef4444' : '#10b981',
+              cancelButtonColor: '#6b7280',
+              confirmButtonText: `Yes, ${actionText}!`,
+              cancelButtonText: 'Cancel',
+              reverseButtons: true
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  // Show loading
+                  Swal.fire({
+                      title: `${actionTextCapitalized}ing user...`,
+                      allowOutsideClick: false,
+                      allowEscapeKey: false,
+                      showConfirmButton: false,
+                      didOpen: () => {
+                          Swal.showLoading();
+                      }
+                  });
+
+                  // Send AJAX request to toggle customer status
+                  // IMPORTANT: The URL here should match your backend route for toggling status
+                  fetch(`/admin/customers/${userId}/toggle-status`, {
+                      method: 'PATCH', // Use PATCH for partial updates
+                      headers: {
+                          'Content-Type': 'application/json',
+                          'X-Requested-With': 'XMLHttpRequest'
+                      },
+                      body: JSON.stringify({
+                          action: action // 'block' or 'unblock'
+                      })
+                  })
+                  .then(response => {
+                      if (!response.ok) {
+                          return response.json().then(err => { throw new Error(err.message || 'Server error'); });
+                      }
+                      return response.json();
+                  })
+                  .then(data => {
+                      if (data.success) {
+                          // Update UI immediately
+                          updateDataStatusUI(userId, data.newStatus, dataName);
+                          
+                          // Show success message
+                          Swal.fire({
+                              title: 'Success!',
+                              text: `User has been ${actionText}ed successfully.`,
+                              icon: 'success',
+                              confirmButtonColor: '#6366f1',
+                              timer: 2000,
+                              timerProgressBar: true
+                          });
+                      } else {
+                          Swal.fire({
+                              title: 'Error!',
+                              text: data.message || `Failed to ${actionText} user.`,
+                              icon: 'error',
+                              confirmButtonColor: '#6366f1'
+                          });
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Error:', error);
+                      Swal.fire({
+                          title: 'Error!',
+                          text: `Network error occurred while trying to ${actionText} user: ${error.message}`,
+                          icon: 'error',
+                          confirmButtonColor: '#6366f1'
+                      });
+                  });
+              }
+          });
+      }
+
+      // Update customer status in UI
+      function updateDataStatusUI(userId, newStatus, dataName) {
+          const statusBadge = document.getElementById(`status-badge-${userId}`);
+          const actionBtn = document.getElementById(`action-btn-${userId}`);
+          
+          if (statusBadge && actionBtn) {
+              // Update status badge
+              statusBadge.textContent = newStatus;
+              statusBadge.className = `inline-flex px-2 md:px-3 py-1 text-xs font-medium rounded-full ${
+                  newStatus === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`;
+              
+              // Update action button
+              if (newStatus === 'Active') {
+                  actionBtn.className = 'p-1.5 md:p-2 text-gray-400 hover:text-red-600 transition-colors rounded hover:bg-red-50';
+                  actionBtn.title = 'Block User';
+                  actionBtn.onclick = () => toggleDataStatus(userId, dataName, 'block');
+                  actionBtn.innerHTML = '<i class="fas fa-ban text-sm"></i>';
+              } else {
+                  actionBtn.className = 'p-1.5 md:p-2 text-gray-400 hover:text-green-600 transition-colors rounded hover:bg-green-50';
+                  actionBtn.title = 'Unblock User';
+                  actionBtn.onclick = () => toggleDataStatus(userId, dataName, 'unblock');
+                  actionBtn.innerHTML = '<i class="fas fa-check-circle text-sm"></i>';
+              }
+          }
+      }
+
+      // Pagination functions
+      function goToPage(page) {
+          const urlParams = new URLSearchParams(window.location.search);
+          urlParams.set('page', page);
+          urlParams.set('limit', <%= limit %>); // Ensure limit is carried over
+          urlParams.set('search', '<%= search %>'); // Ensure search is carried over
+          window.location.search = urlParams.toString();
+      }
+
+      function previousPage() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const currentPage = parseInt(urlParams.get('page')) || 1;
+          if (currentPage > 1) {
+              urlParams.set('page', currentPage - 1);
+              urlParams.set('limit', <%= limit %>);
+              urlParams.set('search', '<%= search %>');
+              window.location.search = urlParams.toString();
+          }
+      }
+
+      function nextPage() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const currentPage = parseInt(urlParams.get('page')) || 1;
+          urlParams.set('page', currentPage + 1);
+          urlParams.set('limit', <%= limit %>);
+          urlParams.set('search', '<%= search %>');
+          window.location.search = urlParams.toString();
+      }
+
+      function changePageSize(size) {
+          const urlParams = new URLSearchParams(window.location.search);
+          urlParams.set('limit', size);
+          urlParams.set('page', 1); // Reset to first page when changing limit
+          urlParams.set('search', '<%= search %>');
+          window.location.search = urlParams.toString();
+      }
+
+      // Search functionality
+      document.addEventListener('DOMContentLoaded', function () {
+          const searchInput = document.querySelector('input[placeholder="Search here"]');
+          let searchTimeout;
+
+          if (searchInput) {
+              searchInput.addEventListener('input', function () {
+                  clearTimeout(searchTimeout);
+                  searchTimeout = setTimeout(() => {
+                      const searchTerm = this.value.trim();
+                      const urlParams = new URLSearchParams(window.location.search);
+                      if (searchTerm) {
+                          urlParams.set('search', searchTerm);
+                      } else {
+                          urlParams.delete('search');
+                      }
+                      urlParams.set('page', 1); // Reset to first page on new search
+                      urlParams.set('limit', <%= limit %>); // Ensure limit is carried over
+                      window.location.search = urlParams.toString();
+                  }, 500);
+              });
+          }
+
+          // Export functionality
+          const exportBtn = document.querySelector('button:has(.fa-download)');
+          if (exportBtn) {
+              exportBtn.addEventListener('click', function () {
+                  window.location.href = '/admin/customers/export';
+              });
+          }
+
+          // Mobile menu functionality
+          const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+          const mobileMenu = document.getElementById('mobileMenu');
+          const closeMobileMenu = document.getElementById('closeMobileMenu');
+
+          if (mobileMenuBtn && mobileMenu) {
+              mobileMenuBtn.addEventListener('click', function () {
+                  mobileMenu.classList.remove('hidden');
+              });
+          }
+
+          if (closeMobileMenu && mobileMenu) {
+              closeMobileMenu.addEventListener('click', function () {
+                  mobileMenu.classList.add('hidden');
+              });
+          }
+      });
+  </script>
+</body>
+</html>

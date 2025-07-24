@@ -33,7 +33,7 @@ const login = async (req, res) => {
             return res.redirect('/login')
         }
 
-        if (findUser.isBlock) {
+        if (findUser.isBlocked) {
             req.session.message = "This User Is Blocked By Admin";
             return res.redirect('/login')
         }

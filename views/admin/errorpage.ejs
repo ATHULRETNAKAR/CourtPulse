@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | CourtPulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- 404 Error Content -->
+    <main class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Left Side - Error Text -->
+                <div class="text-center lg:text-left order-2 lg:order-1">
+                    <div class="mb-8">
+                        <h1 class="text-8xl sm:text-9xl font-bold text-gray-800 mb-2">
+                            404
+                            <span class="text-2xl sm:text-3xl font-normal text-gray-500 block">Error occurred.</span>
+                        </h1>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <p class="text-xl sm:text-2xl text-gray-600 mb-2">
+                            Woops. Looks like this
+                        </p>
+                        <p class="text-xl sm:text-2xl text-gray-600">
+                            page doesn't exist.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <p class="text-gray-800 mb-1">back to</p>
+                        <a href="/admin/dashboard" class="text-purple-600 text-xl font-medium hover:text-purple-700 transition-colors duration-200 border-b-2 border-purple-600 hover:border-purple-700">
+                            Back To Dashboard
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Right Side - Illustration -->
+                <div class="flex justify-center order-1 lg:order-2">
+                    <div class="relative max-w-md w-full">
+                        <img 
+                            src="/images/pageNotFound.png" 
+                            alt="404 Error Illustration - Confused person sitting" 
+                            class="w-full h-auto"
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer (Optional - Simple version) -->
+    <footer class="bg-white border-t border-gray-200 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-gray-500">
+                <p>&copy; 2024 CourtPulse. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle functionality
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', function() {
+                    // Add mobile menu functionality if needed
+                    console.log('Mobile menu clicked');
+                });
+            }
+            
+            // Add any additional JavaScript functionality here
+            console.log('404 page loaded');
+        });
+    </script>
+</body>
+</html>

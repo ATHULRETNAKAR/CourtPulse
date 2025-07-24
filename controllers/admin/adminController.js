@@ -55,12 +55,27 @@ const loadDashboard = async (req,res)=>{
     }
 }
 
-const pageNotFound = async (req, res) => {
+const errorpage = async (req, res) => {
     try {
-        return res.status(200).render('page-404')
+        return res.status(200).render('errorpage')
     } catch (error) {
         console.log("Error Page Not Found", error)
-        res.status(500).redirect('/pageNotFound')
+        res.status(500).redirect('/errorpage')
+    }
+}
+
+const logout = async(req,res)=>{
+    try {
+        req.session.destroy((err)=>{
+            if(err){
+                console.log("Session Destroying Failed",err.message);
+                return res.redirect('/admin/errorpage');
+            }
+            return res.redirect('/admin/login')
+        })
+    } catch (error) {
+        console.log("Logout Error",error);
+        res.redirect('/admin/errorpage')
     }
 }
 
@@ -68,5 +83,6 @@ module.exports = {
     loadLogin,
     login,
     loadDashboard,
-    pageNotFound,
+    errorpage,
+    logout,
 }
