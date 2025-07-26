@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CourtPulse - Category Management</title>
+    <title>CourtPulse - Brand Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- SweetAlert2 CDN -->
@@ -99,18 +99,18 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Header -->
             <%- include("../../views/partials/admin/header") %>
-            <!-- Category Content -->
+            <!-- Brand Content -->
             <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
                 <!-- Page Header -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                    <h2 class="text-2xl font-semibold text-gray-900">Category management</h2>
+                    <h2 class="text-2xl font-semibold text-gray-900">Brand management</h2>
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         <!-- Enhanced Search Section -->
                         <div class="flex items-center gap-2">
                             <div class="relative flex-1 sm:w-64">
-                                <input type="text" placeholder="Search categories..."
+                                <input type="text" placeholder="Search brands..."
                                     class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                    value="<%= search %>" id="categorySearchInput">
+                                    value="<%= search %>" id="brandSearchInput">
                                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                 <!-- Clear button (only show when there's text) -->
                                 <button type="button" id="clearSearchBtn"
@@ -143,8 +143,8 @@
                             <i class="fas fa-info-circle text-blue-500"></i>
                             <span class="text-sm text-blue-700">
                                 Showing results for "<strong><%= search %></strong>"
-                                <% if (categories && categories.length > 0) { %>
-                                - <%= categories.length %> result<%= categories.length !== 1 ? 's' : '' %> found
+                                <% if (brands && brands.length > 0) { %>
+                                - <%= brands.length %> result<%= brands.length !== 1 ? 's' : '' %> found
                                 <% } else { %>
                                 - No results found
                                 <% } %>
@@ -158,33 +158,33 @@
                 </div>
                 <% } %>
 
-                <!-- Add Category Form -->
+                <!-- Add Brand Form -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
                     <div class="px-4 md:px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-medium text-gray-900">Add New Category</h3>
+                        <h3 class="text-lg font-medium text-gray-900">Add New Brand</h3>
                     </div>
                     <div class="p-4 md:p-6">
-                        <form id="addCategoryForm">
+                        <form id="addBrandForm">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end">
-                                <!-- Category Name -->
+                                <!-- Brand Name -->
                                 <div class="md:col-span-1 lg:col-span-1 xl:col-span-1">
-                                    <label for="categoryName" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Category Name
+                                    <label for="brandName" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Brand Name
                                     </label>
-                                    <input type="text" id="categoryName" name="categoryName" placeholder="Apparels"
+                                    <input type="text" id="brandName" name="brandName" placeholder="Yonex"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm"
                                         required>
-                                    <div id="categoryNameError" class="error-message hidden"></div>
+                                    <div id="brandNameError" class="error-message hidden"></div>
                                 </div>
-                                <!-- Category Description -->
+                                <!-- Brand Image URL -->
                                 <div class="md:col-span-1 lg:col-span-1 xl:col-span-1">
-                                    <label for="categoryDescription" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Category Description
+                                    <label for="brandImageUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Brand Image
                                     </label>
-                                    <input type="text" id="categoryDescription" name="description"
-                                        placeholder="Write your description here..."
+                                    <input type="text" id="brandImageUrl" name="imageUrl"
+                                        placeholder="https://example.com/logo.png"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm">
-                                    <div id="categoryDescriptionError" class="error-message hidden"></div>
+                                    <div id="brandImageUrlError" class="error-message hidden"></div>
                                 </div>
                                 <!-- Visibility Status -->
                                 <div class="md:col-span-1 lg:col-span-1 xl:col-span-1">
@@ -214,7 +214,7 @@
                                 </div>
                                 <!-- Add Button -->
                                 <div class="md:col-span-2 lg:col-span-4 xl:col-span-1 flex justify-start">
-                                    <button type="submit" id="addCategoryBtn"
+                                    <button type="submit" id="addBrandBtn"
                                         class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors font-medium flex items-center space-x-2 text-sm">
                                         <span id="addBtnText">Add</span>
                                         <div id="addBtnSpinner" class="spinner hidden"></div>
@@ -225,66 +225,69 @@
                     </div>
                 </div>
 
-                <!-- Category Table -->
+                <!-- Brand Table -->
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead class="bg-courtpulse-header-purple text-white">
                                 <tr>
-                                    <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Category</th>
-                                    <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Description</th>
+                                    <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Brand</th>
+                                    <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Image</th>
                                     <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Discounts/Offers</th>
                                     <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Status</th>
                                     <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                                <% if (categories && categories.length > 0) { %>
-                                <% categories.forEach(function(category) { %>
-                                <tr class="hover:bg-gray-50 transition-colors" id="category-row-<%= category._id %>">
-                                    <!-- Category Name -->
+                                <% if (brands && brands.length > 0) { %>
+                                <% brands.forEach(function(brand) { %>
+                                <tr class="hover:bg-gray-50 transition-colors" id="brand-row-<%= brand._id %>">
+                                    <!-- Brand Name -->
                                     <td class="px-4 md:px-6 py-4">
-                                        <div id="name-display-<%= category._id %>">
+                                        <div id="name-display-<%= brand._id %>">
                                             <span class="font-medium text-gray-900 text-sm md:text-base truncate">
-                                                <%= category.name %>
+                                                <%= brand.brandName %>
                                             </span>
                                         </div>
-                                        <div id="name-edit-<%= category._id %>" class="hidden">
+                                        <div id="name-edit-<%= brand._id %>" class="hidden">
                                             <input type="text" 
                                                    class="edit-input" 
-                                                   value="<%= category.name %>" 
-                                                   id="name-input-<%= category._id %>">
+                                                   value="<%= brand.brandName %>" 
+                                                   id="name-input-<%= brand._id %>">
                                         </div>
                                     </td>
                                     
-                                    <!-- Description -->
+                                    <!-- Image -->
                                     <td class="px-4 md:px-6 py-4">
-                                        <div id="desc-display-<%= category._id %>">
-                                            <span class="text-gray-700 text-sm">
-                                                <%= category.description || 'Description' %>
-                                            </span>
+                                        <div id="image-display-<%= brand._id %>">
+                                            <% if (brand.brandImage) { %>
+                                                <img src="<%= brand.brandImage %>" alt="<%= brand.name %> Brand Image" class="w-12 h-12 object-contain rounded-md">
+                                            <% } else { %>
+                                                <img src="/placeholder.svg?height=48&width=48" alt="Placeholder Brand Image" class="w-12 h-12 object-contain rounded-md">
+                                            <% } %>
                                         </div>
-                                        <div id="desc-edit-<%= category._id %>" class="hidden">
+                                        <div id="image-edit-<%= brand._id %>" class="hidden">
                                             <input type="text" 
                                                    class="edit-input" 
-                                                   value="<%= category.description || '' %>" 
-                                                   id="desc-input-<%= category._id %>">
+                                                   value="<%= brand.brandImage || '' %>" 
+                                                   id="image-input-<%= brand._id %>"
+                                                   placeholder="Image URL">
                                         </div>
                                     </td>
                                     
                                     <!-- Discounts -->
                                     <td class="px-4 md:px-6 py-4">
-                                        <div id="discount-display-<%= category._id %>">
+                                        <div id="discount-display-<%= brand._id %>">
                                             <span class="text-gray-700 text-sm">
-                                                <%= typeof category.discounts === 'string' ? category.discounts : (category.discounts + '%') %>
+                                                <%= typeof brand.discount === 'number' ? brand.discount : (brand.discount + '%') %>%
                                             </span>
                                         </div>
-                                        <div id="discount-edit-<%= category._id %>" class="hidden">
+                                        <div id="discount-edit-<%= brand._id %>" class="hidden">
                                             <div class="relative">
                                                 <input type="number" 
                                                        class="edit-input pr-6" 
-                                                       value="<%= typeof category.discounts === 'string' ? category.discounts.replace('%', '') : (category.discounts || '0') %>" 
-                                                       id="discount-input-<%= category._id %>"
+                                                       value="<%= typeof brand.discount === 'number' ? brand.discount : (parseFloat(brand.discount) || 0) %>" 
+                                                       id="discount-input-<%= brand._id %>"
                                                        min="0" max="100" step="0.01">
                                                 <span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs">%</span>
                                             </div>
@@ -293,39 +296,43 @@
                                     
                                     <!-- Status -->
                                     <td class="px-4 md:px-6 py-4">
-                                        <div id="status-display-<%= category._id %>">
-                                            <span id="status-badge-<%= category._id %>"
-                                                class="inline-flex px-2 md:px-3 py-1 text-xs font-medium rounded-full <%= category.status === 'Active' ? 'badge-active' : 'badge-blocked' %>">
-                                                <%= category.status %>
+                                        <div id="status-display-<%= brand._id %>">
+                                            <span id="status-badge-<%= brand._id %>"
+                                                class="inline-flex px-2 md:px-3 py-1 text-xs font-medium rounded-full <%= brand.status === 'Active' ? 'badge-active' : 'badge-blocked' %>">
+                                                <%= brand.status %>
                                             </span>
                                         </div>
-                                        <div id="status-edit-<%= category._id %>" class="hidden">
-                                            <select class="edit-select" id="status-input-<%= category._id %>">
-                                                <option value="Active" <%= category.status === 'Active' ? 'selected' : '' %>>Active</option>
-                                                <option value="Inactive" <%= category.status === 'Inactive' ? 'selected' : '' %>>Inactive</option>
+                                        <div id="status-edit-<%= brand._id %>" class="hidden">
+                                            <select class="edit-select" id="status-input-<%= brand._id %>">
+                                                <option value="Active" <%= brand.status === 'Active' ? 'selected' : '' %>>Active</option>
+                                                <option value="Inactive" <%= brand.status === 'Inactive' ? 'selected' : '' %>>Inactive</option>
                                             </select>
                                         </div>
                                     </td>
                                     
-                                   !-- Actions -->
-                                    <td clas <s="px-4 md:px-6 py-4">
+                                    <!-- Actions -->
+                                    <td class="px-4 md:px-6 py-4">
                                         <div class="flex items-center space-x-2">
                                             <!-- Normal mode buttons -->
-                                            <div id="normal-actions-<%= category._id %>">
+                                            <div id="normal-actions-<%= brand._id %>">
                                                 <button class="p-1.5 md:p-2 text-gray-400 hover:text-blue-600 transition-colors rounded hover:bg-blue-50"
-                                                        onclick="enterEditMode('<%= category._id %>')" title="Edit Category">
+                                                        onclick="enterEditMode('<%= brand._id %>')" title="Edit Brand">
                                                     <i class="fas fa-edit text-sm"></i>
+                                                </button>
+                                                <button class="p-1.5 md:p-2 text-gray-400 hover:text-red-600 transition-colors rounded hover:bg-red-50"
+                                                        onclick="deleteBrand('<%= brand._id %>', '<%= brand.name %>')" title="Delete Brand">
+                                                    <i class="fas fa-trash-alt text-sm"></i>
                                                 </button>
                                             </div>
                                             
                                             <!-- Edit mode buttons -->
-                                            <div id="edit-actions-<%= category._id %>" class="hidden">
+                                            <div id="edit-actions-<%= brand._id %>" class="hidden">
                                                 <button class="p-1.5 md:p-2 text-gray-400 hover:text-green-600 transition-colors rounded hover:bg-green-50"
-                                                        onclick="saveCategory('<%= category._id %>')" title="Save Changes">
+                                                        onclick="saveBrand('<%= brand._id %>')" title="Save Changes">
                                                     <i class="fas fa-check text-sm"></i>
                                                 </button>
                                                 <button class="p-1.5 md:p-2 text-gray-400 hover:text-red-600 transition-colors rounded hover:bg-red-50"
-                                                        onclick="cancelEdit('<%= category._id %>')" title="Cancel Edit">
+                                                        onclick="cancelEdit('<%= brand._id %>')" title="Cancel Edit">
                                                     <i class="fas fa-times text-sm"></i>
                                                 </button>
                                             </div>
@@ -339,13 +346,13 @@
                                         <% if (search && search.trim() !== '') { %>
                                         <div class="flex flex-col items-center space-y-2">
                                             <i class="fas fa-search text-3xl text-gray-300"></i>
-                                            <p>No categories found matching "<%= search %>"</p>
+                                            <p>No brands found matching "<%= search %>"</p>
                                             <button onclick="clearSearch()" class="text-primary hover:text-indigo-700 text-sm font-medium">
-                                                Clear search to see all categories
+                                                Clear search to see all brands
                                             </button>
                                         </div>
                                         <% } else { %>
-                                        No categories found.
+                                        No brands found.
                                         <% } %>
                                     </td>
                                 </tr>
@@ -393,7 +400,7 @@
 
         // Search functionality
         function performSearch() {
-            const searchTerm = document.getElementById('categorySearchInput').value.trim();
+            const searchTerm = document.getElementById('brandSearchInput').value.trim();
             const urlParams = new URLSearchParams(window.location.search);
             if (searchTerm) {
                 urlParams.set('search', searchTerm);
@@ -414,88 +421,93 @@
         }
 
         // Inline editing functions
-        function enterEditMode(categoryId) {
+        function enterEditMode(brandId) {
             // Store original values
-            originalValues[categoryId] = {
-                name: document.getElementById(`name-input-${categoryId}`).value,
-                description: document.getElementById(`desc-input-${categoryId}`).value,
-                discount: document.getElementById(`discount-input-${categoryId}`).value,
-                status: document.getElementById(`status-input-${categoryId}`).value
+            originalValues[brandId] = {
+                name: document.getElementById(`name-input-${brandId}`).value,
+                imageUrl: document.getElementById(`image-input-${brandId}`).value,
+                discount: document.getElementById(`discount-input-${brandId}`).value,
+                status: document.getElementById(`status-input-${brandId}`).value
             };
 
             // Hide display elements and show edit elements
-            document.getElementById(`name-display-${categoryId}`).classList.add('hidden');
-            document.getElementById(`name-edit-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`name-display-${brandId}`).classList.add('hidden');
+            document.getElementById(`name-edit-${brandId}`).classList.remove('hidden');
             
-            document.getElementById(`desc-display-${categoryId}`).classList.add('hidden');
-            document.getElementById(`desc-edit-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`image-display-${brandId}`).classList.add('hidden');
+            document.getElementById(`image-edit-${brandId}`).classList.remove('hidden');
             
-            document.getElementById(`discount-display-${categoryId}`).classList.add('hidden');
-            document.getElementById(`discount-edit-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`discount-display-${brandId}`).classList.add('hidden');
+            document.getElementById(`discount-edit-${brandId}`).classList.remove('hidden');
             
-            document.getElementById(`status-display-${categoryId}`).classList.add('hidden');
-            document.getElementById(`status-edit-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`status-display-${brandId}`).classList.add('hidden');
+            document.getElementById(`status-edit-${brandId}`).classList.remove('hidden');
 
             // Switch action buttons
-            document.getElementById(`normal-actions-${categoryId}`).classList.add('hidden');
-            document.getElementById(`edit-actions-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`normal-actions-${brandId}`).classList.add('hidden');
+            document.getElementById(`edit-actions-${brandId}`).classList.remove('hidden');
 
             // Add edit mode styling to row
-            document.getElementById(`category-row-${categoryId}`).classList.add('edit-mode');
+            document.getElementById(`brand-row-${brandId}`).classList.add('edit-mode');
 
             // Focus on name input
-            document.getElementById(`name-input-${categoryId}`).focus();
+            document.getElementById(`name-input-${brandId}`).focus();
         }
 
-        function cancelEdit(categoryId) {
+        function cancelEdit(brandId) {
             // Restore original values
-            if (originalValues[categoryId]) {
-                document.getElementById(`name-input-${categoryId}`).value = originalValues[categoryId].name;
-                document.getElementById(`desc-input-${categoryId}`).value = originalValues[categoryId].description;
-                document.getElementById(`discount-input-${categoryId}`).value = originalValues[categoryId].discount;
-                document.getElementById(`status-input-${categoryId}`).value = originalValues[categoryId].status;
+            if (originalValues[brandId]) {
+                document.getElementById(`name-input-${brandId}`).value = originalValues[brandId].name;
+                document.getElementById(`image-input-${brandId}`).value = originalValues[brandId].imageUrl;
+                document.getElementById(`discount-input-${brandId}`).value = originalValues[brandId].discount;
+                document.getElementById(`status-input-${brandId}`).value = originalValues[brandId].status;
             }
 
-            exitEditMode(categoryId);
+            exitEditMode(brandId);
         }
 
-        function exitEditMode(categoryId) {
+        function exitEditMode(brandId) {
             // Show display elements and hide edit elements
-            document.getElementById(`name-display-${categoryId}`).classList.remove('hidden');
-            document.getElementById(`name-edit-${categoryId}`).classList.add('hidden');
+            document.getElementById(`name-display-${brandId}`).classList.remove('hidden');
+            document.getElementById(`name-edit-${brandId}`).classList.add('hidden');
             
-            document.getElementById(`desc-display-${categoryId}`).classList.remove('hidden');
-            document.getElementById(`desc-edit-${categoryId}`).classList.add('hidden');
+            document.getElementById(`image-display-${brandId}`).classList.remove('hidden');
+            document.getElementById(`image-edit-${brandId}`).classList.add('hidden');
             
-            document.getElementById(`discount-display-${categoryId}`).classList.remove('hidden');
-            document.getElementById(`discount-edit-${categoryId}`).classList.add('hidden');
+            document.getElementById(`discount-display-${brandId}`).classList.remove('hidden');
+            document.getElementById(`discount-edit-${brandId}`).classList.add('hidden');
             
-            document.getElementById(`status-display-${categoryId}`).classList.remove('hidden');
-            document.getElementById(`status-edit-${categoryId}`).classList.add('hidden');
+            document.getElementById(`status-display-${brandId}`).classList.remove('hidden');
+            document.getElementById(`status-edit-${brandId}`).classList.add('hidden');
 
             // Switch action buttons
-            document.getElementById(`normal-actions-${categoryId}`).classList.remove('hidden');
-            document.getElementById(`edit-actions-${categoryId}`).classList.add('hidden');
+            document.getElementById(`normal-actions-${brandId}`).classList.remove('hidden');
+            document.getElementById(`edit-actions-${brandId}`).classList.add('hidden');
 
             // Remove edit mode styling
-            document.getElementById(`category-row-${categoryId}`).classList.remove('edit-mode');
+            document.getElementById(`brand-row-${brandId}`).classList.remove('edit-mode');
 
             // Clean up stored values
-            delete originalValues[categoryId];
+            delete originalValues[brandId];
         }
 
-        async function saveCategory(categoryId) {
-            const name = document.getElementById(`name-input-${categoryId}`).value.trim();
-            const description = document.getElementById(`desc-input-${categoryId}`).value.trim();
-            const discount = document.getElementById(`discount-input-${categoryId}`).value; // This is already a number string
-            const status = document.getElementById(`status-input-${categoryId}`).value;
+        async function saveBrand(brandId) {
+            console.log(brandId)
+            const name = document.getElementById(`name-input-${brandId}`).value.trim();
+            const imageUrl = document.getElementById(`image-input-${brandId}`).value.trim();
+            const discountValue = document.getElementById(`discount-input-${brandId}`).value;
+            const status = document.getElementById(`status-input-${brandId}`).value;
+
+            // Convert to number, handling empty string or NaN as 0
+            const parsedDiscount = parseFloat(discountValue);
+            const finalDiscount = isNaN(parsedDiscount) ? 0 : parsedDiscount;
 
             // Basic validation
             if (!name) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Validation Error',
-                    text: 'Category name is required',
+                    text: 'Brand name is required',
                 });
                 return;
             }
@@ -504,12 +516,12 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Validation Error',
-                    text: 'Category name must be at least 2 characters',
+                    text: 'Brand name must be at least 2 characters',
                 });
                 return;
             }
 
-            if (discount && (isNaN(parseFloat(discount)) || parseFloat(discount) < 0 || parseFloat(discount) > 100)) {
+            if (finalDiscount < 0 || finalDiscount > 100) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Validation Error',
@@ -519,15 +531,15 @@
             }
 
             try {
-                const response = await fetch(`/admin/category/${categoryId}`, {
+                const response = await fetch(`/admin/brand/${brandId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        categoryName: name,
-                        description: description,
-                        discounts: discount === '' ? 0 : parseFloat(discount), 
+                        brandName: name,
+                        imageUrl: imageUrl,
+                        discounts: finalDiscount,
                         status: status
                     }),
                 });
@@ -536,22 +548,28 @@
 
                 if (result.success) {
                     // Update display values
-                    document.querySelector(`#name-display-${categoryId} span`).textContent = name;
-                    document.querySelector(`#desc-display-${categoryId} span`).textContent = description || 'Description';
-                    // Ensure display always shows '%'
-                    document.querySelector(`#discount-display-${categoryId} span`).textContent = (discount === '' ? '0' : discount) + '%';
+                    document.querySelector(`#name-display-${brandId} span`).textContent = name;
+                    
+                    const imageDisplayDiv = document.getElementById(`image-display-${brandId}`);
+                    if (imageUrl) {
+                        imageDisplayDiv.innerHTML = `<img src="${imageUrl}" alt="${name} Brand Image" class="w-12 h-12 object-contain rounded-md">`;
+                    } else {
+                        imageDisplayDiv.innerHTML = `<img src="/placeholder.svg?height=48&width=48" alt="Placeholder Brand Image" class="w-12 h-12 object-contain rounded-md">`;
+                    }
+
+                    document.querySelector(`#discount-display-${brandId} span`).textContent = finalDiscount + '%';
                     
                     // Update status badge
-                    const statusBadge = document.getElementById(`status-badge-${categoryId}`);
+                    const statusBadge = document.getElementById(`status-badge-${brandId}`);
                     statusBadge.textContent = status;
                     statusBadge.className = `inline-flex px-2 md:px-3 py-1 text-xs font-medium rounded-full ${status === 'Active' ? 'badge-active' : 'badge-blocked'}`;
 
-                    exitEditMode(categoryId);
+                    exitEditMode(brandId);
 
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
-                        text: 'Category updated successfully',
+                        text: 'Brand updated successfully',
                         timer: 2000,
                         showConfirmButton: false,
                     });
@@ -559,11 +577,11 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: result.message || 'Failed to update category',
+                        text: result.message || 'Failed to update brand',
                     });
                 }
             } catch (error) {
-                console.error('Error updating category:', error);
+                console.error('Error updating brand:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -572,13 +590,13 @@
             }
         }
 
-        // Add Category Form functionality
+        // Add Brand Form functionality
         document.addEventListener('DOMContentLoaded', function () {
-            const categoryForm = document.getElementById('addCategoryForm');
-            const addCategoryBtn = document.getElementById('addCategoryBtn');
+            const brandForm = document.getElementById('addBrandForm');
+            const addBrandBtn = document.getElementById('addBrandBtn');
             const addBtnText = document.getElementById('addBtnText');
             const addBtnSpinner = document.getElementById('addBtnSpinner');
-            const searchInput = document.getElementById('categorySearchInput');
+            const searchInput = document.getElementById('brandSearchInput');
             const searchBtn = document.getElementById('searchBtn');
             const clearSearchBtn = document.getElementById('clearSearchBtn');
 
@@ -607,31 +625,31 @@
             });
 
             // Form validation
-            const categoryNameInput = document.getElementById('categoryName');
+            const brandNameInput = document.getElementById('brandName');
             const discountOffersInput = document.getElementById('discountOffers');
 
-            categoryNameInput.addEventListener('input', function () {
-                validateCategoryName();
+            brandNameInput.addEventListener('input', function () {
+                validateBrandName();
             });
 
             discountOffersInput.addEventListener('input', function () {
                 validateDiscountOffers();
             });
 
-            function validateCategoryName() {
-                const value = categoryNameInput.value.trim();
-                const errorDiv = document.getElementById('categoryNameError');
+            function validateBrandName() {
+                const value = brandNameInput.value.trim();
+                const errorDiv = document.getElementById('brandNameError');
                 if (value.length === 0) {
-                    showError(categoryNameInput, errorDiv, 'Category name is required');
+                    showError(brandNameInput, errorDiv, 'Brand name is required');
                     return false;
                 } else if (value.length < 2) {
-                    showError(categoryNameInput, errorDiv, 'Category name must be at least 2 characters');
+                    showError(brandNameInput, errorDiv, 'Brand name must be at least 2 characters');
                     return false;
                 } else if (value.length > 50) {
-                    showError(categoryNameInput, errorDiv, 'Category name must be less than 50 characters');
+                    showError(brandNameInput, errorDiv, 'Brand name must be less than 50 characters');
                     return false;
                 } else {
-                    clearError(categoryNameInput, errorDiv);
+                    clearError(brandNameInput, errorDiv);
                     return true;
                 }
             }
@@ -660,11 +678,11 @@
             }
 
             // Form submission
-            categoryForm.addEventListener('submit', async function (e) {
+            brandForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 
                 // Validate form
-                const isNameValid = validateCategoryName();
+                const isNameValid = validateBrandName();
                 const isDiscountValid = validateDiscountOffers();
                 
                 if (!isNameValid || !isDiscountValid) {
@@ -678,20 +696,24 @@
                 }
 
                 // Show loading state
-                addCategoryBtn.disabled = true;
+                addBrandBtn.disabled = true;
                 addBtnText.textContent = 'Adding...';
                 addBtnSpinner.classList.remove('hidden');
 
-                const formData = new FormData(categoryForm);
+                const formData = new FormData(brandForm);
+                const rawDiscounts = formData.get('discounts');
+                const parsedDiscounts = parseFloat(rawDiscounts);
+                const finalAddDiscount = isNaN(parsedDiscounts) ? 0 : parsedDiscounts; // Ensure it's a number, default to 0 if NaN
+
                 const data = {
-                    categoryName: formData.get('categoryName'),
-                    description: formData.get('description'),
-                    discounts: formData.get('discounts') === '' ? 0 : parseFloat(formData.get('discounts')),
+                    brandName: formData.get('brandName'),
+                    imageUrl: formData.get('imageUrl'),
+                    discounts: finalAddDiscount, // Send the guaranteed number
                     status: formData.get('status'),
                 };
 
                 try {
-                    const res = await fetch('/admin/Category', {
+                    const res = await fetch('/admin/Brand', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -725,24 +747,53 @@
                     });
                 } finally {
                     // Hide loading state regardless of success or failure
-                    addCategoryBtn.disabled = false;
+                    addBrandBtn.disabled = false;
                     addBtnText.textContent = 'Add';
                     addBtnSpinner.classList.add('hidden');
                 }
             });
 
-            // Handle escape key to cancel edit mode
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    // Find any category in edit mode and cancel it
-                    const editModeRows = document.querySelectorAll('.edit-mode');
-                    editModeRows.forEach(row => {
-                        const categoryId = row.id.replace('category-row-', '');
-                        cancelEdit(categoryId);
+        });
+
+        // Existing brand management functions
+        function deleteBrand(brandId, brandName) {
+            Swal.fire({
+                title: `Delete Brand?`,
+                text: `Are you sure you want to delete ${brandName}? This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: `Yes, delete it!`,
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: `Deleting brand...`,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
                     });
+
+                    setTimeout(() => {
+                        const row = document.getElementById(`brand-row-${brandId}`);
+                        if (row) row.remove();
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: `Brand "${brandName}" has been deleted.`,
+                            icon: 'success',
+                            confirmButtonColor: '#6366f1',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                    }, 1000);
                 }
             });
-        });
+        }
 
         // Existing pagination functions
         function goToPage(page) {

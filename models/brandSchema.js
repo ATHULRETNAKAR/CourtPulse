@@ -11,9 +11,14 @@ const brandSchema = new Schema({
         type:[String],
         required:true
     },
-    isBlocked : {
-        type:Boolean,
-        default:false,
+    status : {
+        type: String,
+        enum: ['Active', 'Blocked'],
+        default: 'Active'
+    },
+    discount : {
+        type:Number,
+        default:0
     },
     createdAt : {
         type:Date,

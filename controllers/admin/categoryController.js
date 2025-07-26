@@ -50,7 +50,7 @@ const addCategory = async (req, res) => {
         }
 
         // Check if category already exists
-        const existingCategory = await Category.findOne({ name: { $regex: new RegExp(`^${categoryName}$`, 'i') } });
+        const existingCategory = await Category.findOne({ name: { $regex: new RegExp(`^${categoryName}`, 'i') } });
         if (existingCategory) {
             return res.status(409).json({ success: false, message: 'Category with this name already exists.' });
         }
@@ -63,7 +63,7 @@ const addCategory = async (req, res) => {
         });
 
         await newCategory.save();
-        res.status(201).json({ success: true, message: 'Category added successfully!', category: newCategory });
+        res.status(201).json({ success: true, message: 'Category added successfully!'});
 
     } catch (error) {
         console.error('Error adding category:', error);
@@ -76,7 +76,6 @@ const editCategory = async (req, res) => {
     try {
         const { id } = req.params; // Category ID from URL
         const { categoryName, description, discounts, status } = req.body;
-        console.log(req.body)
 
         const updatedCategory = await Category.findByIdAndUpdate(id, {
             name:categoryName,
@@ -89,7 +88,7 @@ const editCategory = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Category not found.' });
         }
 
-        res.json({ success: true, message: 'Category updated successfully!', category: updatedCategory });
+        res.json({ success: true, message: 'Category updated successfully!'});
 
     } catch (error) {
         console.error('Error updating category:', error);

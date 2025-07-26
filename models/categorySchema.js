@@ -7,8 +7,8 @@ const categorySchema = new Schema({
         required: true,
         unique: true
     },
-    description: { // Fixed typo
-        type: String // Removed required: true to make it optional
+    description: { 
+        type: String 
     },
     status: {
         type: String,

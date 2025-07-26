@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/admin/adminController');
 const customerController = require('../controllers/admin/customerController');
 const categoryController = require('../controllers/admin/categoryController');
+const brandController = require('../controllers/admin/brandController')
 const {userAuth,adminAuth} = require('../middlewares/auth');
 
 //Login Management
@@ -23,6 +24,11 @@ router.post('/category',adminAuth, categoryController.addCategory);
 router.put('/category/:id',adminAuth, categoryController.editCategory);
 router.delete('/category/:id',adminAuth, categoryController.deleteCategory);
 
+
+//Brand Management
+router.get('/brand',adminAuth,brandController.brandInfo)
+router.post('/brand',adminAuth,brandController.addBrand)
+router.put('/brand/:id',adminAuth,brandController.editBrand)
 
 
 module.exports = router;
