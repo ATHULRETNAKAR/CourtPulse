@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtPulse - Category Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        'courtpulse-header-purple': '#522B8C',
+                        'green-100': '#dcfce7',
+                        'green-800': '#16a34a',
+                        'red-100': '#fee2e2',
+                        'red-800': '#dc2626',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for the active/blocked badges */
+        .badge-active {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+        .badge-blocked {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        /* Form validation styles */
+        .form-error {
+            border-color: #dc2626;
+            background-color: #fef2f2;
+        }
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        /* Loading spinner */
+        .spinner {
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #6366f1;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Edit mode styles */
+        .edit-mode {
+            background-color: #f0f9ff;
+            border: 1px solid #0ea5e9;
+        }
+        .edit-input {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            width: 100%;
+            background-color: white;
+        }
+        .edit-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+        .edit-select {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            width: 100%;
+            background-color: white;
+        }
+        .edit-select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <%- include("../../views/partials/admin/sidebar") %>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <%- include("../../views/partials/admin/header") %>
+            <!-- Category Content -->
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+                <!-- Page Header -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <h2 class="text-2xl font-semibold text-gray-900">Category management</h2>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <!-- Enhanced Search Section -->
+                        <div class="flex items-center gap-2">
+                            <div class="relative flex-1 sm:w-64">
+                                <input type="text" placeholder="Search categories..."
+                                    class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    value="<%= search %>" id="categorySearchInput">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <!-- Clear button (only show when there's text) -->
+                                <button type="button" id="clearSearchBtn"
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors <%= search ? '' : 'hidden' %>"
+                                    title="Clear search">
+                                    <i class="fas fa-times text-sm"></i>
+                                </button>
+                            </div>
+                            <!-- Search Button -->
+                            <button type="button" id="searchBtn"
+                                class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center space-x-2 transition-colors whitespace-nowrap">
+                                <i class="fas fa-search"></i>
+                                <span class="hidden sm:inline">Search</span>
+                            </button>
+                        </div>
+                        <button
+                            class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center justify-center space-x-2 transition-colors"
+                            id="filtersBtn">
+                            <i class="fas fa-filter"></i>
+                            <span>Filters</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Results Info -->
+                <% if (search && search.trim() !== '') { %>
+                <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-info-circle text-blue-500"></i>
+                            <span class="text-sm text-blue-700">
+                                Showing results for "<strong><%= search %></strong>"
+                                <% if (categories && categories.length > 0) { %>
+                                - <%= categories.length %> result<%= categories.length !== 1 ? 's' : '' %> found
+                                <% } else { %>
+                                - No results found
+                                <% } %>
+                            </span>
+                        </div>
+                        <button type="button" onclick="clearSearch()"
+                            class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            Clear search
+                        </button>
+                    </div>
+                </div>
+                <% } %>
+
+                <!-- Add Category Form -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
+                    <div class="px-4 md:px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Add New Category</h3>
+                    </div>
+                    <div class="p-4 md:p-6">
+                        <form id="addCategoryForm">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end">
+                                <!-- Category Name -->
+                                <div class="md:col-span-1 lg:col-span-1 xl:col-span-1">
+                                    <label for="categoryName" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Category Name
+                                    </label>
+                                    <input type="text" id="categoryName" name="categoryName" placeholder="Apparels"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm"
+                                        required>
+                                    <div id="categoryNameError" class="error-message hidden"></div>
+                                </div>
+                                <!-- Category Description -->
+                                <div class="md:col-span-1 lg:col-span-1 xl:col-span-1">
+                                    <label for="categoryDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Category Description
+                                    </label>
+                                    <input type="text" id="categoryDescription" name="description"
+                                        placeholder="Write your description here..."
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm">
+                                    <div id="categoryDescriptionError" class="error-message hidden"></div>
+                                </div>
+                                <!-- Visibility Status -->
+                                <div class="md:col-span-1 lg:col-span-1 xl:col-span-1">
+                                    <label for="visibilityStatus" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Visibility Status
+                                    </label>
+                                    <select id="visibilityStatus" name="status"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm"
+                                        required>
+                                        <option value="Active" selected>Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                    <div id="visibilityStatusError" class="error-message hidden"></div>
+                                </div>
+                                <!-- Discounts/Offers - Manual Input -->
+                                <div class="md:col-span-1 lg:col-span-1 xl:col-span-1">
+                                    <label for="discountOffers" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Discounts/Offers
+                                    </label>
+                                    <div class="relative">
+                                        <input type="number" id="discountOffers" name="discounts" placeholder="10"
+                                            min="0" max="100" step="0.01"
+                                            class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm">
+                                        <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">%</span>
+                                    </div>
+                                    <div id="discountOffersError" class="error-message hidden"></div>
+                                </div>
+                                <!-- Add Button -->
+                                <div class="md:col-span-2 lg:col-span-4 xl:col-span-1 flex justify-start">
+                                    <button type="submit" id="addCategoryBtn"
+                                        class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors font-medium flex items-center space-x-2 text-sm">
+                                        <span id="addBtnText">Add</span>
+                                        <div id="addBtnSpinner" class="spinner hidden"></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Category Table -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-courtpulse-header-purple text-white">
+                                <tr>
+                                    <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Category</th>
+                                    <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Description</th>
+                                    <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Discounts/Offers</th>
+                                    <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Status</th>
+                                    <th class="px-4 md:px-6 py-4 text-left font-medium text-sm">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <% if (categories && categories.length > 0) { %>
+                                <% categories.forEach(function(category) { %>
+                                <tr class="hover:bg-gray-50 transition-colors" id="category-row-<%= category._id %>">
+                                    <!-- Category Name -->
+                                    <td class="px-4 md:px-6 py-4">
+                                        <div id="name-display-<%= category._id %>">
+                                            <span class="font-medium text-gray-900 text-sm md:text-base truncate">
+                                                <%= category.name %>
+                                            </span>
+                                        </div>
+                                        <div id="name-edit-<%= category._id %>" class="hidden">
+                                            <input type="text" 
+                                                   class="edit-input" 
+                                                   value="<%= category.name %>" 
+                                                   id="name-input-<%= category._id %>">
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- Description -->
+                                    <td class="px-4 md:px-6 py-4">
+                                        <div id="desc-display-<%= category._id %>">
+                                            <span class="text-gray-700 text-sm">
+                                                <%= category.description || 'Description' %>
+                                            </span>
+                                        </div>
+                                        <div id="desc-edit-<%= category._id %>" class="hidden">
+                                            <input type="text" 
+                                                   class="edit-input" 
+                                                   value="<%= category.description || '' %>" 
+                                                   id="desc-input-<%= category._id %>">
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- Discounts -->
+                                    <td class="px-4 md:px-6 py-4">
+                                        <div id="discount-display-<%= category._id %>">
+                                            <span class="text-gray-700 text-sm">
+                                                <%= typeof category.discounts === 'string' ? category.discounts : (category.discounts + '%') %>
+                                            </span>
+                                        </div>
+                                        <div id="discount-edit-<%= category._id %>" class="hidden">
+                                            <div class="relative">
+                                                <input type="number" 
+                                                       class="edit-input pr-6" 
+                                                       value="<%= typeof category.discounts === 'string' ? category.discounts.replace('%', '') : (category.discounts || '0') %>" 
+                                                       id="discount-input-<%= category._id %>"
+                                                       min="0" max="100" step="0.01">
+                                                <span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs">%</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- Status -->
+                                    <td class="px-4 md:px-6 py-4">
+                                        <div id="status-display-<%= category._id %>">
+                                            <span id="status-badge-<%= category._id %>"
+                                                class="inline-flex px-2 md:px-3 py-1 text-xs font-medium rounded-full <%= category.status === 'Active' ? 'badge-active' : 'badge-blocked' %>">
+                                                <%= category.status %>
+                                            </span>
+                                        </div>
+                                        <div id="status-edit-<%= category._id %>" class="hidden">
+                                            <select class="edit-select" id="status-input-<%= category._id %>">
+                                                <option value="Active" <%= category.status === 'Active' ? 'selected' : '' %>>Active</option>
+                                                <option value="Inactive" <%= category.status === 'Inactive' ? 'selected' : '' %>>Inactive</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- Actions -->
+                                    <td class="px-4 md:px-6 py-4">
+                                        <div class="flex items-center space-x-2">
+                                            <!-- Normal mode buttons -->
+                                            <div id="normal-actions-<%= category._id %>">
+                                                <button class="p-1.5 md:p-2 text-gray-400 hover:text-blue-600 transition-colors rounded hover:bg-blue-50"
+                                                        onclick="enterEditMode('<%= category._id %>')" title="Edit Category">
+                                                    <i class="fas fa-edit text-sm"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Edit mode buttons -->
+                                            <div id="edit-actions-<%= category._id %>" class="hidden">
+                                                <button class="p-1.5 md:p-2 text-gray-400 hover:text-green-600 transition-colors rounded hover:bg-green-50"
+                                                        onclick="saveCategory('<%= category._id %>')" title="Save Changes">
+                                                    <i class="fas fa-check text-sm"></i>
+                                                </button>
+                                                <button class="p-1.5 md:p-2 text-gray-400 hover:text-red-600 transition-colors rounded hover:bg-red-50"
+                                                        onclick="cancelEdit('<%= category._id %>')" title="Cancel Edit">
+                                                    <i class="fas fa-times text-sm"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                <% } else { %>
+                                <tr>
+                                    <td colspan="5" class="text-center py-8 text-gray-500">
+                                        <% if (search && search.trim() !== '') { %>
+                                        <div class="flex flex-col items-center space-y-2">
+                                            <i class="fas fa-search text-3xl text-gray-300"></i>
+                                            <p>No categories found matching "<%= search %>"</p>
+                                            <button onclick="clearSearch()" class="text-primary hover:text-indigo-700 text-sm font-medium">
+                                                Clear search to see all categories
+                                            </button>
+                                        </div>
+                                        <% } else { %>
+                                        No categories found.
+                                        <% } %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="flex flex-col sm:flex-row items-center justify-between px-4 md:px-6 py-4 border-t border-gray-200 gap-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-700">Show result:</span>
+                            <select class="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                onchange="changePageSize(this.value)">
+                                <option value="2" <%= limit == 2 ? 'selected' : '' %>>2</option>
+                                <option value="5" <%= limit == 5 ? 'selected' : '' %>>5</option>
+                                <option value="10" <%= limit == 10 ? 'selected' : '' %>>10</option>
+                                <option value="20" <%= limit == 20 ? 'selected' : '' %>>20</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-1 md:space-x-2">
+                            <button class="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 rounded hover:bg-gray-100"
+                                <%= currentPage === 1 ? 'disabled' : '' %> onclick="previousPage()" title="Previous Page">
+                                <i class="fas fa-chevron-left text-sm"></i>
+                            </button>
+                            <% for (let i = 1; i <= totalPages; i++) { %>
+                            <button class="px-2 md:px-3 py-1 <%= currentPage === i ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100' %> rounded text-sm"
+                                onclick="goToPage(<%= i %>)">
+                                <%= i %>
+                            </button>
+                            <% } %>
+                            <button class="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+                                <%= currentPage === totalPages ? 'disabled' : '' %> onclick="nextPage()" title="Next Page">
+                                <i class="fas fa-chevron-right text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Store original values for cancel functionality
+        let originalValues = {};
+
+        // Search functionality
+        function performSearch() {
+            const searchTerm = document.getElementById('categorySearchInput').value.trim();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (searchTerm) {
+                urlParams.set('search', searchTerm);
+            } else {
+                urlParams.delete('search');
+            }
+            urlParams.set('page', 1);
+            urlParams.set('limit', <%= limit %>);
+            window.location.search = urlParams.toString();
+        }
+
+        function clearSearch() {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.delete('search');
+            urlParams.set('page', 1);
+            urlParams.set('limit', <%= limit %>);
+            window.location.search = urlParams.toString();
+        }
+
+        // Inline editing functions
+        function enterEditMode(categoryId) {
+            // Store original values
+            originalValues[categoryId] = {
+                name: document.getElementById(`name-input-${categoryId}`).value,
+                description: document.getElementById(`desc-input-${categoryId}`).value,
+                discount: document.getElementById(`discount-input-${categoryId}`).value,
+                status: document.getElementById(`status-input-${categoryId}`).value
+            };
+
+            // Hide display elements and show edit elements
+            document.getElementById(`name-display-${categoryId}`).classList.add('hidden');
+            document.getElementById(`name-edit-${categoryId}`).classList.remove('hidden');
+            
+            document.getElementById(`desc-display-${categoryId}`).classList.add('hidden');
+            document.getElementById(`desc-edit-${categoryId}`).classList.remove('hidden');
+            
+            document.getElementById(`discount-display-${categoryId}`).classList.add('hidden');
+            document.getElementById(`discount-edit-${categoryId}`).classList.remove('hidden');
+            
+            document.getElementById(`status-display-${categoryId}`).classList.add('hidden');
+            document.getElementById(`status-edit-${categoryId}`).classList.remove('hidden');
+
+            // Switch action buttons
+            document.getElementById(`normal-actions-${categoryId}`).classList.add('hidden');
+            document.getElementById(`edit-actions-${categoryId}`).classList.remove('hidden');
+
+            // Add edit mode styling to row
+            document.getElementById(`category-row-${categoryId}`).classList.add('edit-mode');
+
+            // Focus on name input
+            document.getElementById(`name-input-${categoryId}`).focus();
+        }
+
+        function cancelEdit(categoryId) {
+            // Restore original values
+            if (originalValues[categoryId]) {
+                document.getElementById(`name-input-${categoryId}`).value = originalValues[categoryId].name;
+                document.getElementById(`desc-input-${categoryId}`).value = originalValues[categoryId].description;
+                document.getElementById(`discount-input-${categoryId}`).value = originalValues[categoryId].discount;
+                document.getElementById(`status-input-${categoryId}`).value = originalValues[categoryId].status;
+            }
+
+            exitEditMode(categoryId);
+        }
+
+        function exitEditMode(categoryId) {
+            // Show display elements and hide edit elements
+            document.getElementById(`name-display-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`name-edit-${categoryId}`).classList.add('hidden');
+            
+            document.getElementById(`desc-display-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`desc-edit-${categoryId}`).classList.add('hidden');
+            
+            document.getElementById(`discount-display-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`discount-edit-${categoryId}`).classList.add('hidden');
+            
+            document.getElementById(`status-display-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`status-edit-${categoryId}`).classList.add('hidden');
+
+            // Switch action buttons
+            document.getElementById(`normal-actions-${categoryId}`).classList.remove('hidden');
+            document.getElementById(`edit-actions-${categoryId}`).classList.add('hidden');
+
+            // Remove edit mode styling
+            document.getElementById(`category-row-${categoryId}`).classList.remove('edit-mode');
+
+            // Clean up stored values
+            delete originalValues[categoryId];
+        }
+
+        async function saveCategory(categoryId) {
+            const name = document.getElementById(`name-input-${categoryId}`).value.trim();
+            const description = document.getElementById(`desc-input-${categoryId}`).value.trim();
+            const discount = document.getElementById(`discount-input-${categoryId}`).value; // This is already a number string
+            const status = document.getElementById(`status-input-${categoryId}`).value;
+
+            // Basic validation
+            if (!name) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Category name is required',
+                });
+                return;
+            }
+
+            if (name.length < 2) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Category name must be at least 2 characters',
+                });
+                return;
+            }
+
+            if (discount && (isNaN(parseFloat(discount)) || parseFloat(discount) < 0 || parseFloat(discount) > 100)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Discount must be between 0 and 100',
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/category/${categoryId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        categoryName: name,
+                        description: description,
+                        discounts: discount === '' ? 0 : parseFloat(discount), 
+                        status: status
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Update display values
+                    document.querySelector(`#name-display-${categoryId} span`).textContent = name;
+                    document.querySelector(`#desc-display-${categoryId} span`).textContent = description || 'Description';
+                    // Ensure display always shows '%'
+                    document.querySelector(`#discount-display-${categoryId} span`).textContent = (discount === '' ? '0' : discount) + '%';
+                    
+                    // Update status badge
+                    const statusBadge = document.getElementById(`status-badge-${categoryId}`);
+                    statusBadge.textContent = status;
+                    statusBadge.className = `inline-flex px-2 md:px-3 py-1 text-xs font-medium rounded-full ${status === 'Active' ? 'badge-active' : 'badge-blocked'}`;
+
+                    exitEditMode(categoryId);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Category updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: result.message || 'Failed to update category',
+                    });
+                }
+            } catch (error) {
+                console.error('Error updating category:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to connect to server',
+                });
+            }
+        }
+
+        // Add Category Form functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const categoryForm = document.getElementById('addCategoryForm');
+            const addCategoryBtn = document.getElementById('addCategoryBtn');
+            const addBtnText = document.getElementById('addBtnText');
+            const addBtnSpinner = document.getElementById('addBtnSpinner');
+            const searchInput = document.getElementById('categorySearchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+            // Search functionality
+            searchBtn.addEventListener('click', performSearch);
+            clearSearchBtn.addEventListener('click', function () {
+                searchInput.value = '';
+                clearSearch();
+            });
+
+            // Enter key search
+            searchInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+
+            // Show/hide clear button based on input
+            searchInput.addEventListener('input', function () {
+                if (this.value.trim()) {
+                    clearSearchBtn.classList.remove('hidden');
+                } else {
+                    clearSearchBtn.classList.add('hidden');
+                }
+            });
+
+            // Form validation
+            const categoryNameInput = document.getElementById('categoryName');
+            const discountOffersInput = document.getElementById('discountOffers');
+
+            categoryNameInput.addEventListener('input', function () {
+                validateCategoryName();
+            });
+
+            discountOffersInput.addEventListener('input', function () {
+                validateDiscountOffers();
+            });
+
+            function validateCategoryName() {
+                const value = categoryNameInput.value.trim();
+                const errorDiv = document.getElementById('categoryNameError');
+                if (value.length === 0) {
+                    showError(categoryNameInput, errorDiv, 'Category name is required');
+                    return false;
+                } else if (value.length < 2) {
+                    showError(categoryNameInput, errorDiv, 'Category name must be at least 2 characters');
+                    return false;
+                } else if (value.length > 50) {
+                    showError(categoryNameInput, errorDiv, 'Category name must be less than 50 characters');
+                    return false;
+                } else {
+                    clearError(categoryNameInput, errorDiv);
+                    return true;
+                }
+            }
+
+            function validateDiscountOffers() {
+                const value = parseFloat(discountOffersInput.value);
+                const errorDiv = document.getElementById('discountOffersError');
+                if (discountOffersInput.value !== '' && (isNaN(value) || value < 0 || value > 100)) {
+                    showError(discountOffersInput, errorDiv, 'Discount must be between 0 and 100');
+                    return false;
+                } else {
+                    clearError(discountOffersInput, errorDiv);
+                    return true;
+                }
+            }
+
+            function showError(input, errorDiv, message) {
+                input.classList.add('form-error');
+                errorDiv.textContent = message;
+                errorDiv.classList.remove('hidden');
+            }
+
+            function clearError(input, errorDiv) {
+                input.classList.remove('form-error');
+                errorDiv.classList.add('hidden');
+            }
+
+            // Form submission
+            categoryForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                
+                // Validate form
+                const isNameValid = validateCategoryName();
+                const isDiscountValid = validateDiscountOffers();
+                
+                if (!isNameValid || !isDiscountValid) {
+                    Swal.fire({
+                        title: 'Validation Error',
+                        text: 'Please fix the errors in the form before submitting.',
+                        icon: 'error',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    return;
+                }
+
+                // Show loading state
+                addCategoryBtn.disabled = true;
+                addBtnText.textContent = 'Adding...';
+                addBtnSpinner.classList.remove('hidden');
+
+                const formData = new FormData(categoryForm);
+                const data = {
+                    categoryName: formData.get('categoryName'),
+                    description: formData.get('description'),
+                    discounts: formData.get('discounts') === '' ? 0 : parseFloat(formData.get('discounts')),
+                    status: formData.get('status'),
+                };
+
+                try {
+                    const res = await fetch('/admin/Category', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: result.message,
+                            timer: 2000,
+                            showConfirmButton: false,
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message || 'Something went wrong',
+                        });
+                    }
+                } catch (err) {
+                    console.error('Fetch error:', err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to connect to server',
+                    });
+                } finally {
+                    // Hide loading state regardless of success or failure
+                    addCategoryBtn.disabled = false;
+                    addBtnText.textContent = 'Add';
+                    addBtnSpinner.classList.add('hidden');
+                }
+            });
+
+            // Handle escape key to cancel edit mode
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    // Find any category in edit mode and cancel it
+                    const editModeRows = document.querySelectorAll('.edit-mode');
+                    editModeRows.forEach(row => {
+                        const categoryId = row.id.replace('category-row-', '');
+                        cancelEdit(categoryId);
+                    });
+                }
+            });
+        });
+
+        // Existing pagination functions
+        function goToPage(page) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', page);
+            urlParams.set('limit', <%= limit %>);
+            urlParams.set('search', '<%= search %>');
+            window.location.search = urlParams.toString();
+        }
+
+        function previousPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPage = parseInt(urlParams.get('page')) || 1;
+            if (currentPage > 1) {
+                urlParams.set('page', currentPage - 1);
+                urlParams.set('limit', <%= limit %>);
+                urlParams.set('search', '<%= search %>');
+                window.location.search = urlParams.toString();
+            }
+        }
+
+        function nextPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPage = parseInt(urlParams.get('page')) || 1;
+            urlParams.set('page', currentPage + 1);
+            urlParams.set('limit', <%= limit %>);
+            urlParams.set('search', '<%= search %>');
+            window.location.search = urlParams.toString();
+        }
+
+        function changePageSize(size) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('limit', size);
+            urlParams.set('page', 1);
+            urlParams.set('search', '<%= search %>');
+            window.location.search = urlParams.toString();
+        }
+    </script>
+</body>
+</html>

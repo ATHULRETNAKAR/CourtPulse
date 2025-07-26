@@ -48,7 +48,7 @@ const customerInfo = async (req, res) => {
 
     } catch (error) {
         console.error("Error fetching customer info:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(500).redirect('/errorpage');
     }
 }
 
@@ -79,5 +79,5 @@ const toggleUserStatus = async (req, res) => {
 
 module.exports = {
     customerInfo,
-    toggleUserStatus
+    toggleUserStatus,
 }
