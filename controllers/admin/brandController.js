@@ -2,7 +2,7 @@ const Brand = require('../../models/brandSchema')
 
 const brandInfo = async (req, res) => {
     try {
-        const search = req.query.serach || "";
+        const search = req.query.search || "";
         const currentPage = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
 
@@ -17,9 +17,8 @@ const brandInfo = async (req, res) => {
         const brands = await Brand.find(query)
             .skip((currentPage - 1) * limit)
             .limit(limit)
-            .sort({ createdAt: -1 })
+            .sort({ createdAt: -1 });
 
-        console.log(brands)
         res.render('admin-brand', {
             brands: brands,
             search: search,

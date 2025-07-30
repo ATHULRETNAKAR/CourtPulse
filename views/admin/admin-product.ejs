@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtPulse - Product Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .table-container {
+            overflow-x: auto;
+        }
+        .image-preview {
+            max-width: 50px;
+            max-height: 50px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <%- include('../../views/partials/admin/sidebar') %>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <%- include('../../views/partials/admin/header') %>
+
+            <!-- Dashboard Content -->
+            <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold text-gray-800">Product Management</h2>
+                        <a href="/admin/addProduct" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add New Product</a>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="min-w-full bg-white border border-gray-200">
+                            <thead>
+                                <tr class="bg-gray-100 text-left text-gray-600">
+                                    <th class="py-2 px-4 border-b">Product Name</th>
+                                    <th class="py-2 px-4 border-b">Brand</th>
+                                    <th class="py-2 px-4 border-b">Category</th>
+                                    <th class="py-2 px-4 border-b">Status</th>
+                                    <th class="py-2 px-4 border-b">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% products.forEach(product => { %>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="py-2 px-4 border-b">
+                                            <div class="flex items-center space-x-2">
+                                                <% if (product.variants[0] && product.variants[0].images[0]) { %>
+                                                    <img src="<%= product.variants[0].images[0] %>" alt="Product Image" class="image-preview">
+                                                <% } %>
+                                                <%= product.productName %>
+                                            </div>
+                                        </td>
+                                        <td class="py-2 px-4 border-b">
+                                            <%= product.brand.name || 'N/A' %>
+                                        </td>
+                                        <td class="py-2 px-4 border-b">
+                                            <%= product.category.name || 'N/A' %>
+                                        </td>
+                                        <td class="py-2 px-4 border-b">
+                                            <span class="px-2 py-1 rounded <%= product.status === 'Available' ? 'bg-green-100 text-green-800' : product.status === 'Out of Stock' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
+                                                <%= product.status %>
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-4 border-b">
+                                            <div class="flex space-x-2">
+                                                <a href="/admin/edit-product/<%= product._id %>" class="text-blue-600 hover:text-blue-800">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <button onclick="confirmDelete('<%= product._id %>')" class="text-red-600 hover:text-red-800">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <% if (products.length === 0) { %>
+                        <p class="text-center text-gray-500 py-4">No products found.</p>
+                    <% } %>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        document.getElementById('closeMobileMenu').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.add('hidden');
+        });
+
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('mobileMenu').classList.add('hidden');
+            });
+        });
+
+        function confirmDelete(productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/admin/delete-product/${productId}`;
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
