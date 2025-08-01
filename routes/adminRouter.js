@@ -5,7 +5,7 @@ const customerController = require('../controllers/admin/customerController');
 const categoryController = require('../controllers/admin/categoryController');
 const brandController = require('../controllers/admin/brandController')
 const productController = require('../controllers/admin/productController')
-const {userAuth,adminAuth} = require('../middlewares/auth');
+const {userAuth,adminAuth,upload} = require('../middlewares/auth');
 
 //Login Management
 router.get('/login',adminController.loadLogin);
@@ -33,7 +33,8 @@ router.put('/brand/:id',adminAuth,brandController.editBrand)
 
 
 //Product Management
-router.get('/addProduct',adminAuth,productController.addProduct)
 router.get('/productInfo',adminAuth,productController.productInfo)
+router.get('/addProduct',adminAuth,productController.addProduct)
+
 
 module.exports = router;

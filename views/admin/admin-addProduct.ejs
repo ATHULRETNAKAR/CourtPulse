@@ -32,6 +32,7 @@
             height: 100px;
             width: 100px;
         }
+
         .image-preview {
             max-width: 100px;
             max-height: 100px;
@@ -45,137 +46,106 @@
         <!-- Sidebar -->
         <%- include("../../views/partials/admin/sidebar") %>
 
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
-            <!-- Header -->
-            <%- include("../../views/partials/admin/header") %>
+            <!-- Main Content -->
+            <div class="flex-1 flex flex-col">
+                <!-- Header -->
+                <%- include("../../views/partials/admin/header") %>
 
-            <!-- Dashboard Content -->
-            <main class="flex-1 p-8 overflow-y-auto">
-                <form id="productForm" action="/admin/add-product" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow-lg">
-                    <input type="hidden" name="variants" id="variantsData">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Product Name -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Product Name</label>
-                            <input type="text" name="productName" class="w-full p-2 border rounded mt-1" placeholder="Enter product name...">
-                            <p id="name-error" class="text-red-500 text-sm hidden"></p>
-                        </div>
-                        <!-- Brand Name -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Brand Name</label>
-                            <select name="brandName" class="w-full p-2 border rounded mt-1">
-                                <option value="">Select brand</option>
-                                <% brands.forEach(brand=> { %>
-                                    <option value="<%= brand._id %>">
-                                        <%= brand.name %>
-                                    </option>
-                                    <% }) %>
-                            </select>
-                            <p id="brand-error" class="text-red-500 text-sm hidden"></p>
-                        </div>
-                    </div>
+                    <!-- Dashboard Content -->
+                    <main class="flex-1 p-8 overflow-y-auto">
+                        <form id="productForm" action="/admin/addProduct" method="POST" enctype="multipart/form-data"
+                            class="bg-white p-6 rounded-lg shadow-lg">
+                            <input type="hidden" name="variants" id="variantsData">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-gray-700">Product Description</label>
-                        <textarea name="description" class="w-full p-2 border rounded mt-1" rows="4" placeholder="Write your description here..."></textarea>
-                        <p id="description-error" class="text-red-500 text-sm hidden"></p>
-                    </div>
+                                <!-- Product Name -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Product Name</label>
+                                    <input type="text" name="productName" class="w-full p-2 border rounded mt-1"
+                                        placeholder="Enter product name...">
+                                    <p id="name-error" class="text-red-500 text-sm hidden"></p>
+                                </div>
 
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-gray-700">Product Category</label>
-                        <select name="category" id="categorySelect" class="w-full p-2 border rounded mt-1" onchange="updateVariantSizes()">
-                            <option value="">Select category</option>
-                            <% categories.forEach(category=> { %>
-                                <option value="<%= category._id %>" data-type="<%= category.name.toLowerCase().includes('shoe') ? 'shoe' : 'dress' %>">
-                                    <%= category.name %>
-                                </option>
-                                <% }) %>
-                        </select>
-                        <p id="category-error" class="text-red-500 text-sm hidden"></p>
-                    </div>
+                                <!-- Brand Name -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Brand Name</label>
+                                    <select name="brandName" class="w-full p-2 border rounded mt-1">
+                                        <option value="">Select brand</option>
+                                        <% brands.forEach(brand=> { %>
+                                            <option value="<%= brand._id %>">
+                                                <%= brand.brandName %>
+                                            </option>
+                                            <% }); %>
+                                    </select>
+                                    <p id="brand-error" class="text-red-500 text-sm hidden"></p>
+                                </div>
+                            </div>
 
-                    <div class="mt-6">
-                        <button type="button" onclick="addVariant()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">+ Add Variant's</button>
-                    </div>
+                            <!--Product Description-->
+                            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Product Description</label>
+                                    <textarea name="description" class="w-full p-2 border rounded mt-1" rows="4"
+                                        placeholder="Write your description here..."></textarea>
+                                    <p id="description-error" class="text-red-500 text-sm hidden"></p>
+                                </div>
 
-                    <div id="variantsSection" class="mt-6 space-y-6">
-                        <!-- Variants will be added dynamically -->
-                    </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Product Category</label>
+                                    <select name="category" id="categorySelect" class="w-full p-2 border rounded mt-1"
+                                        onchange="updateVariantSizes()">
+                                        <option value="">Select category</option>
+                                        <% categories.forEach(category=> { %>
+                                            <option value="<%= category._id %>"
+                                                data-type="<%= category.name.toLowerCase().includes('shoe') ? 'shoe' : 'dress' %>">
+                                                <%= category.name %>
+                                            </option>
+                                            <% }); %>
+                                    </select>
+                                    <p id="category-error" class="text-red-500 text-sm hidden"></p>
+                                </div>
 
-                    <div class="mt-6 flex justify-end space-x-4">
-                        <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400" onclick="window.history.back()">Cancel</button>
-                        <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Save</button>
-                    </div>
-                </form>
-            </main>
-        </div>
-    </div>
+                            <!--Add Variant-->
+                            <div class="mt-6">
+                                <button type="button" onclick="addVariant()"
+                                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">+ Add
+                                    Variant's</button>
+                            </div>
 
-    <!-- Mobile Menu Overlay -->
-    <div id="mobileMenu" class="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden hidden">
-        <div class="w-64 bg-white h-full shadow-lg">
-            <div class="p-6">
-                <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-gray-800">CourtPulse</h1>
-                    <button id="closeMobileMenu">
-                        <i class="fas fa-times text-gray-600"></i>
-                    </button>
-                </div>
+                            <div id="variantsSection" class="mt-6 space-y-6">
+                                <!-- Variants will be added dynamically -->
+                            </div>
+
+                            <div class="mt-6 flex justify-end space-x-4">
+                                <button type="button"
+                                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                                    onclick="window.history.back()">Cancel</button>
+                                <button type="submit"
+                                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Save</button>
+                            </div>
+                        </form>
+                    </main>
             </div>
-            <nav class="mt-6">
-                <div class="px-4 space-y-2">
-                    <a href="#" class="flex items-center px-4 py-3 text-white bg-primary rounded-lg">
-                        <i class="fas fa-chart-line mr-3"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-shopping-cart mr-3"></i>
-                        <span>Order</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-box mr-3"></i>
-                        <span>Products</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-chart-bar mr-3"></i>
-                        <span>Sales report</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-users mr-3"></i>
-                        <span>Customer</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-ticket-alt mr-3"></i>
-                        <span>Coupon</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-tags mr-3"></i>
-                        <span>Category</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-undo mr-3"></i>
-                        <span>Refund/Return</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-image mr-3"></i>
-                        <span>Banner</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-star mr-3"></i>
-                        <span>Brand</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-sign-out-alt mr-3"></i>
-                        <span>Sign Out</span>
-                    </a>
-                </div>
-            </nav>
-        </div>
     </div>
 
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script>
+
+        function updateSellingPrice(inputElement) {
+            const variantDiv = inputElement.closest('.bg-gray-100');
+            if (!variantDiv) return;
+
+            const originalPriceInput = variantDiv.querySelector('input[name$="[originalPrice]"]');
+            const discountInput = variantDiv.querySelector('input[name$="[discount]"]');
+            const sellingPriceInput = variantDiv.querySelector('input[name$="[sellingPrice]"]');
+
+            const originalPrice = parseFloat(originalPriceInput.value) || 0;
+            const discount = parseFloat(discountInput.value) || 0;
+
+            const sellingPrice = originalPrice - (originalPrice * (discount / 100));
+            sellingPriceInput.value = sellingPrice.toFixed(2);
+        }
+
         let variantIndex = 0;
 
         function addVariant() {
@@ -194,6 +164,7 @@
                         <label class="block text-sm font-medium text-gray-700">Product Size</label>
                         <select name="variants[${variantIndex}][size]" class="w-full p-2 border rounded mt-1" id="variantSize_${variantIndex}">
                             <optgroup label="Shoe Sizes (UK)">
+                                <option value="">Select Size</option>
                                 <option value="5">5</option>
                                 <option value="6">6</option>
                                 <option value="7">7</option>
@@ -202,8 +173,9 @@
                                 <option value="10">10</option>
                                 <option value="11">11</option>
                                 <option value="12">12</option>
-                            </optgroup>
-                            <optgroup label="Dress Sizes">
+                                </optgroup>
+                                <optgroup label="Dress Sizes">
+                                <option value="">Select Size</option>
                                 <option value="S">S</option>
                                 <option value="M">M</option>
                                 <option value="L">L</option>
@@ -230,25 +202,25 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Original Price / MRP</label>
-                        <input type="number" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
+                        <input oninput="updateSellingPrice(this)" type="number" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Discount Percentage</label>
-                        <input type="number" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
+                        <input oninput="updateSellingPrice(this)" type="number" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Selling Price</label>
-                        <input type="number" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
+                        <input type="number" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1 bg-white" placeholder="Enter selling price">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Add Photos</label>
                         <div class="flex space-x-4">
                             <% for(let i = 0; i < 4; i++) { %>
-                                <div class="image-upload-placeholder">
+                                <div class="image-upload-placeholder" onclick="this.querySelector('input[type=file]').click()">
                                     <input type="file" name="variants[${variantIndex}][images][]" class="hidden" accept="image/*" onchange="previewImage(event, this)">
+                                    <img class="image-preview hidden" alt="Preview">
                                     <i class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
                                     <p class="text-xs text-gray-500">Add Image</p>
-                                    <img class="image-preview hidden" alt="Preview">
                                 </div>
                             <% } %>
                         </div>
@@ -277,29 +249,91 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    input.nextElementSibling.src = e.target.result;
-                    input.nextElementSibling.classList.remove('hidden');
+                    const preview = input.nextElementSibling; // The img element
+                    console.log(preview.tagName)
+                    if (preview && preview.tagName === 'IMG') {
+                        preview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                    }
                 };
                 reader.readAsDataURL(file);
             }
         }
 
+        function calculateSellingPrice(originalPrice, discount) {
+            return originalPrice - (originalPrice * (discount / 100));
+        }
+
+
+        //Form validation
         document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
+
+            if (!validateForm()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Failed',
+                    text: 'Please fill all required fields!',
+                    confirmButtonColor: '#6366f1'
+                });
+                return;
+            }
+
             const variants = [];
+            let hasVariant = false;
             document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
+                hasVariant = true;
                 const size = variantDiv.querySelector('select[name$="[size]"]').value;
-                const color = variantDiv.querySelector('input[name$="[color]"]').value;
+                const color = variantDiv.querySelector('input[name$="[color]"]').value.trim();
                 const stockStatus = variantDiv.querySelector('select[name$="[stockStatus]"]').value;
                 const quantity = variantDiv.querySelector('input[name$="[quantity]"]').value;
                 const originalPrice = variantDiv.querySelector('input[name$="[originalPrice]"]').value;
                 const discount = variantDiv.querySelector('input[name$="[discount]"]').value;
                 const sellingPrice = variantDiv.querySelector('input[name$="[sellingPrice]"]').value;
+
+                if (!size || !color || !stockStatus || !quantity || !originalPrice || !discount || !sellingPrice) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Incomplete Variant Data',
+                        text: 'Please fill all fields for each variant.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    return;
+                }
+
                 variants.push({ size, color, stockStatus, quantity, originalPrice, discount, sellingPrice });
             });
+
+            if (!hasVariant) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Variant Added',
+                    text: 'Please add at least one variant before submitting.',
+                    confirmButtonColor: '#6366f1'
+                });
+                return;
+            }
+
             document.getElementById('variantsData').value = JSON.stringify(variants);
+            console.log('Variants Data Sent:', document.getElementById('variantsData').value); // Debug
+
+            // Only disable non-variant and non-file fields
+            const formElements = this.elements;
+            for (let i = 0; i < formElements.length; i++) {
+                if (formElements[i].name !== 'variants' && formElements[i].type !== 'file' && formElements[i].name !== 'productName' && formElements[i].name !== 'brandName' && formElements[i].name !== 'description' && formElements[i].name !== 'category') {
+                    formElements[i].disabled = true;
+                }
+            }
+
+            // Submit the form
             this.submit();
+
+            // Re-enable fields after submission
+            for (let i = 0; i < formElements.length; i++) {
+                formElements[i].disabled = false;
+            }
         });
+
 
         function validateForm() {
             let isValid = true;
@@ -346,13 +380,13 @@
                 const shoeSizes = sizeSelect.querySelectorAll('optgroup[label="Shoe Sizes (UK)"] option');
                 const dressSizes = sizeSelect.querySelectorAll('optgroup[label="Dress Sizes"] option');
 
-                shoeSizes.forEach(option => option.style.display = 'block');
-                dressSizes.forEach(option => option.style.display = 'block');
 
                 if (categoryType === 'shoe') {
                     dressSizes.forEach(option => option.style.display = 'none');
+                    shoeSizes.forEach(option => option.style.display = 'block');
                 } else if (categoryType === 'dress') {
                     shoeSizes.forEach(option => option.style.display = 'none');
+                    dressSizes.forEach(option => option.style.display = 'block');
                 }
             });
         }

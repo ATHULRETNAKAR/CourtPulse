@@ -133,6 +133,7 @@ const signup = async (req, res) => {
             req.session.message = "User With Same Email-Id Already Exist"
             return res.redirect('/signup')
         }
+
         const otp = generateOtp();
         const emailSent = await sendVerificationEmail(email, otp)
 
