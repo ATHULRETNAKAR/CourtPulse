@@ -12,6 +12,7 @@
         .table-container {
             overflow-x: auto;
         }
+
         .image-preview {
             max-width: 50px;
             max-height: 50px;
@@ -24,79 +25,147 @@
     <div class="flex h-screen">
         <!-- Sidebar -->
         <%- include('../../views/partials/admin/sidebar') %>
-        
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
-            <!-- Header -->
-            <%- include('../../views/partials/admin/header') %>
 
-            <!-- Dashboard Content -->
-            <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-semibold text-gray-800">Product Management</h2>
-                        <a href="/admin/addProduct" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add New Product</a>
-                    </div>
+            <!-- Main Content -->
+            <div class="flex-1 flex flex-col">
+                <!-- Header -->
+                <%- include('../../views/partials/admin/header') %>
 
-                    <div class="table-container">
-                        <table class="min-w-full bg-white border border-gray-200">
-                            <thead>
-                                <tr class="bg-gray-100 text-left text-gray-600">
-                                    <th class="py-2 px-4 border-b">Product Name</th>
-                                    <th class="py-2 px-4 border-b">Offer</th>
-                                    <th class="py-2 px-4 border-b">Brand</th>
-                                    <th class="py-2 px-4 border-b">Category</th>
-                                    <th class="py-2 px-4 border-b">Status</th>
-                                    <th class="py-2 px-4 border-b">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% products.forEach(product => { %>
-                                    <tr class="hover:bg-gray-50 transition-colors">
-                                        <td class="py-2 px-4 border-b">
-                                            <div class="flex items-center space-x-2">
-                                                <% if (product.variants[0] && product.variants[0].images[0]) { %>
-                                                    <img src="<%= product.variants[0].images[0] %>" alt="Product Image" class="image-preview">
-                                                <% } %>
-                                                <%= product.productName %>
-                                            </div>
-                                        </td>
-                                        <td class="py-2 px-4 border-b">
-                                            <%= product.productOffer || 'N/A' %>
-                                        </td>
-                                        <td class="py-2 px-4 border-b">
-                                            <%= product.brand.brandName || 'N/A' %>
-                                        </td>
-                                        <td class="py-2 px-4 border-b">
-                                            <%= product.category.name || 'N/A' %>
-                                        </td>
-                                        <td class="py-2 px-4 border-b">
-                                            <span class="px-2 py-1 rounded <%= product.status === 'Available' ? 'bg-green-100 text-green-800' : product.status === 'Out of Stock' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
-                                                <%= product.status %>
-                                            </span>
-                                        </td>
-                                        <td class="py-2 px-4 border-b">
-                                            <div class="flex space-x-2">
-                                                <a href="/admin/edit-product/<%= product._id %>" class="text-blue-600 hover:text-blue-800">
-                                                    <i class="fas fa-edit"></i> Edit
-                                                </a>
-                                                <button onclick="confirmDelete('<%= product._id %>')" class="text-red-600 hover:text-red-800">
-                                                    <i class="fas fa-trash"></i> Delete
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            </tbody>
-                        </table>
-                    </div>
+                    <!-- Dashboard Content -->
+                    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+                        <div class="bg-white p-6 rounded-lg shadow-lg">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-semibold text-gray-800">Product Management</h2>
+                                <a href="/admin/addProduct"
+                                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add New
+                                    Product</a>
+                            </div>
 
-                    <% if (products.length === 0) { %>
-                        <p class="text-center text-gray-500 py-4">No products found.</p>
-                    <% } %>
-                </div>
-            </main>
-        </div>
+                            <div class="table-container">
+                                <table class="min-w-full bg-white border border-gray-200">
+                                    <thead>
+                                        <tr class="bg-gray-100 text-left text-gray-600">
+                                            <th class="py-2 px-4 border-b">Product Name</th>
+                                            <th class="py-2 px-4 border-b">Brand</th>
+                                            <th class="py-2 px-4 border-b">Discount</th>
+                                            <th class="py-2 px-4 border-b">Stoke</th>
+                                            <th class="py-2 px-4 border-b">Category</th>
+                                            <th class="py-2 px-4 border-b">No.Variants</th>
+                                            <th class="py-2 px-4 border-b">Status</th>
+                                            <th class="py-2 px-4 border-b">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% products.forEach(product=> { %>
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="py-2 px-4 border-b">
+                                                    <%= product.productName || 'N/A' %>
+                                                </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <%= product.brand.brandName || 'N/A' %>
+                                                </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <%= product.variants[0].discount || 'N/A' %>
+                                                </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <%= product.variants.reduce((total,v)=> total + (v.quantity || 0 ),0)%>
+                                                </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <%= product.category.name || 'N/A' %>
+                                                </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <div class="flex items-center space-x-2 cursor-pointer"
+                                                        onclick="toggleVariants('<%= product._id %>')">
+                                                        <span class="px-2 py-1 rounded  bg-yellow-100 text-yellow-800">
+                                                            <%= product.variants?.length || 0 %> Variant
+                                                        </span>
+                                                        <i class="fas fa-chevron-down text-sm"
+                                                            id="icon-<%= product._id %>"></i>
+                                                    </div>
+                                                </td>
+
+                                                <td class="py-2 px-4 border-b">
+                                                    <span class="px-2 py-1 rounded 
+                                                        <%= product.status === 'Available' 
+                                                            ? 'bg-green-100 text-green-800' 
+                                                            : product.status === 'Out of Stock' 
+                                                            ? 'bg-red-100 text-red-800' 
+                                                            : product.status === 'Discontinued' 
+                                                            ? 'bg-gray-200 text-gray-800' 
+                                                            : 'bg-yellow-100 text-yellow-800' %>">
+                                                        <%= product.status %>
+                                                    </span>
+                                                </td>
+                                                <td class="py-2 px-4 border-b">
+                                                    <div class="flex space-x-2">
+                                                        <a href="/admin/edit-product/<%= product._id %>"
+                                                            class="text-blue-600 hover:text-blue-800">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <button onclick="confirmDelete('<%= product._id %>')"
+                                                            class="text-red-600 hover:text-red-800">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr id="variants-<%= product._id %>" class="hidden bg-gray-50">
+                                                <td colspan="8" class="py-2 px-4 border-b">
+                                                    <div class="overflow-x-auto">
+                                                        <table class="w-full text-sm text-left text-gray-700 border">
+                                                            <thead class="bg-gray-100 text-xs text-gray-600 uppercase">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 border">Size</th>
+                                                                    <th class="px-3 py-2 border">Color</th>
+                                                                    <th class="px-3 py-2 border">Quantity</th>
+                                                                    <th class="px-3 py-2 border">Original Price</th>
+                                                                    <th class="px-3 py-2 border">Discount (%)</th>
+                                                                    <th class="px-3 py-2 border">Selling Price</th>
+                                                                    <th class="px-3 py-2 border">Stock Status</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <% product.variants.forEach(variant=> { %>
+                                                                    <tr>
+                                                                        <td class="px-3 py-2 border">
+                                                                            <%= variant.size || 'N/A' %>
+                                                                        </td>
+                                                                        <td class="px-3 py-2 border">
+                                                                            <%= variant.color || 'N/A' %>
+                                                                        </td>
+                                                                        <td class="px-3 py-2 border">
+                                                                            <%= variant.quantity || 0 %>
+                                                                        </td>
+                                                                        <td class="px-3 py-2 border">
+                                                                            <%= variant.originalPrice || 0 %>
+                                                                        </td>
+                                                                        <td class="px-3 py-2 border">
+                                                                            <%= variant.discount || 0 %>
+                                                                        </td>
+                                                                        <td class="px-3 py-2 border">
+                                                                            <%= variant.sellingPrice || 0 %>
+                                                                        </td>
+                                                                        <td class="px-3 py-2 border">
+                                                                            <%= variant.stockStatus || 'N/A' %>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <% }) %>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <% if (products.length===0) { %>
+                                <p class="text-center text-gray-500 py-4">No products found.</p>
+                                <% } %>
+                        </div>
+                    </main>
+            </div>
     </div>
 
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
@@ -126,6 +195,22 @@
                 }
             });
         }
+
+        function toggleVariants(productId) {
+            const row = document.getElementById(`variants-${productId}`);
+            const icon = document.getElementById(`icon-${productId}`);
+            if (row.classList.contains('hidden')) {
+                row.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                row.classList.add('hidden');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+
     </script>
 </body>
 

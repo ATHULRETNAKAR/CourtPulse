@@ -106,8 +106,8 @@
                                 <!-- Product Offer -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Product Offer</label>
-                                    <input type="number" min="0" max="100" name="productOffer" class="w-full p-2 border rounded mt-1"
-                                        placeholder="Enter discount percentage">
+                                    <input type="number" min="0" max="100" name="productOffer"
+                                        class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
                                     <p id="productOffer-error" class="text-red-500 text-sm hidden"></p>
                                 </div>
 
@@ -193,93 +193,99 @@
             const categorySelect = document.getElementById('categorySelect');
             const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
             const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
+            const categoryName = selectedCategory ? selectedCategory.text.toLowerCase() : '';
 
             const container = document.getElementById('variantsSection');
             const variantDiv = document.createElement('div');
             variantDiv.className = 'bg-gray-100 p-4 rounded-lg border border-red-500 relative';
+
+            // Define size field with all options initially, to be filtered by updateVariantSizes
             let sizeField = `
-                            <div class="size-field">
-                                <label class="block text-sm font-medium text-gray-700">Product Size</label>
-                                <select name="variants[${variantIndex}][size]" class="w-full p-2 border rounded mt-1" id="variantSize_${variantIndex}">
-                                    
-                                    < label="Shoe Sizes (UK)">
-                                        <opoptgrouption value="">Select Size</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                        <option value="7">7</option>
-                                        <option value="8">8</option>
-                                        <option value="9">9</option>
-                                        <option value="10">10</option>
-                                        <option value="11">11</option>
-                                        <option value="12">12</option>
-                                    </optgroup>
-                                    <optgroup label="Dress Sizes">
-                                        <option value="">Select Size</option>
-                                        <option value="S">S</option>
-                                        <option value="M">M</option>
-                                        <option value="L">L</option>
-                                        <option value="XL">XL</option>
-                                        <option value="XXL">XXL</option>
-                                        <option value="XXXL">XXXL</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                        `;
-
-
+            <div class="size-field">
+                <label class="block text-sm font-medium text-gray-700">Product Size</label>
+                <select name="variants[${variantIndex}][size]" class="w-full p-2 border rounded mt-1" id="variantSize_${variantIndex}">
+                    <option value="N/A">N/A</option>
+                    <optgroup label="Shoe Sizes (UK)">
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </optgroup>
+                    <optgroup label="Dress Sizes">
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                        <option value="XXXL">XXXL</option>
+                    </optgroup>
+                </select>
+            </div>
+        `;
 
             variantDiv.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold">Variant - ${variantIndex + 1}</h3>
-                    <button type="button" onclick="removeVariant(this)" class="text-red-500 hover:text-red-700">
-                        <i class="fas fa-times"></i>
-                    </button>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Variant - ${variantIndex + 1}</h3>
+                <button type="button" onclick="removeVariant(this)" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${sizeField}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Product Colour</label>
+                    <input type="text" name="variants[${variantIndex}][color]" class="w-full p-2 border rounded mt-1" placeholder="Enter color">
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${sizeField}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Product Colour</label>
-                        <input type="text" name="variants[${variantIndex}][color]" class="w-full p-2 border rounded mt-1" placeholder="Enter color">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Stock Status</label>
-                        <select name="variants[${variantIndex}][stockStatus]" class="w-full p-2 border rounded mt-1">
-                            <option value="In Stock">In Stock</option>
-                            <option value="Out of Stock">Out of Stock</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Stock Quantity</label>
-                        <input type="number" min="0" name="variants[${variantIndex}][quantity]" class="w-full p-2 border rounded mt-1" placeholder="Enter stock limit">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Original Price / MRP</label>
-                        <input oninput="updateSellingPrice(this)" type="number" min="0" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Discount Percentage</label>
-                        <input oninput="updateSellingPrice(this)" type="number" min="0" max="100" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
-                    </div> 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Selling Price</label>
-                        <input type="number" min="0" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1 bg-white" placeholder="Enter selling price">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Add Photos</label>
-                        <div class="flex flex-wrap gap-4 mt-2">
-                            <% for(let i = 0; i < 4; i++) { %>
-                                <div class="image-upload-placeholder" onclick="this.querySelector('input[type=file]').click()">
-                                    <input type="file" name="variants[${variantIndex}][images][]" class="hidden" accept="image/*" onchange="previewImage(event, this)">
-                                    <img class="image-preview hidden" alt="Preview">
-                                    <i class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
-                                    <p class="text-xs text-gray-500">Add Image</p>
-                                </div>
-                            <% } %>
-                        </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Stock Status</label>
+                    <select name="variants[${variantIndex}][stockStatus]" class="w-full p-2 border rounded mt-1">
+                        <option value="In Stock">In Stock</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                    <input type="number" min="0" name="variants[${variantIndex}][quantity]" class="w-full p-2 border rounded mt-1" placeholder="Enter stock limit">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Original Price / MRP</label>
+                    <input oninput="updateSellingPrice(this)" type="number" min="0" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Discount Percentage</label>
+                    <input oninput="updateSellingPrice(this)" type="number" min="0" max="100" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
+                </div> 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Selling Price</label>
+                    <input type="number" min="0" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1 bg-white" placeholder="Enter selling price">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Add Photos</label>
+                    <div class="flex flex-wrap gap-4 mt-2">
+                        <% for(let i = 0; i < 4; i++) { %>
+                            <div class="image-upload-placeholder" onclick="this.querySelector('input[type=file]').click()">
+                                <input type="file" name="variants[${variantIndex}][images][]" class="hidden" accept="image/*" onchange="previewImage(event, this)">
+                                <img class="image-preview hidden" alt="Preview">
+                                <i class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
+                                <p class="text-xs text-gray-500">Add Image</p>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
-            `;
+            </div>
+        `;
             container.appendChild(variantDiv);
+
+            // Set default size based on category
+            const sizeSelect = variantDiv.querySelector(`select[name="variants[${variantIndex}][size]"]`);
+            if (categoryType === 'nosize') {
+                sizeSelect.value = 'N/A'; // Default to N/A for non-size categories
+            }
+
             updateVariantSizes();
             variantIndex++;
         }
@@ -363,32 +369,42 @@
             const categorySelect = document.getElementById('categorySelect');
             const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
             const categoryName = selectedCategory ? selectedCategory.text.toLowerCase() : '';
+            const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
 
             document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
                 const sizeField = variantDiv.querySelector('.size-field');
                 if (sizeField) {
-                    sizeField.style.display = 'block'; // Always show
-
                     const sizeSelect = sizeField.querySelector('select[name$="[size]"]');
-                    const shoeSizes = sizeSelect.querySelectorAll('optgroup[label="Shoe Sizes (UK)"] option');
-                    const dressSizes = sizeSelect.querySelectorAll('optgroup[label="Dress Sizes"] option');
+                    const shoeSizesGroup = sizeSelect.querySelector('optgroup[label="Shoe Sizes (UK)"]');
+                    const dressSizesGroup = sizeSelect.querySelector('optgroup[label="Dress Sizes"]');
+                    const naOption = sizeSelect.querySelector('option[value="N/A"]');
 
                     if (categoryName.includes('shoe')) {
-                        shoeSizes.forEach(opt => opt.style.display = 'block');
-                        dressSizes.forEach(opt => opt.style.display = 'none');
+                        shoeSizesGroup.style.display = 'block';
+                        dressSizesGroup.style.display = 'none';
+                        naOption.style.display = 'none';
+                        if (sizeSelect.value === 'N/A') {
+                            sizeSelect.value = ''; // Reset to no selection if N/A was selected
+                        }
                     } else if (categoryName.includes('apparel')) {
-                        shoeSizes.forEach(opt => opt.style.display = 'none');
-                        dressSizes.forEach(opt => opt.style.display = 'block');
+                        shoeSizesGroup.style.display = 'none';
+                        dressSizesGroup.style.display = 'block';
+                        naOption.style.display = 'none';
+                        if (sizeSelect.value === 'N/A') {
+                            sizeSelect.value = ''; // Reset to no selection if N/A was selected
+                        }
                     } else {
-                        // Show all for other categories
-                        shoeSizes.forEach(opt => opt.style.display = 'block');
-                        dressSizes.forEach(opt => opt.style.display = 'block');
+                        shoeSizesGroup.style.display = 'none';
+                        dressSizesGroup.style.display = 'none';
+                        naOption.style.display = 'block';
+                        sizeSelect.value = 'N/A'; // Default to N/A for non-size categories
+                        // Disable other options by removing them temporarily
+                        sizeSelect.innerHTML = `<option value="N/A">N/A</option>`;
                     }
                 }
             });
         }
 
-        console.log("form submitted")
         async function submitForm() {
             if (!validateForm()) {
                 Swal.fire({
@@ -405,8 +421,7 @@
             document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
                 hasVariant = true;
                 const sizeField = variantDiv.querySelector('select[name$="[size]"]');
-                // const size = categoryType === 'size' ? (sizeField ? sizeField.value : '') : 'N/A';
-                const size = sizeField ? sizeField.value : ''
+                const size = sizeField ? sizeField.value : 'N/A';
                 const color = variantDiv.querySelector('input[name$="[color]"]').value.trim();
                 const stockStatus = variantDiv.querySelector('select[name$="[stockStatus]"]').value;
                 const quantity = variantDiv.querySelector('input[name$="[quantity]"]').value;
@@ -418,11 +433,11 @@
                 const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
                 const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
 
-                if (categoryType === 'size' && !size) {
+                if (categoryType === 'size' && (!size || size === 'N/A')) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Incomplete Variant Data',
-                        text: 'Please select a size for each variant.',
+                        text: 'Please select a valid size for each variant in shoe or apparel categories.',
                         confirmButtonColor: '#6366f1'
                     });
                     return;
