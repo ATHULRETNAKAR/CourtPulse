@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "Start": "nodemon app"
+    "start": "nodemon app.js",
+    "end": "echo 'Server stopped.'"
   },
   "author": "",
   "license": "ISC",
@@ -18,9 +19,11 @@
     "mongoose": "^8.16.3",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.5",
-    "nodemon": "^3.1.10",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "sharp": "^0.34.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }

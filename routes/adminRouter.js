@@ -5,7 +5,8 @@ const customerController = require('../controllers/admin/customerController');
 const categoryController = require('../controllers/admin/categoryController');
 const brandController = require('../controllers/admin/brandController')
 const productController = require('../controllers/admin/productController')
-const { userAuth, adminAuth, upload } = require('../middlewares/auth');
+const { userAuth, adminAuth } = require('../middlewares/auth');
+const upload = require('../helpers/multer')
 
 //Login Management
 router.get('/login', adminController.loadLogin);
@@ -36,6 +37,7 @@ router.put('/brand/:id', brandController.editBrand)
 //Product Management
 router.get('/productInfo', productController.productInfo)
 router.get('/addProduct', productController.addProduct)
+router.post('/addProduct', upload, productController.addProductpost)
 
 
 module.exports = router;

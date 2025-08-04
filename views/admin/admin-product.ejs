@@ -43,6 +43,7 @@
                             <thead>
                                 <tr class="bg-gray-100 text-left text-gray-600">
                                     <th class="py-2 px-4 border-b">Product Name</th>
+                                    <th class="py-2 px-4 border-b">Offer</th>
                                     <th class="py-2 px-4 border-b">Brand</th>
                                     <th class="py-2 px-4 border-b">Category</th>
                                     <th class="py-2 px-4 border-b">Status</th>
@@ -61,7 +62,10 @@
                                             </div>
                                         </td>
                                         <td class="py-2 px-4 border-b">
-                                            <%= product.brand.name || 'N/A' %>
+                                            <%= product.productOffer || 'N/A' %>
+                                        </td>
+                                        <td class="py-2 px-4 border-b">
+                                            <%= product.brand.brandName || 'N/A' %>
                                         </td>
                                         <td class="py-2 px-4 border-b">
                                             <%= product.category.name || 'N/A' %>

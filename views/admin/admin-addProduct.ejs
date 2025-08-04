@@ -38,6 +38,30 @@
             max-height: 100px;
             object-fit: cover;
         }
+
+        .image-upload-placeholder.has-image .fa-cloud-upload-alt,
+        .image-upload-placeholder.has-image p.text-xs.text-gray-500 {
+            display: none !important;
+        }
+
+        #variantsSection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        #variantsSection .bg-gray-100 {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .form-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
     </style>
 </head>
 
@@ -54,10 +78,9 @@
                     <!-- Dashboard Content -->
                     <main class="flex-1 p-8 overflow-y-auto">
                         <form id="productForm" action="/admin/addProduct" method="POST" enctype="multipart/form-data"
-                            class="bg-white p-6 rounded-lg shadow-lg">
+                            class="bg-white p-6 rounded-lg shadow-lg form-container">
                             <input type="hidden" name="variants" id="variantsData">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
                                 <!-- Product Name -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Product Name</label>
@@ -79,10 +102,26 @@
                                     </select>
                                     <p id="brand-error" class="text-red-500 text-sm hidden"></p>
                                 </div>
-                            </div>
 
-                            <!--Product Description-->
-                            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Product Offer -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Product Offer</label>
+                                    <input type="number" min="0" max="100" name="productOffer" class="w-full p-2 border rounded mt-1"
+                                        placeholder="Enter discount percentage">
+                                    <p id="productOffer-error" class="text-red-500 text-sm hidden"></p>
+                                </div>
+
+                                <!-- Product Status -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Product Status</label>
+                                    <select name="productStatus" class="w-full p-2 border rounded mt-1">
+                                        <option value="Available" selected>Available</option>
+                                        <option value="Out of Stock">Out of Stock</option>
+                                        <option value="Discontinued">Discontinued</option>
+                                    </select>
+                                </div>
+
+                                <!-- Product Description -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Product Description</label>
                                     <textarea name="description" class="w-full p-2 border rounded mt-1" rows="4"
@@ -90,6 +129,7 @@
                                     <p id="description-error" class="text-red-500 text-sm hidden"></p>
                                 </div>
 
+                                <!-- Product Category -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Product Category</label>
                                     <select name="category" id="categorySelect" class="w-full p-2 border rounded mt-1"
@@ -97,31 +137,33 @@
                                         <option value="">Select category</option>
                                         <% categories.forEach(category=> { %>
                                             <option value="<%= category._id %>"
-                                                data-type="<%= category.name.toLowerCase().includes('shoe') ? 'shoe' : 'dress' %>">
+                                                data-type="<%= category.name.toLowerCase().includes('shoe') || category.name.toLowerCase().includes('apparel') ? 'size' : 'nosize' %>">
                                                 <%= category.name %>
                                             </option>
                                             <% }); %>
                                     </select>
                                     <p id="category-error" class="text-red-500 text-sm hidden"></p>
                                 </div>
+                            </div>
 
-                            <!--Add Variant-->
-                            <div class="mt-6">
+                            <!-- Add Variant Button -->
+                            <div class="mt-6 flex justify-center">
                                 <button type="button" onclick="addVariant()"
                                     class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">+ Add
-                                    Variant's</button>
+                                    Variant</button>
                             </div>
 
-                            <div id="variantsSection" class="mt-6 space-y-6">
-                                <!-- Variants will be added dynamically -->
-                            </div>
+                            <!-- Variants Section -->
+                            <div id="variantsSection" class="mt-6 flex flex-col gap-6"></div>
 
+                            <!-- Form Buttons -->
                             <div class="mt-6 flex justify-end space-x-4">
                                 <button type="button"
                                     class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
                                     onclick="window.history.back()">Cancel</button>
-                                <button type="submit"
-                                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Save</button>
+                                <button type="button"
+                                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                                    onclick="submitForm()">Save</button>
                             </div>
                         </form>
                     </main>
@@ -130,7 +172,6 @@
 
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script>
-
         function updateSellingPrice(inputElement) {
             const variantDiv = inputElement.closest('.bg-gray-100');
             if (!variantDiv) return;
@@ -149,9 +190,44 @@
         let variantIndex = 0;
 
         function addVariant() {
+            const categorySelect = document.getElementById('categorySelect');
+            const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+            const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
+
             const container = document.getElementById('variantsSection');
             const variantDiv = document.createElement('div');
             variantDiv.className = 'bg-gray-100 p-4 rounded-lg border border-red-500 relative';
+            let sizeField = `
+                            <div class="size-field">
+                                <label class="block text-sm font-medium text-gray-700">Product Size</label>
+                                <select name="variants[${variantIndex}][size]" class="w-full p-2 border rounded mt-1" id="variantSize_${variantIndex}">
+                                    
+                                    < label="Shoe Sizes (UK)">
+                                        <opoptgrouption value="">Select Size</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                    </optgroup>
+                                    <optgroup label="Dress Sizes">
+                                        <option value="">Select Size</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                        <option value="XXL">XXL</option>
+                                        <option value="XXXL">XXXL</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        `;
+
+
+
             variantDiv.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold">Variant - ${variantIndex + 1}</h3>
@@ -160,31 +236,7 @@
                     </button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Product Size</label>
-                        <select name="variants[${variantIndex}][size]" class="w-full p-2 border rounded mt-1" id="variantSize_${variantIndex}">
-                            <optgroup label="Shoe Sizes (UK)">
-                                <option value="">Select Size</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                                <option value="11">11</option>
-                                <option value="12">12</option>
-                                </optgroup>
-                                <optgroup label="Dress Sizes">
-                                <option value="">Select Size</option>
-                                <option value="S">S</option>
-                                <option value="M">M</option>
-                                <option value="L">L</option>
-                                <option value="XL">XL</option>
-                                <option value="XXL">XXL</option>
-                                <option value="XXXL">XXXL</option>
-                            </optgroup>
-                        </select>
-                    </div>
+                    ${sizeField}
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Product Colour</label>
                         <input type="text" name="variants[${variantIndex}][color]" class="w-full p-2 border rounded mt-1" placeholder="Enter color">
@@ -198,23 +250,23 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Stock Quantity</label>
-                        <input type="number" name="variants[${variantIndex}][quantity]" class="w-full p-2 border rounded mt-1" placeholder="Enter stock limit">
+                        <input type="number" min="0" name="variants[${variantIndex}][quantity]" class="w-full p-2 border rounded mt-1" placeholder="Enter stock limit">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Original Price / MRP</label>
-                        <input oninput="updateSellingPrice(this)" type="number" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
+                        <input oninput="updateSellingPrice(this)" type="number" min="0" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Discount Percentage</label>
-                        <input oninput="updateSellingPrice(this)" type="number" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
-                    </div>
+                        <input oninput="updateSellingPrice(this)" type="number" min="0" max="100" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
+                    </div> 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Selling Price</label>
-                        <input type="number" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1 bg-white" placeholder="Enter selling price">
+                        <input type="number" min="0" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1 bg-white" placeholder="Enter selling price">
                     </div>
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Add Photos</label>
-                        <div class="flex space-x-4">
+                        <div class="flex flex-wrap gap-4 mt-2">
                             <% for(let i = 0; i < 4; i++) { %>
                                 <div class="image-upload-placeholder" onclick="this.querySelector('input[type=file]').click()">
                                     <input type="file" name="variants[${variantIndex}][images][]" class="hidden" accept="image/*" onchange="previewImage(event, this)">
@@ -228,7 +280,7 @@
                 </div>
             `;
             container.appendChild(variantDiv);
-            updateVariantSizes(); // Update sizes for the new variant
+            updateVariantSizes();
             variantIndex++;
         }
 
@@ -238,7 +290,7 @@
             if (variant) {
                 variant.remove();
                 console.log('Variant removed successfully');
-                updateVariantSizes(); // Update sizes after removal
+                updateVariantSizes();
             } else {
                 console.log('Variant not found');
             }
@@ -249,11 +301,12 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    const preview = input.nextElementSibling; // The img element
-                    console.log(preview.tagName)
+                    const preview = input.nextElementSibling;
+                    const placeholder = input.closest('.image-upload-placeholder');
                     if (preview && preview.tagName === 'IMG') {
                         preview.src = e.target.result;
                         preview.classList.remove('hidden');
+                        placeholder.classList.add('has-image');
                     }
                 };
                 reader.readAsDataURL(file);
@@ -263,77 +316,6 @@
         function calculateSellingPrice(originalPrice, discount) {
             return originalPrice - (originalPrice * (discount / 100));
         }
-
-
-        //Form validation
-        document.getElementById('productForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            if (!validateForm()) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Failed',
-                    text: 'Please fill all required fields!',
-                    confirmButtonColor: '#6366f1'
-                });
-                return;
-            }
-
-            const variants = [];
-            let hasVariant = false;
-            document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
-                hasVariant = true;
-                const size = variantDiv.querySelector('select[name$="[size]"]').value;
-                const color = variantDiv.querySelector('input[name$="[color]"]').value.trim();
-                const stockStatus = variantDiv.querySelector('select[name$="[stockStatus]"]').value;
-                const quantity = variantDiv.querySelector('input[name$="[quantity]"]').value;
-                const originalPrice = variantDiv.querySelector('input[name$="[originalPrice]"]').value;
-                const discount = variantDiv.querySelector('input[name$="[discount]"]').value;
-                const sellingPrice = variantDiv.querySelector('input[name$="[sellingPrice]"]').value;
-
-                if (!size || !color || !stockStatus || !quantity || !originalPrice || !discount || !sellingPrice) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Incomplete Variant Data',
-                        text: 'Please fill all fields for each variant.',
-                        confirmButtonColor: '#6366f1'
-                    });
-                    return;
-                }
-
-                variants.push({ size, color, stockStatus, quantity, originalPrice, discount, sellingPrice });
-            });
-
-            if (!hasVariant) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'No Variant Added',
-                    text: 'Please add at least one variant before submitting.',
-                    confirmButtonColor: '#6366f1'
-                });
-                return;
-            }
-
-            document.getElementById('variantsData').value = JSON.stringify(variants);
-            console.log('Variants Data Sent:', document.getElementById('variantsData').value); // Debug
-
-            // Only disable non-variant and non-file fields
-            const formElements = this.elements;
-            for (let i = 0; i < formElements.length; i++) {
-                if (formElements[i].name !== 'variants' && formElements[i].type !== 'file' && formElements[i].name !== 'productName' && formElements[i].name !== 'brandName' && formElements[i].name !== 'description' && formElements[i].name !== 'category') {
-                    formElements[i].disabled = true;
-                }
-            }
-
-            // Submit the form
-            this.submit();
-
-            // Re-enable fields after submission
-            for (let i = 0; i < formElements.length; i++) {
-                formElements[i].disabled = false;
-            }
-        });
-
 
         function validateForm() {
             let isValid = true;
@@ -360,6 +342,13 @@
                 isValid = false;
             }
 
+            const productOffer = parseFloat(document.querySelector('input[name="productOffer"]').value);
+            if (isNaN(productOffer) || productOffer < 0 || productOffer > 100) {
+                document.getElementById('productOffer-error').innerText = 'Product offer must be a number between 0 and 100';
+                document.getElementById('productOffer-error').classList.remove('hidden');
+                isValid = false;
+            }
+
             const category = document.querySelector('select[name="category"]').value;
             if (!category) {
                 document.getElementById('category-error').innerText = 'Category is required';
@@ -373,22 +362,153 @@
         function updateVariantSizes() {
             const categorySelect = document.getElementById('categorySelect');
             const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
-            const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : null;
+            const categoryName = selectedCategory ? selectedCategory.text.toLowerCase() : '';
 
             document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
-                const sizeSelect = variantDiv.querySelector('select[name$="[size]"]');
-                const shoeSizes = sizeSelect.querySelectorAll('optgroup[label="Shoe Sizes (UK)"] option');
-                const dressSizes = sizeSelect.querySelectorAll('optgroup[label="Dress Sizes"] option');
+                const sizeField = variantDiv.querySelector('.size-field');
+                if (sizeField) {
+                    sizeField.style.display = 'block'; // Always show
 
+                    const sizeSelect = sizeField.querySelector('select[name$="[size]"]');
+                    const shoeSizes = sizeSelect.querySelectorAll('optgroup[label="Shoe Sizes (UK)"] option');
+                    const dressSizes = sizeSelect.querySelectorAll('optgroup[label="Dress Sizes"] option');
 
-                if (categoryType === 'shoe') {
-                    dressSizes.forEach(option => option.style.display = 'none');
-                    shoeSizes.forEach(option => option.style.display = 'block');
-                } else if (categoryType === 'dress') {
-                    shoeSizes.forEach(option => option.style.display = 'none');
-                    dressSizes.forEach(option => option.style.display = 'block');
+                    if (categoryName.includes('shoe')) {
+                        shoeSizes.forEach(opt => opt.style.display = 'block');
+                        dressSizes.forEach(opt => opt.style.display = 'none');
+                    } else if (categoryName.includes('apparel')) {
+                        shoeSizes.forEach(opt => opt.style.display = 'none');
+                        dressSizes.forEach(opt => opt.style.display = 'block');
+                    } else {
+                        // Show all for other categories
+                        shoeSizes.forEach(opt => opt.style.display = 'block');
+                        dressSizes.forEach(opt => opt.style.display = 'block');
+                    }
                 }
             });
+        }
+
+        console.log("form submitted")
+        async function submitForm() {
+            if (!validateForm()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Failed',
+                    text: 'Please fill all required fields!',
+                    confirmButtonColor: '#6366f1'
+                });
+                return;
+            }
+
+            const variants = [];
+            let hasVariant = false;
+            document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
+                hasVariant = true;
+                const sizeField = variantDiv.querySelector('select[name$="[size]"]');
+                // const size = categoryType === 'size' ? (sizeField ? sizeField.value : '') : 'N/A';
+                const size = sizeField ? sizeField.value : ''
+                const color = variantDiv.querySelector('input[name$="[color]"]').value.trim();
+                const stockStatus = variantDiv.querySelector('select[name$="[stockStatus]"]').value;
+                const quantity = variantDiv.querySelector('input[name$="[quantity]"]').value;
+                const originalPrice = variantDiv.querySelector('input[name$="[originalPrice]"]').value;
+                const discount = variantDiv.querySelector('input[name$="[discount]"]').value;
+                const sellingPrice = variantDiv.querySelector('input[name$="[sellingPrice]"]').value;
+
+                const categorySelect = document.getElementById('categorySelect');
+                const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+                const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
+
+                if (categoryType === 'size' && !size) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Incomplete Variant Data',
+                        text: 'Please select a size for each variant.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    return;
+                }
+
+                if (!color || !stockStatus || !quantity || !originalPrice || !discount || !sellingPrice) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Incomplete Variant Data',
+                        text: 'Please fill all fields for each variant.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    return;
+                }
+
+                const images = [];
+                variantDiv.querySelectorAll('input[name$="[images][]"]').forEach(input => {
+                    if (input.files[0]) {
+                        images.push(input.files[0]);
+                    }
+                });
+
+                variants.push({ size, color, stockStatus, quantity, originalPrice, discount, sellingPrice, images });
+            });
+
+            if (!hasVariant) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Variant Added',
+                    text: 'Please add at least one variant before submitting.',
+                    confirmButtonColor: '#6366f1'
+                });
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('productName', document.querySelector('input[name="productName"]').value.trim());
+            formData.append('brandName', document.querySelector('select[name="brandName"]').value);
+            formData.append('description', document.querySelector('textarea[name="description"]').value.trim());
+            formData.append('category', document.querySelector('select[name="category"]').value);
+            formData.append('productOffer', document.querySelector('input[name="productOffer"]').value);
+            formData.append('productStatus', document.querySelector('select[name="productStatus"]').value);
+            formData.append('variants', JSON.stringify(variants.map(v => ({
+                size: v.size,
+                color: v.color,
+                stockStatus: v.stockStatus,
+                quantity: v.quantity,
+                originalPrice: v.originalPrice,
+                discount: v.discount,
+                sellingPrice: v.sellingPrice
+            }))));
+
+            variants.forEach((variant, index) => {
+                variant.images.forEach((image, imgIndex) => {
+                    formData.append(`variants[${index}][images][]`, image);
+                });
+            });
+
+            try {
+                const response = await fetch('/admin/addProduct', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Product added successfully!',
+                    confirmButtonColor: '#6366f1'
+                }).then(() => {
+                    window.location.href = '/admin/productInfo';
+                });
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Submission Failed',
+                    text: 'An error occurred while submitting the form. Please try again.',
+                    confirmButtonColor: '#6366f1'
+                });
+            }
         }
     </script>
 </body>

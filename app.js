@@ -7,6 +7,7 @@ const db = require("./config/db");
 const passport = require('./config/passport')
 const userRouter = require("./routes/userRouter")
 const adminRouter = require("./routes/adminRouter")
+const errorRouter = require("./controllers/error/errorController")
 db() // dataBase connected
 
 app.set('view engine', "ejs")
@@ -35,6 +36,7 @@ app.use(passport.session());
 
 app.use('/', userRouter);
 app.use('/admin', adminRouter);
+app.use(errorRouter.pageNotFound);
 
 app.listen(process.env.PORT, () => console.log("Server Running....!"));
 
