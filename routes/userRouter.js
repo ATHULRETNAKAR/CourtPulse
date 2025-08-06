@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/user/userController');
 const passport = require('passport');
+const userController = require('../controllers/user/userController');
+const shopController = require('../controllers/user/shopController');
 
 
 router.get('/pageNotFound',userController.pageNotFound)
@@ -18,6 +19,8 @@ router.get('/auth/google',passport.authenticate('google',{scope:['profile','emai
 router.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:'/signup'}),(req,res)=>{
     res.redirect('/')
 })
+
+router.get('/shopRaquet',shopController.raquet)
 
 
 module.exports = router

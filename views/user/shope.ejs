@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CourtPulse Shop</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 font-sans">
+  <!-- Header -->
+  <%- include("../../views/partials/user/header") %>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4">
+      <div class="flex flex-col md:flex-row gap-4">
+        <!-- Filter Sidebar -->
+        <aside class="w-full md:w-1/4 bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-bold mb-4">Filter Items</h2>
+          <div class="space-y-4">
+            <div>
+              <h3 class="font-semibold">Category</h3>
+              <ul class="list-disc pl-5 space-y-1">
+                <li><a href="#" class="text-purple-600 hover:text-purple-800">Racquets</a></li>
+                <li><a href="#" class="text-purple-600 hover:text-purple-800">Badminton Shoes</a></li>
+                <li><a href="#" class="text-purple-600 hover:text-purple-800">Apparel & Clothing</a></li>
+                <li><a href="#" class="text-purple-600 hover:text-purple-800">Accessories</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="font-semibold">Price</h3>
+              <input type="range" min="0" max="5000" class="w-full">
+              <div class="flex justify-between text-sm mt-1">
+                <span>₹0</span><span>₹5000</span>
+              </div>
+            </div>
+            <div>
+              <h3 class="font-semibold">Customer Rating</h3>
+              <div class="flex flex-col space-y-1">
+                <label class="flex items-center">
+                  <input type="checkbox" class="mr-2">4 & 5
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" class="mr-2">3 & above
+                </label>
+              </div>
+            </div>
+            <div>
+              <h3 class="font-semibold">Brands</h3>
+              <input type="text" placeholder="Search brands..." class="w-full p-2 border rounded">
+              <div class="mt-2">
+                <label class="flex items-center">
+                  <input type="checkbox" class="mr-2">Yonex
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" class="mr-2">Li-Ning
+                </label>
+              </div>
+            </div>
+            <div>
+              <h3 class="font-semibold">Availability</h3>
+              <label class="flex items-center">
+                <input type="checkbox" class="mr-2">In stock
+              </label>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Product Grid -->
+        <section class="w-full md:w-3/4">
+          <div class="flex justify-between mb-4 items-center">
+            <h2 class="text-xl font-bold">Shop Now</h2>
+            <select class="p-2 border rounded">
+              <option>Sort by</option>
+              <option>Price: Low to High</option>
+              <option>Price: High to Low</option>
+              <option>Rating</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <% if (product && product.length> 0) { %>
+              <% const productsToShow=product.slice(0, 12); %> 
+                <% productsToShow.forEach(product=> { %>
+                  <div class="bg-white p-4 rounded shadow text-center hover:shadow-lg transition-shadow">
+                    <img src="productimg/<%= product.variants[0].images[0] %>" alt="<%= product.variants.name %>"
+                      class="mx-auto h-40 w-40 object-cover">
+                    <h3 class="font-semibold text-lg">
+                      <%= product.productName %>
+                    </h3>
+                    <div class="text-sm text-gray-500 mt-1">Yonex <%= product.productName.split(' ')[1] || '' %></div>
+                  <div> 
+                    <p class="text-green-600 font-bold text-xl">₹<%= product.variants[0].sellingPrice %></p>
+                    <div class="mt-1 flex justify-center gap-2">
+                      <p class="text-gray-400 line-through">₹<%= product.variants[0].originalPrice %></p>
+                      <p class="text-red-500 text-sm"><%= product.variants[0].discount %>% off</p>
+                    </div>
+                  </div>
+                <div class="flex justify-center space-x-2 mt-2">
+                  <button class="bg-purple-600 text-white p-2 rounded hover:bg-purple-800">Add to Cart</button>
+                  <button class="bg-gray-200 text-purple-600 p-2 rounded hover:bg-gray-300">♥</button>
+                </div>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <p>No product available.</p>
+          <% } %>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+          <%- include("../../views/partials/user/footer") %>
+
+</body>
+</html>
