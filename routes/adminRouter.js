@@ -38,6 +38,10 @@ router.put('/brand/:id', brandController.editBrand)
 router.get('/productInfo', productController.productInfo)
 router.get('/addProduct', productController.addProduct)
 router.post('/addProduct', upload, productController.addProductpost)
+router.delete('/addProduct/:id', productController.productDelete)
+router.put('/editProduct/:id',upload, productController.productEditPut)
+router.get('/editProduct/:id',upload, productController.editProduct)
+router.post('/removeProductImage', productController.removeProductImage);
 
 
 module.exports = router;

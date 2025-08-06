@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtPulse - <%= isEdit ? 'Edit Product' : 'Add Product' %>
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .image-upload-placeholder {
+            border: 2px dashed #d1d5db;
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            height: 100px;
+            width: 100px;
+            position: relative;
+        }
+
+        .image-preview {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: cover;
+        }
+
+        .image-upload-placeholder.has-image .fa-cloud-upload-alt,
+        .image-upload-placeholder.has-image p.text-xs.text-gray-500 {
+            display: none !important;
+        }
+
+        .remove-image-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+        }
+
+        .image-upload-placeholder.has-image .remove-image-btn {
+            display: flex;
+        }
+
+        #variantsSection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        #variantsSection .bg-gray-100 {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .form-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <%- include("../../views/partials/admin/sidebar") %>
+
+            <!-- Main Content -->
+            <div class="flex-1 flex flex-col">
+                <!-- Header -->
+                <%- include("../../views/partials/admin/header") %>
+
+                    <!-- Dashboard Content -->
+                    <main class="flex-1 p-8 overflow-y-auto">
+                        <form id="productForm"
+                            action="<%= isEdit ? '/admin/editProduct/' + product._id : '/admin/addProduct' %>"
+                            method="POST" enctype="multipart/form-data"
+                            class="bg-white p-6 rounded-lg shadow-lg form-container">
+                            <% if (isEdit) { %>
+                                <input type="hidden" name="_method" value="PUT">
+                                <% } %>
+                                    <input type="hidden" name="variants" id="variantsData">
+                                    <input type="hidden" name="isEdit" value="<%= isEdit ? 'true' : 'false' %>">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Product Name -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Product Name</label>
+                                            <input type="text" name="productName" class="w-full p-2 border rounded mt-1"
+                                                placeholder="Enter product name..."
+                                                value="<%= isEdit ? product.productName : '' %>">
+                                            <p id="name-error" class="text-red-500 text-sm hidden"></p>
+                                        </div>
+
+                                        <!-- Brand Name -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Brand Name</label>
+                                            <select name="brandName" class="w-full p-2 border rounded mt-1">
+                                                <option value="">Select brand</option>
+                                                <% brands.forEach(brand=> { %>
+                                                    <option value="<%= brand._id %>" <%=isEdit && product.brand &&
+                                                        product.brand._id &&
+                                                        product.brand._id.toString()===brand._id.toString() ? 'selected'
+                                                        : '' %>>
+                                                        <%= brand.brandName %>
+                                                    </option>
+                                                    <% }); %>
+                                            </select>
+                                            <p id="brand-error" class="text-red-500 text-sm hidden"></p>
+                                        </div>
+
+                                        <!-- Product Offer -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Product Offer</label>
+                                            <input type="number" min="0" max="100" name="productOffer"
+                                                class="w-full p-2 border rounded mt-1"
+                                                placeholder="Enter discount percentage"
+                                                value="<%= isEdit ? product.productOffer : '' %>">
+                                            <p id="productOffer-error" class="text-red-500 text-sm hidden"></p>
+                                        </div>
+
+                                        <!-- Product Status -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Product
+                                                Status</label>
+                                            <select name="productStatus" class="w-full p-2 border rounded mt-1">
+                                                <option value="Available" <%=isEdit &&
+                                                    product.productStatus==='Available' ? 'selected' : !isEdit
+                                                    ? 'selected' : '' %>>Available</option>
+                                                <option value="Out of Stock" <%=isEdit &&
+                                                    product.productStatus==='Out of Stock' ? 'selected' : '' %>>Out of
+                                                    Stock</option>
+                                                <option value="Discontinued" <%=isEdit &&
+                                                    product.productStatus==='Discontinued' ? 'selected' : '' %>
+                                                    >Discontinued</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Product Description -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Product
+                                                Description</label>
+                                            <textarea name="description" class="w-full p-2 border rounded mt-1" rows="4"
+                                                placeholder="Write your description here..."><%= isEdit ? product.description : '' %></textarea>
+                                            <p id="description-error" class="text-red-500 text-sm hidden"></p>
+                                        </div>
+
+                                        <!-- Product Category -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Product
+                                                Category</label>
+                                            <select name="category" id="categorySelect"
+                                                class="w-full p-2 border rounded mt-1" onchange="updateVariantSizes()">
+                                                <option value="">Select category</option>
+                                                <% categories.forEach(category=> { %>
+                                                    <option value="<%= category._id %>"
+                                                        data-type="<%= category.name.toLowerCase().includes('shoe') || category.name.toLowerCase().includes('apparel') ? 'size' : 'nosize' %>"
+                                                        <%=isEdit && product.category && product.category._id &&
+                                                        product.category._id.toString()===category._id.toString()
+                                                        ? 'selected' : '' %>>
+                                                        <%= category.name %>
+                                                    </option>
+                                                    <% }); %>
+                                            </select>
+                                            <p id="category-error" class="text-red-500 text-sm hidden"></p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Add Variant Button -->
+                                    <div class="mt-6 flex justify-center">
+                                        <button type="button" onclick="addVariant()"
+                                            class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">+ Add
+                                            Variant</button>
+                                    </div>
+
+                                    <!-- Variants Section -->
+                                    <div id="variantsSection" class="mt-6 flex flex-col gap-6">
+                                        <% if (isEdit && product.variants && product.variants.length> 0) { %>
+                                            <% product.variants.forEach((variant, index)=> { %>
+                                                <div class="bg-gray-100 p-4 rounded-lg border border-red-500 relative">
+                                                    <div class="flex justify-between items-center mb-4">
+                                                        <h3 class="text-lg font-semibold">Variant - <%= index + 1 %>
+                                                        </h3>
+                                                        <button type="button" onclick="removeVariant(this)"
+                                                            class="text-red-500 hover:text-red-700">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div class="size-field">
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Product
+                                                                Size</label>
+                                                            <select name="variants[<%= index %>][size]"
+                                                                class="w-full p-2 border rounded mt-1"
+                                                                id="variantSize_<%= index %>">
+                                                                <option value="N/A" <%=variant.size==='N/A' ? 'selected'
+                                                                    : '' %>>N/A</option>
+                                                                <optgroup label="Shoe Sizes (UK)">
+                                                                    <option value="5" <%=variant.size==='5' ? 'selected'
+                                                                        : '' %>>5</option>
+                                                                    <option value="6" <%=variant.size==='6' ? 'selected'
+                                                                        : '' %>>6</option>
+                                                                    <option value="7" <%=variant.size==='7' ? 'selected'
+                                                                        : '' %>>7</option>
+                                                                    <option value="8" <%=variant.size==='8' ? 'selected'
+                                                                        : '' %>>8</option>
+                                                                    <option value="9" <%=variant.size==='9' ? 'selected'
+                                                                        : '' %>>9</option>
+                                                                    <option value="10" <%=variant.size==='10'
+                                                                        ? 'selected' : '' %>>10</option>
+                                                                    <option value="11" <%=variant.size==='11'
+                                                                        ? 'selected' : '' %>>11</option>
+                                                                    <option value="12" <%=variant.size==='12'
+                                                                        ? 'selected' : '' %>>12</option>
+                                                                </optgroup>
+                                                                <optgroup label="Dress Sizes">
+                                                                    <option value="S" <%=variant.size==='S' ? 'selected'
+                                                                        : '' %>>S</option>
+                                                                    <option value="M" <%=variant.size==='M' ? 'selected'
+                                                                        : '' %>>M</option>
+                                                                    <option value="L" <%=variant.size==='L' ? 'selected'
+                                                                        : '' %>>L</option>
+                                                                    <option value="XL" <%=variant.size==='XL'
+                                                                        ? 'selected' : '' %>>XL</option>
+                                                                    <option value="XXL" <%=variant.size==='XXL'
+                                                                        ? 'selected' : '' %>>XXL</option>
+                                                                    <option value="XXXL" <%=variant.size==='XXXL'
+                                                                        ? 'selected' : '' %>>XXXL</option>
+                                                                </optgroup>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Product
+                                                                Colour</label>
+                                                            <input type="text" name="variants[<%= index %>][color]"
+                                                                class="w-full p-2 border rounded mt-1"
+                                                                placeholder="Enter color" value="<%= variant.color %>">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-sm font-medium text-gray-700">Stock
+                                                                Status</label>
+                                                            <select name="variants[<%= index %>][stockStatus]"
+                                                                class="w-full p-2 border rounded mt-1">
+                                                                <option value="In Stock"
+                                                                    <%=variant.stockStatus==='In Stock' ? 'selected'
+                                                                    : '' %>>In Stock</option>
+                                                                <option value="Out of Stock"
+                                                                    <%=variant.stockStatus==='Out of Stock' ? 'selected'
+                                                                    : '' %>>Out of Stock</option>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-sm font-medium text-gray-700">Stock
+                                                                Quantity</label>
+                                                            <input type="number" min="0"
+                                                                name="variants[<%= index %>][quantity]"
+                                                                class="w-full p-2 border rounded mt-1"
+                                                                placeholder="Enter stock limit"
+                                                                value="<%= variant.quantity %>">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Original
+                                                                Price / MRP</label>
+                                                            <input oninput="updateSellingPrice(this)" type="number"
+                                                                min="0" name="variants[<%= index %>][originalPrice]"
+                                                                class="w-full p-2 border rounded mt-1"
+                                                                placeholder="Enter base price"
+                                                                value="<%= variant.originalPrice %>">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Discount
+                                                                Percentage</label>
+                                                            <input oninput="updateSellingPrice(this)" type="number"
+                                                                min="0" max="100"
+                                                                name="variants[<%= index %>][discount]"
+                                                                class="w-full p-2 border rounded mt-1"
+                                                                placeholder="Enter discount percentage"
+                                                                value="<%= variant.discount %>">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Selling
+                                                                Price</label>
+                                                            <input type="number" min="0"
+                                                                name="variants[<%= index %>][sellingPrice]"
+                                                                class="w-full p-2 border rounded mt-1 bg-white"
+                                                                placeholder="Enter selling price"
+                                                                value="<%= variant.sellingPrice %>">
+                                                        </div>
+                                                        <div class="md:col-span-2">
+                                                            <label class="block text-sm font-medium text-gray-700">Add
+                                                                Photos</label>
+                                                            <div class="flex flex-wrap gap-4 mt-2">
+                                                                <% for(let i=0; i < 4; i++) { %>
+                                                                    <div class="image-upload-placeholder <%= variant.images[i] ? 'has-image' : '' %>"
+                                                                        onclick="this.querySelector('input[type=file]').click()">
+                                                                        <input type="file"
+                                                                            name="variants[<%= index %>][images][]"
+                                                                            class="hidden" accept="image/*"
+                                                                            onchange="previewImage(event, this)">
+                                                                        <img class="image-preview <%= variant.images[i] ? '' : 'hidden' %>"
+                                                                            src="/productimg/<%= variant.images[i] ? variant.images[i] : '' %>"
+                                                                            alt="Preview">
+                                                                        <i
+                                                                            class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
+                                                                        <p class="text-xs text-gray-500">Add Image</p>
+                                                                        <span class="remove-image-btn"
+                                                                            onclick="removeImage(this, event)"><i
+                                                                                class="fas fa-times"></i></span>
+                                                                    </div>
+                                                                    <% } %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <% }); %>
+                                                    <% } %>
+                                    </div>
+
+                                    <!-- Form Buttons -->
+                                    <div class="mt-6 flex justify-end space-x-4">
+                                        <button type="button"
+                                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                                            onclick="window.history.back()">Cancel</button>
+                                        <button type="button"
+                                            class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                                            onclick="submitForm()">
+                                            <%= isEdit ? 'Update' : 'Save' %>
+                                        </button>
+                                    </div>
+                        </form>
+                    </main>
+            </div>
+    </div>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        const isEdit = <%= isEdit ? 'true' : 'false' %>;
+        let variantIndex = <%= isEdit && product.variants ? product.variants.length : 0 %>;
+
+        function updateSellingPrice(inputElement) {
+            const variantDiv = inputElement.closest('.bg-gray-100');
+            if (!variantDiv) return;
+
+            const originalPriceInput = variantDiv.querySelector('input[name$="[originalPrice]"]');
+            const discountInput = variantDiv.querySelector('input[name$="[discount]"]');
+            const sellingPriceInput = variantDiv.querySelector('input[name$="[sellingPrice]"]');
+
+            const originalPrice = parseFloat(originalPriceInput.value) || 0;
+            const discount = parseFloat(discountInput.value) || 0;
+
+            const sellingPrice = originalPrice - (originalPrice * (discount / 100));
+            sellingPriceInput.value = sellingPrice.toFixed(2);
+        }
+
+        function addVariant() {
+            const categorySelect = document.getElementById('categorySelect');
+            const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+            const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
+            const categoryName = selectedCategory ? selectedCategory.text.toLowerCase() : '';
+
+            const container = document.getElementById('variantsSection');
+            const variantDiv = document.createElement('div');
+            variantDiv.className = 'bg-gray-100 p-4 rounded-lg border border-red-500 relative';
+
+            let sizeField = `
+                <div class="size-field">
+                    <label class="block text-sm font-medium text-gray-700">Product Size</label>
+                    <select name="variants[${variantIndex}][size]" class="w-full p-2 border rounded mt-1" id="variantSize_${variantIndex}">
+                        <option value="N/A">N/A</option>
+                        <optgroup label="Shoe Sizes (UK)">
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </optgroup>
+                        <optgroup label="Dress Sizes">
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="XXL">XXL</option>
+                            <option value="XXXL">XXXL</option>
+                        </optgroup>
+                    </select>
+                </div>
+            `;
+
+            variantDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Variant - ${variantIndex + 1}</h3>
+                    <button type="button" onclick="removeVariant(this)" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${sizeField}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Product Colour</label>
+                        <input type="text" name="variants[${variantIndex}][color]" class="w-full p-2 border rounded mt-1" placeholder="Enter color">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Stock Status</label>
+                        <select name="variants[${variantIndex}][stockStatus]" class="w-full p-2 border rounded mt-1">
+                            <option value="In Stock">In Stock</option>
+                            <option value="Out of Stock">Out of Stock</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                        <input type="number" min="0" name="variants[${variantIndex}][quantity]" class="w-full p-2 border rounded mt-1" placeholder="Enter stock limit">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Original Price / MRP</label>
+                        <input oninput="updateSellingPrice(this)" type="number" min="0" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Discount Percentage</label>
+                        <input oninput="updateSellingPrice(this)" type="number" min="0" max="100" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Selling Price</label>
+                        <input type="number" min="0" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1 bg-white" placeholder="Enter selling price">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Add Photos</label>
+                        <div class="flex flex-wrap gap-4 mt-2">
+                            <% for(let i = 0; i < 4; i++) { %>
+                                <div class="image-upload-placeholder" onclick="this.querySelector('input[type=file]').click()">
+                                    <input type="file" name="variants[${variantIndex}][images][]" class="hidden" accept="image/*" onchange="previewImage(event, this)">
+                                    <img class="image-preview hidden" alt="Preview">
+                                    <i class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
+                                    <p class="text-xs text-gray-500">Add Image</p>
+                                    <span class="remove-image-btn" onclick="removeImage(this, event)"><i class="fas fa-times"></i></span>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(variantDiv);
+
+            if (categoryType === 'nosize') {
+                const sizeSelect = variantDiv.querySelector(`select[name="variants[${variantIndex}][size]"]`);
+                sizeSelect.value = 'N/A';
+            }
+
+            updateVariantSizes();
+            variantIndex++;
+        }
+
+        function removeVariant(button) {
+            const variant = button.closest('.bg-gray-100');
+            if (variant) {
+                variant.remove();
+                updateVariantSizes();
+            }
+        }
+
+        function previewImage(event, input) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = input.nextElementSibling;
+                    const placeholder = input.closest('.image-upload-placeholder');
+                    if (preview && preview.tagName === 'IMG') {
+                        preview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                        placeholder.classList.add('has-image');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImage(button, event) {
+            event.stopPropagation();
+            const placeholder = button.closest('.image-upload-placeholder');
+            const input = placeholder.querySelector('input[type=file]');
+            const preview = placeholder.querySelector('.image-preview');
+
+            input.value = '';
+            preview.src = '';
+            preview.classList.add('hidden');
+            placeholder.classList.remove('has-image');
+        }
+
+        function validateForm() {
+            let isValid = true;
+            document.querySelectorAll('.text-red-500').forEach(el => el.classList.add('hidden'));
+
+            const productName = document.querySelector('input[name="productName"]').value.trim();
+            if (!productName) {
+                document.getElementById('name-error').innerText = 'Product name is required';
+                document.getElementById('name-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            const brandName = document.querySelector('select[name="brandName"]').value;
+            if (!brandName) {
+                document.getElementById('brand-error').innerText = 'Brand name is required';
+                document.getElementById('brand-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            const description = document.querySelector('textarea[name="description"]').value.trim();
+            if (!description) {
+                document.getElementById('description-error').innerText = 'Description is required';
+                document.getElementById('description-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            const productOffer = parseFloat(document.querySelector('input[name="productOffer"]').value);
+            if (isNaN(productOffer) || productOffer < 0 || productOffer > 100) {
+                document.getElementById('productOffer-error').innerText = 'Product offer must be a number between 0 and 100';
+                document.getElementById('productOffer-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            const category = document.querySelector('select[name="category"]').value;
+            if (!category) {
+                document.getElementById('category-error').innerText = 'Category is required';
+                document.getElementById('category-error').classList.remove('hidden');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function updateVariantSizes() {
+            const categorySelect = document.getElementById('categorySelect');
+            const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+            const categoryName = selectedCategory ? selectedCategory.text.toLowerCase() : '';
+            const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
+
+            document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
+                const sizeField = variantDiv.querySelector('.size-field');
+                if (sizeField) {
+                    const sizeSelect = sizeField.querySelector('select[name$="[size]"]');
+                    const shoeSizesGroup = sizeSelect.querySelector('optgroup[label="Shoe Sizes (UK)"]');
+                    const dressSizesGroup = sizeSelect.querySelector('optgroup[label="Dress Sizes"]');
+                    const naOption = sizeSelect.querySelector('option[value="N/A"]');
+
+                    if (categoryName.includes('shoe')) {
+                        shoeSizesGroup.style.display = 'block';
+                        dressSizesGroup.style.display = 'none';
+                        naOption.style.display = 'none';
+                        if (sizeSelect.value === 'N/A' && !isEdit) {
+                            sizeSelect.value = '';
+                        }
+                    } else if (categoryName.includes('apparel')) {
+                        shoeSizesGroup.style.display = 'none';
+                        dressSizesGroup.style.display = 'block';
+                        naOption.style.display = 'none';
+                        if (sizeSelect.value === 'N/A' && !isEdit) {
+                            sizeSelect.value = '';
+                        }
+                    } else {
+                        shoeSizesGroup.style.display = 'none';
+                        dressSizesGroup.style.display = 'none';
+                        naOption.style.display = 'block';
+                        if (!isEdit) {
+                            sizeSelect.innerHTML = `<option value="N/A">N/A</option>`;
+                        }
+                    }
+                }
+            });
+        }
+
+        async function submitForm() {
+            if (!validateForm()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Failed',
+                    text: 'Please fill all required fields!',
+                    confirmButtonColor: '#6366f1'
+                });
+                return;
+            }
+
+            const variants = [];
+            let hasVariant = false;
+            let validImages = true;
+
+            document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
+                hasVariant = true;
+                const sizeField = variantDiv.querySelector('select[name$="[size]"]');
+                const size = sizeField ? sizeField.value : 'N/A';
+                const color = variantDiv.querySelector('input[name$="[color]"]').value.trim();
+                const stockStatus = variantDiv.querySelector('select[name$="[stockStatus]"]').value;
+                const quantity = variantDiv.querySelector('input[name$="[quantity]"]').value;
+                const originalPrice = variantDiv.querySelector('input[name$="[originalPrice]"]').value;
+                const discount = variantDiv.querySelector('input[name$="[discount]"]').value;
+                const sellingPrice = variantDiv.querySelector('input[name$="[sellingPrice]"]').value;
+
+                const categorySelect = document.getElementById('categorySelect');
+                const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+                const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
+
+                if (categoryType === 'size' && (!size || size === 'N/A')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Incomplete Variant Data',
+                        text: 'Please select a valid size for each variant in shoe or apparel categories.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    validImages = false;
+                    return;
+                }
+
+                if (!color || !stockStatus || !quantity || !originalPrice || !discount || !sellingPrice) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Incomplete Variant Data',
+                        text: 'Please fill all fields for each variant.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    validImages = false;
+                    return;
+                }
+
+                const images = [];
+                let imageCount = 0;
+                variantDiv.querySelectorAll('input[name$="[images][]"]').forEach(input => {
+                    if (input.files[0]) {
+                        images.push(input.files[0]);
+                        imageCount++;
+                    } else if (isEdit) {
+                        const preview = input.nextElementSibling;
+                        if (preview && preview.tagName === 'IMG' && preview.src && !preview.classList.contains('hidden')) {
+                            imageCount++;
+                        }
+                    }
+                });
+
+                if (imageCount < 3) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Insufficient Images',
+                        text: 'Each variant must have at least 3 images.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    validImages = false;
+                    return;
+                }
+
+                variants.push({ size, color, stockStatus, quantity, originalPrice, discount, sellingPrice, images });
+            });
+
+            if (!hasVariant) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Variant Added',
+                    text: 'Please add at least one variant before submitting.',
+                    confirmButtonColor: '#6366f1'
+                });
+                return;
+            }
+
+            if (!validImages) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('productName', document.querySelector('input[name="productName"]').value.trim());
+            formData.append('brandName', document.querySelector('select[name="brandName"]').value);
+            formData.append('description', document.querySelector('textarea[name="description"]').value.trim());
+            formData.append('category', document.querySelector('select[name="category"]').value);
+            formData.append('productOffer', document.querySelector('input[name="productOffer"]').value);
+            formData.append('productStatus', document.querySelector('select[name="productStatus"]').value);
+            formData.append('isEdit', isEdit ? 'true' : 'false');
+            formData.append('variants', JSON.stringify(variants.map(v => ({
+                size: v.size,
+                color: v.color,
+                stockStatus: v.stockStatus,
+                quantity: v.quantity,
+                originalPrice: v.originalPrice,
+                discount: v.discount,
+                sellingPrice: v.sellingPrice
+            }))));
+
+            variants.forEach((variant, index) => {
+                variant.images.forEach((image, imgIndex) => {
+                    formData.append(`variants[${index}][images][]`, image);
+                });
+            });
+
+            try {
+                const response = await fetch(isEdit ? '/admin/editProduct/<%= product._id %>' : '/admin/addProduct', {
+                    method: isEdit ? 'PUT' : 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: isEdit ? 'Product updated successfully!' : 'Product added successfully!',
+                    confirmButtonColor: '#6366f1'
+                }).then(() => {
+                    window.location.href = '/admin/productInfo';
+                });
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Submission Failed',
+                    text: 'An error occurred while submitting the form. Please try again.',
+                    confirmButtonColor: '#6366f1'
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateVariantSizes();
+        });
+    </script>
+</body>
+
+</html>

@@ -71,10 +71,10 @@ const addCategory = async (req, res) => {
     }
 };
 
-// Placeholder for editCategory and deleteCategory backend logic
+
 const editCategory = async (req, res) => {
     try {
-        const { id } = req.params; // Category ID from URL
+        const { id } = req.params; 
         const { categoryName, description, discounts, status } = req.body;
 
         const updatedCategory = await Category.findByIdAndUpdate(id, {
@@ -82,7 +82,7 @@ const editCategory = async (req, res) => {
             description,
             discounts,
             status
-        }, { new: true }); // `new: true` returns the updated document
+        }, { new: true });
 
         if (!updatedCategory) {
             return res.status(404).json({ success: false, message: 'Category not found.' });
@@ -98,7 +98,7 @@ const editCategory = async (req, res) => {
 
 const deleteCategory = async (req, res) => {
     try {
-        const { id } = req.params; // Category ID from URL
+        const { id } = req.params; 
 
         const deletedCategory = await Category.findByIdAndDelete(id);
 

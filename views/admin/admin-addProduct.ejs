@@ -4,11 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CourtPulse - Admin Dashboard</title>
+    <title>CourtPulse - <%= isEdit ? 'Edit Product' : 'Add Product' %></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -31,6 +33,7 @@
             cursor: pointer;
             height: 100px;
             width: 100px;
+            position: relative;
         }
 
         .image-preview {
@@ -42,6 +45,27 @@
         .image-upload-placeholder.has-image .fa-cloud-upload-alt,
         .image-upload-placeholder.has-image p.text-xs.text-gray-500 {
             display: none !important;
+        }
+
+        .remove-image-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+        }
+
+        .image-upload-placeholder.has-image .remove-image-btn {
+            display: flex;
         }
 
         #variantsSection {
@@ -62,6 +86,71 @@
             max-width: 100%;
             margin: 0 auto;
         }
+
+        #cropperModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px; /* Add padding to ensure border visibility */
+            box-sizing: border-box;
+        }
+
+        #cropperModal .cropper-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid white; /* Explicit white border */
+            max-width: 600px;
+            width: calc(100% - 40px); /* Account for modal padding */
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #cropperImage {
+            max-width: 100%;
+            max-height: 60vh;
+            width: auto;
+            height: auto;
+            display: block;
+        }
+
+        .cropper-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding-top: 10px;
+        }
+
+        .cropper-buttons button {
+            font-size: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+
+        .cropper-container .cropper-crop-box,
+        .cropper-container .cropper-view-box {
+            max-width: 100%;
+            max-height: 60vh;
+            overflow: hidden;
+        }
+
+        .cropper-container .cropper-canvas {
+            max-width: 100%;
+            max-height: 60vh;
+        }
     </style>
 </head>
 
@@ -70,108 +159,244 @@
         <!-- Sidebar -->
         <%- include("../../views/partials/admin/sidebar") %>
 
-            <!-- Main Content -->
-            <div class="flex-1 flex flex-col">
-                <!-- Header -->
-                <%- include("../../views/partials/admin/header") %>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <%- include("../../views/partials/admin/header") %>
 
-                    <!-- Dashboard Content -->
-                    <main class="flex-1 p-8 overflow-y-auto">
-                        <form id="productForm" action="/admin/addProduct" method="POST" enctype="multipart/form-data"
-                            class="bg-white p-6 rounded-lg shadow-lg form-container">
-                            <input type="hidden" name="variants" id="variantsData">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Product Name -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Product Name</label>
-                                    <input type="text" name="productName" class="w-full p-2 border rounded mt-1"
-                                        placeholder="Enter product name...">
-                                    <p id="name-error" class="text-red-500 text-sm hidden"></p>
+            <!-- Dashboard Content -->
+            <main class="flex-1 p-8 overflow-y-auto">
+                <form id="productForm"
+                    action="<%= isEdit ? '/admin/editProduct/' + product._id : '/admin/addProduct' %>"
+                    method="POST" enctype="multipart/form-data"
+                    class="bg-white p-6 rounded-lg shadow-lg form-container">
+                    <% if (isEdit) { %>
+                        <input type="hidden" name="_method" value="PUT">
+                    <% } %>
+                    <input type="hidden" name="variants" id="variantsData">
+                    <input type="hidden" name="isEdit" value="<%= isEdit ? 'true' : 'false' %>">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Product Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Product Name</label>
+                            <input type="text" name="productName" class="w-full p-2 border rounded mt-1"
+                                placeholder="Enter product name..."
+                                value="<%= isEdit ? product.productName : '' %>">
+                            <p id="name-error" class="text-red-500 text-sm hidden"></p>
+                        </div>
+
+                        <!-- Brand Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Brand Name</label>
+                            <select name="brandName" class="w-full p-2 border rounded mt-1">
+                                <option value="">Select brand</option>
+                                <% brands.forEach(brand => { %>
+                                    <option value="<%= brand._id %>" <%= isEdit && product.brand && product.brand._id && product.brand._id.toString() === brand._id.toString() ? 'selected' : '' %>>
+                                        <%= brand.brandName %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                            <p id="brand-error" class="text-red-500 text-sm hidden"></p>
+                        </div>
+
+                        <!-- Product Offer -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Product Offer</label>
+                            <input type="number" min="0" max="100" name="productOffer"
+                                class="w-full p-2 border rounded mt-1"
+                                placeholder="Enter discount percentage"
+                                value="<%= isEdit ? product.productOffer : '' %>">
+                            <p id="productOffer-error" class="text-red-500 text-sm hidden"></p>
+                        </div>
+
+                        <!-- Product Status -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Product Status</label>
+                            <select name="productStatus" class="w-full p-2 border rounded mt-1">
+                                <option value="Available" <%= isEdit && product.productStatus === 'Available' ? 'selected' : !isEdit ? 'selected' : '' %>>Available</option>
+                                <option value="Out of Stock" <%= isEdit && product.productStatus === 'Out of Stock' ? 'selected' : '' %>>Out of Stock</option>
+                                <option value="Discontinued" <%= isEdit && product.productStatus === 'Discontinued' ? 'selected' : '' %>>Discontinued</option>
+                            </select>
+                        </div>
+
+                        <!-- Product Description -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Product Description</label>
+                            <textarea name="description" class="w-full p-2 border rounded mt-1" rows="4"
+                                placeholder="Write your description here..."><%= isEdit ? product.description : '' %></textarea>
+                            <p id="description-error" class="text-red-500 text-sm hidden"></p>
+                        </div>
+
+                        <!-- Product Category -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Product Category</label>
+                            <select name="category" id="categorySelect"
+                                class="w-full p-2 border rounded mt-1" onchange="updateVariantSizes()">
+                                <option value="">Select category</option>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category._id %>"
+                                        data-type="<%= category.name.toLowerCase().includes('shoe') || category.name.toLowerCase().includes('apparel') ? 'size' : 'nosize' %>"
+                                        <%= isEdit && product.category && product.category._id && product.category._id.toString() === category._id.toString() ? 'selected' : '' %>>
+                                        <%= category.name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                            <p id="category-error" class="text-red-500 text-sm hidden"></p>
+                        </div>
+                    </div>
+
+                    <!-- Add Variant Button -->
+                    <div class="mt-6 flex justify-center">
+                        <button type="button" onclick="addVariant()"
+                            class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">+ Add Variant</button>
+                    </div>
+
+                    <!-- Variants Section -->
+                    <div id="variantsSection" class="mt-6 flex flex-col gap-6">
+                        <% if (isEdit && product.variants && product.variants.length > 0) { %>
+                            <% product.variants.forEach((variant, index) => { %>
+                                <div class="bg-gray-100 p-4 rounded-lg border border-red-500 relative">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="text-lg font-semibold">Variant - <%= index + 1 %></h3>
+                                        <button type="button" onclick="removeVariant(this)"
+                                            class="text-red-500 hover:text-red-700">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="size-field">
+                                            <label class="block text-sm font-medium text-gray-700">Product Size</label>
+                                            <select name="variants[<%= index %>][size]"
+                                                class="w-full p-2 border rounded mt-1"
+                                                id="variantSize_<%= index %>">
+                                                <option value="N/A" <%= variant.size === 'N/A' ? 'selected' : '' %>>N/A</option>
+                                                <optgroup label="Shoe Sizes (UK)">
+                                                    <option value="5" <%= variant.size === '5' ? 'selected' : '' %>>5</option>
+                                                    <option value="6" <%= variant.size === '6' ? 'selected' : '' %>>6</option>
+                                                    <option value="7" <%= variant.size === '7' ? 'selected' : '' %>>7</option>
+                                                    <option value="8" <%= variant.size === '8' ? 'selected' : '' %>>8</option>
+                                                    <option value="9" <%= variant.size === '9' ? 'selected' : '' %>>9</option>
+                                                    <option value="10" <%= variant.size === '10' ? 'selected' : '' %>>10</option>
+                                                    <option value="11" <%= variant.size === '11' ? 'selected' : '' %>>11</option>
+                                                    <option value="12" <%= variant.size === '12' ? 'selected' : '' %>>12</option>
+                                                </optgroup>
+                                                <optgroup label="Dress Sizes">
+                                                    <option value="S" <%= variant.size === 'S' ? 'selected' : '' %>>S</option>
+                                                    <option value="M" <%= variant.size === 'M' ? 'selected' : '' %>>M</option>
+                                                    <option value="L" <%= variant.size === 'L' ? 'selected' : '' %>>L</option>
+                                                    <option value="XL" <%= variant.size === 'XL' ? 'selected' : '' %>>XL</option>
+                                                    <option value="XXL" <%= variant.size === 'XXL' ? 'selected' : '' %>>XXL</option>
+                                                    <option value="XXXL" <%= variant.size === 'XXXL' ? 'selected' : '' %>>XXXL</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Product Colour</label>
+                                            <input type="text" name="variants[<%= index %>][color]"
+                                                class="w-full p-2 border rounded mt-1"
+                                                placeholder="Enter color" value="<%= variant.color %>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Stock Status</label>
+                                            <select name="variants[<%= index %>][stockStatus]"
+                                                class="w-full p-2 border rounded mt-1">
+                                                <option value="In Stock" <%= variant.stockStatus === 'In Stock' ? 'selected' : '' %>>In Stock</option>
+                                                <option value="Out of Stock" <%= variant.stockStatus === 'Out of Stock' ? 'selected' : '' %>>Out of Stock</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                                            <input type="number" min="0" name="variants[<%= index %>][quantity]"
+                                                class="w-full p-2 border rounded mt-1"
+                                                placeholder="Enter stock limit" value="<%= variant.quantity %>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Original Price / MRP</label>
+                                            <input oninput="updateSellingPrice(this)" type="number" min="0"
+                                                name="variants[<%= index %>][originalPrice]"
+                                                class="w-full p-2 border rounded mt-1"
+                                                placeholder="Enter base price" value="<%= variant.originalPrice %>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Discount Percentage</label>
+                                            <input oninput="updateSellingPrice(this)" type="number" min="0" max="100"
+                                                name="variants[<%= index %>][discount]"
+                                                class="w-full p-2 border rounded mt-1"
+                                                placeholder="Enter discount percentage" value="<%= variant.discount %>">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Selling Price</label>
+                                            <input type="number" min="0" name="variants[<%= index %>][sellingPrice]"
+                                                class="w-full p-2 border rounded mt-1 bg-white"
+                                                placeholder="Enter selling price" value="<%= variant.sellingPrice %>">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700">Add Photos</label>
+                                            <div class="flex flex-wrap gap-4 mt-2">
+                                                <% for(let i = 0; i < 4; i++) { %>
+                                                    <div class="image-upload-placeholder <%= variant.images[i] ? 'has-image' : '' %>"
+                                                        onclick="this.querySelector('input[type=file]').click()">
+                                                        <input type="file" name="variants[<%= index %>][images][]"
+                                                            class="hidden" accept="image/*"
+                                                            onchange="openCropperModal(event, this)">
+                                                        <img class="image-preview <%= variant.images[i] ? '' : 'hidden' %>"
+                                                            src="/productimg/<%= variant.images[i] ? variant.images[i] : '' %>"
+                                                            alt="Preview">
+                                                        <i class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
+                                                        <p class="text-xs text-gray-500">Add Image</p>
+                                                        <span class="remove-image-btn"
+                                                            onclick="removeImage(this, event)"
+                                                            data-image="<%= variant.images[i] || '' %>"><i
+                                                                class="fas fa-times"></i></span>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+                            <% }); %>
+                        <% } %>
+                    </div>
 
-                                <!-- Brand Name -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Brand Name</label>
-                                    <select name="brandName" class="w-full p-2 border rounded mt-1">
-                                        <option value="">Select brand</option>
-                                        <% brands.forEach(brand=> { %>
-                                            <option value="<%= brand._id %>">
-                                                <%= brand.brandName %>
-                                            </option>
-                                            <% }); %>
-                                    </select>
-                                    <p id="brand-error" class="text-red-500 text-sm hidden"></p>
-                                </div>
+                    <!-- Form Buttons -->
+                    <div class="mt-6 flex justify-end space-x-4">
+                        <button type="button"
+                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                            onclick="window.history.back()">Cancel</button>
+                        <button type="button"
+                            class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                            onclick="submitForm()">
+                            <%= isEdit ? 'Update' : 'Save' %>
+                        </button>
+                    </div>
+                </form>
 
-                                <!-- Product Offer -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Product Offer</label>
-                                    <input type="number" min="0" max="100" name="productOffer"
-                                        class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
-                                    <p id="productOffer-error" class="text-red-500 text-sm hidden"></p>
-                                </div>
-
-                                <!-- Product Status -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Product Status</label>
-                                    <select name="productStatus" class="w-full p-2 border rounded mt-1">
-                                        <option value="Available" selected>Available</option>
-                                        <option value="Out of Stock">Out of Stock</option>
-                                        <option value="Discontinued">Discontinued</option>
-                                    </select>
-                                </div>
-
-                                <!-- Product Description -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Product Description</label>
-                                    <textarea name="description" class="w-full p-2 border rounded mt-1" rows="4"
-                                        placeholder="Write your description here..."></textarea>
-                                    <p id="description-error" class="text-red-500 text-sm hidden"></p>
-                                </div>
-
-                                <!-- Product Category -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Product Category</label>
-                                    <select name="category" id="categorySelect" class="w-full p-2 border rounded mt-1"
-                                        onchange="updateVariantSizes()">
-                                        <option value="">Select category</option>
-                                        <% categories.forEach(category=> { %>
-                                            <option value="<%= category._id %>"
-                                                data-type="<%= category.name.toLowerCase().includes('shoe') || category.name.toLowerCase().includes('apparel') ? 'size' : 'nosize' %>">
-                                                <%= category.name %>
-                                            </option>
-                                            <% }); %>
-                                    </select>
-                                    <p id="category-error" class="text-red-500 text-sm hidden"></p>
-                                </div>
-                            </div>
-
-                            <!-- Add Variant Button -->
-                            <div class="mt-6 flex justify-center">
-                                <button type="button" onclick="addVariant()"
-                                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">+ Add
-                                    Variant</button>
-                            </div>
-
-                            <!-- Variants Section -->
-                            <div id="variantsSection" class="mt-6 flex flex-col gap-6"></div>
-
-                            <!-- Form Buttons -->
-                            <div class="mt-6 flex justify-end space-x-4">
-                                <button type="button"
-                                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-                                    onclick="window.history.back()">Cancel</button>
-                                <button type="button"
-                                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-                                    onclick="submitForm()">Save</button>
-                            </div>
-                        </form>
-                    </main>
-            </div>
+                <!-- Cropper Modal -->
+                <div id="cropperModal">
+                    <div class="cropper-container">
+                        <img id="cropperImage" src="" alt="Image to crop">
+                        <div class="cropper-buttons">
+                            <button type="button"
+                                class="bg-gray-300 text-gray-700 hover:bg-gray-400"
+                                onclick="closeCropperModal()">Cancel</button>
+                            <button type="button"
+                                class="bg-purple-600 text-white hover:bg-purple-700"
+                                onclick="cropImage()">Crop</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
 
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script>
+        const isEdit = <%= isEdit ? 'true' : 'false' %>;
+        let variantIndex = <%= isEdit && product.variants ? product.variants.length : 0 %>;
+        let cropper;
+        let currentInput;
+        let currentPlaceholder;
+
         function updateSellingPrice(inputElement) {
             const variantDiv = inputElement.closest('.bg-gray-100');
             if (!variantDiv) return;
@@ -187,8 +412,6 @@
             sellingPriceInput.value = sellingPrice.toFixed(2);
         }
 
-        let variantIndex = 0;
-
         function addVariant() {
             const categorySelect = document.getElementById('categorySelect');
             const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
@@ -199,91 +422,90 @@
             const variantDiv = document.createElement('div');
             variantDiv.className = 'bg-gray-100 p-4 rounded-lg border border-red-500 relative';
 
-            // Define size field with all options initially, to be filtered by updateVariantSizes
             let sizeField = `
-            <div class="size-field">
-                <label class="block text-sm font-medium text-gray-700">Product Size</label>
-                <select name="variants[${variantIndex}][size]" class="w-full p-2 border rounded mt-1" id="variantSize_${variantIndex}">
-                    <option value="N/A">N/A</option>
-                    <optgroup label="Shoe Sizes (UK)">
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                    </optgroup>
-                    <optgroup label="Dress Sizes">
-                        <option value="S">S</option>
-                        <option value="M">M</option>
-                        <option value="L">L</option>
-                        <option value="XL">XL</option>
-                        <option value="XXL">XXL</option>
-                        <option value="XXXL">XXXL</option>
-                    </optgroup>
-                </select>
-            </div>
-        `;
-
-            variantDiv.innerHTML = `
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold">Variant - ${variantIndex + 1}</h3>
-                <button type="button" onclick="removeVariant(this)" class="text-red-500 hover:text-red-700">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                ${sizeField}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Product Colour</label>
-                    <input type="text" name="variants[${variantIndex}][color]" class="w-full p-2 border rounded mt-1" placeholder="Enter color">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Stock Status</label>
-                    <select name="variants[${variantIndex}][stockStatus]" class="w-full p-2 border rounded mt-1">
-                        <option value="In Stock">In Stock</option>
-                        <option value="Out of Stock">Out of Stock</option>
+                <div class="size-field">
+                    <label class="block text-sm font-medium text-gray-700">Product Size</label>
+                    <select name="variants[${variantIndex}][size]" class="w-full p-2 border rounded mt-1" id="variantSize_${variantIndex}">
+                        <option value="N/A">N/A</option>
+                        <optgroup label="Shoe Sizes (UK)">
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </optgroup>
+                        <optgroup label="Dress Sizes">
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="XXL">XXL</option>
+                            <option value="XXXL">XXXL</option>
+                        </optgroup>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Stock Quantity</label>
-                    <input type="number" min="0" name="variants[${variantIndex}][quantity]" class="w-full p-2 border rounded mt-1" placeholder="Enter stock limit">
+            `;
+
+            variantDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Variant - ${variantIndex + 1}</h3>
+                    <button type="button" onclick="removeVariant(this)" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Original Price / MRP</label>
-                    <input oninput="updateSellingPrice(this)" type="number" min="0" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Discount Percentage</label>
-                    <input oninput="updateSellingPrice(this)" type="number" min="0" max="100" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
-                </div> 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Selling Price</label>
-                    <input type="number" min="0" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1 bg-white" placeholder="Enter selling price">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700">Add Photos</label>
-                    <div class="flex flex-wrap gap-4 mt-2">
-                        <% for(let i = 0; i < 4; i++) { %>
-                            <div class="image-upload-placeholder" onclick="this.querySelector('input[type=file]').click()">
-                                <input type="file" name="variants[${variantIndex}][images][]" class="hidden" accept="image/*" onchange="previewImage(event, this)">
-                                <img class="image-preview hidden" alt="Preview">
-                                <i class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
-                                <p class="text-xs text-gray-500">Add Image</p>
-                            </div>
-                        <% } %>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${sizeField}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Product Colour</label>
+                        <input type="text" name="variants[${variantIndex}][color]" class="w-full p-2 border rounded mt-1" placeholder="Enter color">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Stock Status</label>
+                        <select name="variants[${variantIndex}][stockStatus]" class="w-full p-2 border rounded mt-1">
+                            <option value="In Stock">In Stock</option>
+                            <option value="Out of Stock">Out of Stock</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                        <input type="number" min="0" name="variants[${variantIndex}][quantity]" class="w-full p-2 border rounded mt-1" placeholder="Enter stock limit">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Original Price / MRP</label>
+                        <input oninput="updateSellingPrice(this)" type="number" min="0" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Discount Percentage</label>
+                        <input oninput="updateSellingPrice(this)" type="number" min="0" max="100" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Selling Price</label>
+                        <input type="number" min="0" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1 bg-white" placeholder="Enter selling price">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Add Photos</label>
+                        <div class="flex flex-wrap gap-4 mt-2">
+                            <% for(let i = 0; i < 4; i++) { %>
+                                <div class="image-upload-placeholder" onclick="this.querySelector('input[type=file]').click()">
+                                    <input type="file" name="variants[${variantIndex}][images][]" class="hidden" accept="image/*" onchange="openCropperModal(event, this)">
+                                    <img class="image-preview hidden" alt="Preview">
+                                    <i class="fas fa-cloud-upload-alt text-2xl text-gray-400"></i>
+                                    <p class="text-xs text-gray-500">Add Image</p>
+                                    <span class="remove-image-btn" onclick="removeImage(this, event)" data-image=""><i class="fas fa-times"></i></span>
+                                </div>
+                            <% } %>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
             container.appendChild(variantDiv);
 
-            // Set default size based on category
-            const sizeSelect = variantDiv.querySelector(`select[name="variants[${variantIndex}][size]"]`);
             if (categoryType === 'nosize') {
-                sizeSelect.value = 'N/A'; // Default to N/A for non-size categories
+                const sizeSelect = variantDiv.querySelector(`select[name="variants[${variantIndex}][size]"]`);
+                sizeSelect.value = 'N/A';
             }
 
             updateVariantSizes();
@@ -291,36 +513,132 @@
         }
 
         function removeVariant(button) {
-            console.log('Removing variant...');
             const variant = button.closest('.bg-gray-100');
             if (variant) {
                 variant.remove();
-                console.log('Variant removed successfully');
                 updateVariantSizes();
-            } else {
-                console.log('Variant not found');
             }
         }
 
-        function previewImage(event, input) {
+        function openCropperModal(event, input) {
             const file = event.target.files[0];
             if (file) {
+                currentInput = input;
+                currentPlaceholder = input.closest('.image-upload-placeholder');
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    const preview = input.nextElementSibling;
-                    const placeholder = input.closest('.image-upload-placeholder');
-                    if (preview && preview.tagName === 'IMG') {
-                        preview.src = e.target.result;
-                        preview.classList.remove('hidden');
-                        placeholder.classList.add('has-image');
+                    const cropperImage = document.getElementById('cropperImage');
+                    cropperImage.src = e.target.result;
+                    document.getElementById('cropperModal').style.display = 'flex';
+
+                    if (cropper) {
+                        cropper.destroy();
                     }
+                    cropper = new Cropper(cropperImage, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        autoCropArea: 0.8,
+                        responsive: true,
+                        ready: function () {
+                            const container = document.querySelector('.cropper-container');
+                            const canvasData = this.cropper.getContainerData();
+                            const maxWidth = container.offsetWidth - 40; // Account for padding
+                            const maxHeight = container.offsetHeight - 100; // Account for buttons and padding
+                            if (canvasData.width > maxWidth || canvasData.height > maxHeight) {
+                                this.cropper.zoomTo(Math.min(maxWidth / canvasData.width, maxHeight / canvasData.height));
+                            }
+                        }
+                    });
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function calculateSellingPrice(originalPrice, discount) {
-            return originalPrice - (originalPrice * (discount / 100));
+        function closeCropperModal() {
+            document.getElementById('cropperModal').style.display = 'none';
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        }
+
+        function cropImage() {
+            if (!cropper) return;
+
+            const canvas = cropper.getCroppedCanvas({
+                width: 300,
+                height: 300
+            });
+
+            canvas.toBlob(function (blob) {
+                const preview = currentInput.nextElementSibling;
+                const placeholder = currentInput.closest('.image-upload-placeholder');
+
+                const url = URL.createObjectURL(blob);
+                preview.src = url;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('has-image');
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' }));
+                currentInput.files = dataTransfer.files;
+
+                closeCropperModal();
+            }, 'image/jpeg');
+        }
+
+        async function removeImage(button, event) {
+            event.stopPropagation();
+            const placeholder = button.closest('.image-upload-placeholder');
+            const input = placeholder.querySelector('input[type=file]');
+            const preview = placeholder.querySelector('.image-preview');
+            const variantDiv = button.closest('.bg-gray-100');
+            const variantIndex = Array.from(document.querySelectorAll('#variantsSection .bg-gray-100')).indexOf(variantDiv);
+            const imageName = button.getAttribute('data-image');
+
+            if (isEdit && imageName && imageName !== '') {
+                // Track removed image
+                if (!removedImages[variantIndex]) {
+                    removedImages[variantIndex] = [];
+                }
+                removedImages[variantIndex].push(imageName);
+
+                // Send request to backend to remove image
+                try {
+                    const response = await fetch('/admin/removeProductImage', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            productId: '<%= product._id %>',
+                            variantIndex,
+                            imageName
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    console.error('Image removal failed:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to Remove Image',
+                        text: error.message || 'Server error!',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    return;
+                }
+            }
+
+            // Update UI
+            input.value = '';
+            preview.src = '';
+            preview.classList.add('hidden');
+            placeholder.classList.remove('has-image');
+            button.setAttribute('data-image', '');
         }
 
         function validateForm() {
@@ -383,23 +701,23 @@
                         shoeSizesGroup.style.display = 'block';
                         dressSizesGroup.style.display = 'none';
                         naOption.style.display = 'none';
-                        if (sizeSelect.value === 'N/A') {
-                            sizeSelect.value = ''; // Reset to no selection if N/A was selected
+                        if (sizeSelect.value === 'N/A' && !isEdit) {
+                            sizeSelect.value = '';
                         }
                     } else if (categoryName.includes('apparel')) {
                         shoeSizesGroup.style.display = 'none';
                         dressSizesGroup.style.display = 'block';
                         naOption.style.display = 'none';
-                        if (sizeSelect.value === 'N/A') {
-                            sizeSelect.value = ''; // Reset to no selection if N/A was selected
+                        if (sizeSelect.value === 'N/A' && !isEdit) {
+                            sizeSelect.value = '';
                         }
                     } else {
                         shoeSizesGroup.style.display = 'none';
                         dressSizesGroup.style.display = 'none';
                         naOption.style.display = 'block';
-                        sizeSelect.value = 'N/A'; // Default to N/A for non-size categories
-                        // Disable other options by removing them temporarily
-                        sizeSelect.innerHTML = `<option value="N/A">N/A</option>`;
+                        if (!isEdit) {
+                            sizeSelect.innerHTML = `<option value="N/A">N/A</option>`;
+                        }
                     }
                 }
             });
@@ -418,6 +736,8 @@
 
             const variants = [];
             let hasVariant = false;
+            let validImages = true;
+
             document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
                 hasVariant = true;
                 const sizeField = variantDiv.querySelector('select[name$="[size]"]');
@@ -440,6 +760,7 @@
                         text: 'Please select a valid size for each variant in shoe or apparel categories.',
                         confirmButtonColor: '#6366f1'
                     });
+                    validImages = false;
                     return;
                 }
 
@@ -450,15 +771,34 @@
                         text: 'Please fill all fields for each variant.',
                         confirmButtonColor: '#6366f1'
                     });
+                    validImages = false;
                     return;
                 }
 
                 const images = [];
+                let imageCount = 0;
                 variantDiv.querySelectorAll('input[name$="[images][]"]').forEach(input => {
                     if (input.files[0]) {
                         images.push(input.files[0]);
+                        imageCount++;
+                    } else if (isEdit) {
+                        const preview = input.nextElementSibling;
+                        if (preview && preview.tagName === 'IMG' && preview.src && !preview.classList.contains('hidden')) {
+                            imageCount++;
+                        }
                     }
                 });
+
+                if (imageCount < 3) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Insufficient Images',
+                        text: 'Each variant must have at least 3 images.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    validImages = false;
+                    return;
+                }
 
                 variants.push({ size, color, stockStatus, quantity, originalPrice, discount, sellingPrice, images });
             });
@@ -473,6 +813,10 @@
                 return;
             }
 
+            if (!validImages) {
+                return;
+            }
+
             const formData = new FormData();
             formData.append('productName', document.querySelector('input[name="productName"]').value.trim());
             formData.append('brandName', document.querySelector('select[name="brandName"]').value);
@@ -480,6 +824,7 @@
             formData.append('category', document.querySelector('select[name="category"]').value);
             formData.append('productOffer', document.querySelector('input[name="productOffer"]').value);
             formData.append('productStatus', document.querySelector('select[name="productStatus"]').value);
+            formData.append('isEdit', isEdit ? 'true' : 'false');
             formData.append('variants', JSON.stringify(variants.map(v => ({
                 size: v.size,
                 color: v.color,
@@ -497,8 +842,8 @@
             });
 
             try {
-                const response = await fetch('/admin/addProduct', {
-                    method: 'POST',
+                const response = await fetch(isEdit ? '/admin/editProduct/<%= product._id %>' : '/admin/addProduct', {
+                    method: isEdit ? 'PUT' : 'POST',
                     body: formData
                 });
 
@@ -510,7 +855,7 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Success',
-                    text: 'Product added successfully!',
+                    text: isEdit ? 'Product updated successfully!' : 'Product added successfully!',
                     confirmButtonColor: '#6366f1'
                 }).then(() => {
                     window.location.href = '/admin/productInfo';
@@ -525,6 +870,10 @@
                 });
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateVariantSizes();
+        });
     </script>
 </body>
 

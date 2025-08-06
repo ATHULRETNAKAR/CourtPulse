@@ -8,6 +8,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        'courtpulse-header-purple': '#522B8C',
+                        'green-100': '#dcfce7',
+                        'green-800': '#16a34a',
+                        'red-100': '#fee2e2',
+                        'red-800': '#dc2626',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         .table-container {
             overflow-x: auto;
@@ -18,6 +35,21 @@
             max-height: 50px;
             object-fit: cover;
         }
+
+        .badge-available {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .badge-outofstock {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .badge-discontinued {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
     </style>
 </head>
 
@@ -26,151 +58,233 @@
         <!-- Sidebar -->
         <%- include('../../views/partials/admin/sidebar') %>
 
-            <!-- Main Content -->
-            <div class="flex-1 flex flex-col">
-                <!-- Header -->
-                <%- include('../../views/partials/admin/header') %>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <%- include('../../views/partials/admin/header') %>
 
-                    <!-- Dashboard Content -->
-                    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-                        <div class="bg-white p-6 rounded-lg shadow-lg">
-                            <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-2xl font-semibold text-gray-800">Product Management</h2>
-                                <a href="/admin/addProduct"
-                                    class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Add New
-                                    Product</a>
+            <!-- Dashboard Content -->
+            <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <!-- Page Header -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                        <h2 class="text-2xl font-semibold text-gray-800">Product Management</h2>
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            <!-- Search Section -->
+                            <div class="flex items-center gap-2">
+                                <div class="relative flex-1 sm:w-64">
+                                    <input type="text" placeholder="Search products..."
+                                        class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                        value="<%= search || '' %>" id="productSearchInput">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <button type="button" id="clearSearchBtn"
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors <%= search ? '' : 'hidden' %>"
+                                        title="Clear search">
+                                        <i class="fas fa-times text-sm"></i>
+                                    </button>
+                                </div>
+                                <button type="button" id="searchBtn"
+                                    class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center space-x-2 transition-colors whitespace-nowrap">
+                                    <i class="fas fa-search"></i>
+                                    <span class="hidden sm:inline">Search</span>
+                                </button>
                             </div>
-
-                            <div class="table-container">
-                                <table class="min-w-full bg-white border border-gray-200">
-                                    <thead>
-                                        <tr class="bg-gray-100 text-left text-gray-600">
-                                            <th class="py-2 px-4 border-b">Product Name</th>
-                                            <th class="py-2 px-4 border-b">Brand</th>
-                                            <th class="py-2 px-4 border-b">Discount</th>
-                                            <th class="py-2 px-4 border-b">Stoke</th>
-                                            <th class="py-2 px-4 border-b">Category</th>
-                                            <th class="py-2 px-4 border-b">No.Variants</th>
-                                            <th class="py-2 px-4 border-b">Status</th>
-                                            <th class="py-2 px-4 border-b">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% products.forEach(product=> { %>
-                                            <tr class="hover:bg-gray-50 transition-colors">
-                                                <td class="py-2 px-4 border-b">
-                                                    <%= product.productName || 'N/A' %>
-                                                </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <%= product.brand.brandName || 'N/A' %>
-                                                </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <%= product.variants[0].discount || 'N/A' %>
-                                                </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <%= product.variants.reduce((total,v)=> total + (v.quantity || 0 ),0)%>
-                                                </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <%= product.category.name || 'N/A' %>
-                                                </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <div class="flex items-center space-x-2 cursor-pointer"
-                                                        onclick="toggleVariants('<%= product._id %>')">
-                                                        <span class="px-2 py-1 rounded  bg-yellow-100 text-yellow-800">
-                                                            <%= product.variants?.length || 0 %> Variant
-                                                        </span>
-                                                        <i class="fas fa-chevron-down text-sm"
-                                                            id="icon-<%= product._id %>"></i>
-                                                    </div>
-                                                </td>
-
-                                                <td class="py-2 px-4 border-b">
-                                                    <span class="px-2 py-1 rounded 
-                                                        <%= product.status === 'Available' 
-                                                            ? 'bg-green-100 text-green-800' 
-                                                            : product.status === 'Out of Stock' 
-                                                            ? 'bg-red-100 text-red-800' 
-                                                            : product.status === 'Discontinued' 
-                                                            ? 'bg-gray-200 text-gray-800' 
-                                                            : 'bg-yellow-100 text-yellow-800' %>">
-                                                        <%= product.status %>
-                                                    </span>
-                                                </td>
-                                                <td class="py-2 px-4 border-b">
-                                                    <div class="flex space-x-2">
-                                                        <a href="/admin/edit-product/<%= product._id %>"
-                                                            class="text-blue-600 hover:text-blue-800">
-                                                            <i class="fas fa-edit"></i>
-                                                        </a>
-                                                        <button onclick="confirmDelete('<%= product._id %>')"
-                                                            class="text-red-600 hover:text-red-800">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr id="variants-<%= product._id %>" class="hidden bg-gray-50">
-                                                <td colspan="8" class="py-2 px-4 border-b">
-                                                    <div class="overflow-x-auto">
-                                                        <table class="w-full text-sm text-left text-gray-700 border">
-                                                            <thead class="bg-gray-100 text-xs text-gray-600 uppercase">
-                                                                <tr>
-                                                                    <th class="px-3 py-2 border">Size</th>
-                                                                    <th class="px-3 py-2 border">Color</th>
-                                                                    <th class="px-3 py-2 border">Quantity</th>
-                                                                    <th class="px-3 py-2 border">Original Price</th>
-                                                                    <th class="px-3 py-2 border">Discount (%)</th>
-                                                                    <th class="px-3 py-2 border">Selling Price</th>
-                                                                    <th class="px-3 py-2 border">Stock Status</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <% product.variants.forEach(variant=> { %>
-                                                                    <tr>
-                                                                        <td class="px-3 py-2 border">
-                                                                            <%= variant.size || 'N/A' %>
-                                                                        </td>
-                                                                        <td class="px-3 py-2 border">
-                                                                            <%= variant.color || 'N/A' %>
-                                                                        </td>
-                                                                        <td class="px-3 py-2 border">
-                                                                            <%= variant.quantity || 0 %>
-                                                                        </td>
-                                                                        <td class="px-3 py-2 border">
-                                                                            <%= variant.originalPrice || 0 %>
-                                                                        </td>
-                                                                        <td class="px-3 py-2 border">
-                                                                            <%= variant.discount || 0 %>
-                                                                        </td>
-                                                                        <td class="px-3 py-2 border">
-                                                                            <%= variant.sellingPrice || 0 %>
-                                                                        </td>
-                                                                        <td class="px-3 py-2 border">
-                                                                            <%= variant.stockStatus || 'N/A' %>
-                                                                        </td>
-                                                                    </tr>
-                                                                    <% }) %>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <% }) %>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <% if (products.length===0) { %>
-                                <p class="text-center text-gray-500 py-4">No products found.</p>
-                                <% } %>
+                            <a href="/admin/addProduct"
+                                class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center justify-center space-x-2 transition-colors">
+                                <i class="fas fa-plus"></i>
+                                <span>Add New Product</span>
+                            </a>
                         </div>
-                    </main>
-            </div>
+                    </div>
+
+                    <!-- Search Results Info -->
+                    <% if (search && search.trim() !== '') { %>
+                    <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-info-circle text-blue-500"></i>
+                                <span class="text-sm text-blue-700">
+                                    Showing results for "<strong><%= search %></strong>"
+                                    <% if (products && products.length > 0) { %>
+                                    - <%= products.length %> result<%= products.length !== 1 ? 's' : '' %> found
+                                    <% } else { %>
+                                    - No results found
+                                    <% } %>
+                                </span>
+                            </div>
+                            <button type="button" onclick="clearSearch()"
+                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                Clear search
+                            </button>
+                        </div>
+                    </div>
+                    <% } %>
+
+                    <div class="table-container">
+                        <table class="min-w-full bg-white border border-gray-200">
+                            <thead>
+                                <tr class="bg-gray-100 text-left text-gray-600">
+                                    <th class="py-2 px-4 border-b">Product Name</th>
+                                    <th class="py-2 px-4 border-b">Brand</th>
+                                    <th class="py-2 px-4 border-b">Discount</th>
+                                    <th class="py-2 px-4 border-b">Stock</th>
+                                    <th class="py-2 px-4 border-b">Category</th>
+                                    <th class="py-2 px-4 border-b">No. Variants</th>
+                                    <th class="py-2 px-4 border-b">Status</th>
+                                    <th class="py-2 px-4 border-b">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (products && products.length > 0) { %>
+                                <% products.forEach(product => { %>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="py-2 px-4 border-b">
+                                        <%= product.productName || 'N/A' %>
+                                    </td>
+                                    <td class="py-2 px-4 border-b">
+                                        <%= product.brand ? product.brand.brandName : 'N/A' %>
+                                    </td>
+                                    <td class="py-2 px-4 border-b">
+                                        <%= product.productOffer ? product.productOffer + '%' : 'N/A' %>
+                                    </td>
+                                    <td class="py-2 px-4 border-b">
+                                        <%= product.variants.reduce((total, v) => total + (v.quantity || 0), 0) %>
+                                    </td>
+                                    <td class="py-2 px-4 border-b">
+                                        <%= product.category ? product.category.name : 'N/A' %>
+                                    </td>
+                                    <td class="py-2 px-4 border-b">
+                                        <div class="flex items-center space-x-2 cursor-pointer"
+                                            onclick="toggleVariants('<%= product._id %>')">
+                                            <span class="px-2 py-1 rounded bg-yellow-100 text-yellow-800">
+                                                <%= product.variants?.length || 0 %> Variant
+                                            </span>
+                                            <i class="fas fa-chevron-down text-sm" id="icon-<%= product._id %>"></i>
+                                        </div>
+                                    </td>
+                                    <td class="py-2 px-4 border-b">
+                                        <span class="px-2 py-1 rounded <%= product.status === 'Available' ? 'badge-available' : product.status === 'Out of Stock' ? 'badge-outofstock' : 'badge-discontinued' %>">
+                                            <%= product.status %>
+                                        </span>
+                                    </td>
+                                    <td class="py-2 px-4 border-b">
+                                        <div class="flex space-x-2">
+                                            <a href="/admin/editProduct/<%= product._id %>"
+                                                class="text-blue-600 hover:text-blue-800">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button onclick="confirmDelete('<%= product._id %>')"
+                                                class="text-red-600 hover:text-red-800">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="variants-<%= product._id %>" class="hidden bg-gray-50">
+                                    <td colspan="8" class="py-2 px-4 border-b">
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-sm text-left text-gray-700 border">
+                                                <thead class="bg-gray-100 text-xs text-gray-600 uppercase">
+                                                    <tr>
+                                                        <th class="px-3 py-2 border">Size</th>
+                                                        <th class="px-3 py-2 border">Color</th>
+                                                        <th class="px-3 py-2 border">Quantity</th>
+                                                        <th class="px-3 py-2 border">Original Price</th>
+                                                        <th class="px-3 py-2 border">Discount (%)</th>
+                                                        <th class="px-3 py-2 border">Selling Price</th>
+                                                        <th class="px-3 py-2 border">Stock Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% product.variants.forEach(variant => { %>
+                                                    <tr>
+                                                        <td class="px-3 py-2 border">
+                                                            <%= variant.size || 'N/A' %>
+                                                        </td>
+                                                        <td class="px-3 py-2 border">
+                                                            <%= variant.color || 'N/A' %>
+                                                        </td>
+                                                        <td class="px-3 py-2 border">
+                                                            <%= variant.quantity || 0 %>
+                                                        </td>
+                                                        <td class="px-3 py-2 border">
+                                                            <%= variant.originalPrice || 0 %>
+                                                        </td>
+                                                        <td class="px-3 py-2 border">
+                                                            <%= variant.discount || 0 %>
+                                                        </td>
+                                                        <td class="px-3 py-2 border">
+                                                            <%= variant.sellingPrice || 0 %>
+                                                        </td>
+                                                        <td class="px-3 py-2 border">
+                                                            <%= variant.stockStatus || 'N/A' %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                                <% } else { %>
+                                <tr>
+                                    <td colspan="8" class="text-center py-8 text-gray-500">
+                                        <% if (search && search.trim() !== '') { %>
+                                        <div class="flex flex-col items-center space-y-2">
+                                            <i class="fas fa-search text-3xl text-gray-300"></i>
+                                            <p>No products found matching "<%= search %>"</p>
+                                            <button onclick="clearSearch()" class="text-primary hover:text-indigo-700 text-sm font-medium">
+                                                Clear search to see all products
+                                            </button>
+                                        </div>
+                                        <% } else { %>
+                                        No products found.
+                                        <% } %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-4 border-t border-gray-200 gap-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-700">Show result:</span>
+                            <select class="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                onchange="changePageSize(this.value)">
+                                <option value="2" <%= limit == 2 ? 'selected' : '' %>>2</option>
+                                <option value="5" <%= limit == 5 ? 'selected' : '' %>>5</option>
+                                <option value="10" <%= limit == 10 ? 'selected' : '' %>>10</option>
+                                <option value="20" <%= limit == 20 ? 'selected' : '' %>>20</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-1 md:space-x-2">
+                            <button class="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 rounded hover:bg-gray-100"
+                                <%= currentPage === 1 ? 'disabled' : '' %> onclick="previousPage()" title="Previous Page">
+                                <i class="fas fa-chevron-left text-sm"></i>
+                            </button>
+                            <% for (let i = 1; i <= totalPages; i++) { %>
+                            <button class="px-2 md:px-3 py-1 <%= currentPage === i ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100' %> rounded text-sm"
+                                onclick="goToPage(<%= i %>)">
+                                <%= i %>
+                            </button>
+                            <% } %>
+                            <button class="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+                                <%= currentPage === totalPages ? 'disabled' : '' %> onclick="nextPage()" title="Next Page">
+                                <i class="fas fa-chevron-right text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
 
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <script>
-        document.getElementById('closeMobileMenu').addEventListener('click', () => {
+        document.getElementById('closeMobileMenu')?.addEventListener('click', () => {
             document.getElementById('mobileMenu').classList.add('hidden');
         });
 
@@ -191,7 +305,21 @@
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = `/admin/delete-product/${productId}`;
+                    fetch(`/admin/addProduct/${productId}`, {
+                        method: 'DELETE',
+                        headers: { 'Content-type': 'application/json' }
+                    })
+                        .then(res => {
+                            if (res.ok) {
+                                Swal.fire('Deleted!', 'Product has been deleted.', 'success')
+                                    .then(() => location.reload());
+                            } else {
+                                throw new Error('Failed to delete');
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire('Error', 'Something went wrong!', 'error');
+                        });
                 }
             });
         }
@@ -210,8 +338,86 @@
             }
         }
 
+        function performSearch() {
+            const searchTerm = document.getElementById('productSearchInput').value.trim();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (searchTerm) {
+                urlParams.set('search', searchTerm);
+            } else {
+                urlParams.delete('search');
+            }
+            urlParams.set('page', 1);
+            urlParams.set('limit', <%= limit || 10 %>);
+            window.location.search = urlParams.toString();
+        }
 
+        function clearSearch() {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.delete('search');
+            urlParams.set('page', 1);
+            urlParams.set('limit', <%= limit || 10 %>);
+            window.location.search = urlParams.toString();
+        }
+
+        function goToPage(page) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', page);
+            urlParams.set('limit', <%= limit || 10 %>);
+            urlParams.set('search', '<%= search || '' %>');
+            window.location.search = urlParams.toString();
+        }
+
+        function previousPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPage = parseInt(urlParams.get('page')) || 1;
+            if (currentPage > 1) {
+                urlParams.set('page', currentPage - 1);
+                urlParams.set('limit', <%= limit || 10 %>);
+                urlParams.set('search', '<%= search || '' %>');
+                window.location.search = urlParams.toString();
+            }
+        }
+
+        function nextPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPage = parseInt(urlParams.get('page')) || 1;
+            urlParams.set('page', currentPage + 1);
+            urlParams.set('limit', <%= limit || 10 %>);
+            urlParams.set('search', '<%= search || '' %>');
+            window.location.search = urlParams.toString();
+        }
+
+        function changePageSize(size) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('limit', size);
+            urlParams.set('page', 1);
+            urlParams.set('search', '<%= search || '' %>');
+            window.location.search = urlParams.toString();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('productSearchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+            searchBtn.addEventListener('click', performSearch);
+            clearSearchBtn.addEventListener('click', clearSearch);
+
+            searchInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+
+            searchInput.addEventListener('input', function () {
+                if (this.value.trim()) {
+                    clearSearchBtn.classList.remove('hidden');
+                } else {
+                    clearSearchBtn.classList.add('hidden');
+                }
+            });
+        });
     </script>
 </body>
-
 </html>
