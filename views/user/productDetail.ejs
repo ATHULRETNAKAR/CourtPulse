@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtPulse - Product Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .variant-option:hover {
+            border-color: #9333ea;
+            cursor: pointer;
+        }
+        .selected-variant {
+            border-color: #9333ea;
+            border-width: 2px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <%- include("../../views/partials/user/header") %>
+
+    <div class="container mx-auto p-4 flex flex-col md:flex-row gap-6">
+        <div class="w-full md:w-1/2 flex flex-col items-center">
+            <% if (product.variants.length > 0) { %>
+                <img src="/productimg/<%= selectedVariant.images[0] %>" alt="<%= product.productName %>" id="mainImage" class="w-full max-w-md mx-auto rounded shadow object-cover">
+            <% } else { %>
+                <img src="https://via.placeholder.com/300" alt="<%= product.productName %>" class="w-full max-w-md mx-auto rounded shadow object-cover">
+            <% } %>
+            <div class="flex flex-wrap justify-center gap-2 mt-4">
+                <% if (product.variants.length > 0) { %>
+                    <% product.variants.forEach(variant => { %>
+                        <% if (variant._id.toString() === selectedVariant._id.toString()) { %>
+                            <% if (variant.images && variant.images.length > 0) { %>
+                                <% variant.images.forEach(image => { %>
+                                    <img src="/productimg/<%= image %>" alt="Variant Image" class="h-20 w-20 object-cover rounded border hover:variant-option cursor-pointer <%= selectedVariant._id.toString() === variant._id.toString() ? 'selected-variant' : '' %>" onclick="document.getElementById('mainImage').src='/productimg/<%= image %>'; updateVariant('<%= variant._id %>')">
+                                <% }) %>
+                            <% } %>
+                        <% } %>
+                    <% }) %>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2">
+            <h1 class="text-2xl font-bold"><%= product.productName %></h1>
+            <div class="flex items-center">
+                <span class="text-yellow-500">★★★★★</span>
+                <span class="text-gray-600 ml-2">(881)</span>
+                <span class="text-green-600 ml-2">100+ bought in past month</span>
+            </div>
+            <% if (product.variants.length > 0) { %>
+                <div class="mt-4">
+                    <span class="text-red-500 font-bold text-3xl">₹<%= selectedVariant.sellingPrice %></span>
+                    <span class="text-gray-500 line-through ml-2">₹<%= selectedVariant.originalPrice %></span>
+                    <span class="text-green-500 ml-2"><%= selectedVariant.discount %>% off</span>
+                </div>
+            <% } %>
+            <div class="mt-4">
+                <button class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800">Add to Cart</button>
+                <button class="bg-purple-600 text-white px-4 py-2 rounded ml-2 hover:bg-purple-800">Buy with Installments</button>
+            </div>
+            <% if (product.variants.length > 0) { %>
+                <div class="mt-4">
+                    <% if (product.variants.some(variant => variant.color)) { %>
+                        <label class="block">Select Color:</label>
+                        <div class="flex space-x-2">
+                            <% product.variants.forEach(variant => { %>
+                                <button class="w-6 h-6 bg-<%= variant.color.toLowerCase() %>-500 rounded-full variant-option <%= selectedVariant._id.toString() === variant._id.toString() ? 'selected-variant' : '' %>" onclick="updateVariant('<%= variant._id %>')"></button>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                    <% if (product.variants.some(variant => variant.size && variant.size !== 'N/A')) { %>
+                        <label class="block mt-4">Select Size:</label>
+                        <div class="flex space-x-2">
+                            <% product.variants.forEach(variant => { %>
+                                <% if (variant.size && variant.size !== 'N/A') { %>
+                                    <button class="px-2 py-1 border rounded variant-option <%= selectedVariant._id.toString() === variant._id.toString() ? 'selected-variant' : '' %>" onclick="updateVariant('<%= variant._id %>')"><%= variant.size %></button>
+                                <% } %>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                </div>
+            <% } %>
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <div>Free delivery to orders above ₹500</div>
+                <div>1 day return/replacement for the products from delivery date</div>
+                <div>We assure a safe fee of 20 protection fee</div>
+                <div>Delivery all over India within a week express delivery</div>
+                <div>1 year warranty for this product</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 mt-6 bg-white shadow-md">
+        <div class="flex space-x-4 border-b">
+            <button class="pb-2 border-b-2 border-purple-600">Description</button>
+            <button class="pb-2">Specifications</button>
+            <button class="pb-2">Reviews</button>
+        </div>
+        <p class="mt-4"><%= product.description %></p>
+    </div>
+
+    <div class="container mx-auto p-4 mt-6">
+        <h2 class="text-xl font-bold">Related Products</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+            <% relatedProducts.forEach(related => { %>
+                <div class="bg-white p-4 shadow-md text-center">
+                    <% if (related.variants.length > 0) { %>
+                        <img src="/productimg/<%= related.variants[0].images[0] %>" alt="<%= related.productName %>" class="w-full h-auto">
+                    <% } else { %>
+                        <img src="https://via.placeholder.com/150" alt="<%= related.productName %>" class="w-full h-auto">
+                    <% } %>
+                    <h3 class="text-lg font-bold"><%= related.productName %></h3>
+                    <div class="flex items-center justify-center">
+                        <span class="text-yellow-500">★★★★★</span>
+                        <span class="text-gray-600">(88)</span>
+                    </div>
+                    <% if (related.variants.length > 0) { %>
+                        <p class="text-red-500 font-bold">₹<%= related.variants[0].sellingPrice %></p>
+                    <% } %>
+                    <button class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-800">Add to Cart</button>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+
+    <!-- Sub-Footer -->
+    <%- include("../../views/partials/user/subFooter") %>
+
+    <script>
+        let selectedVariantId = '<%= selectedVariant._id %>';
+        function updateVariant(variantId) {
+            selectedVariantId = variantId;
+            const variant = <%= JSON.stringify(product.variants) %>.find(v => v._id.toString() === variantId);
+            if (variant) {
+                document.getElementById('mainImage').src = '/productimg/' + variant.images[0];
+                document.querySelectorAll('.text-red-500.font-bold.text-3xl').forEach(price => price.textContent = '₹' + variant.sellingPrice);
+                document.querySelectorAll('.text-gray-500.line-through.ml-2').forEach(mrp => mrp.textContent = '₹' + variant.originalPrice);
+                document.querySelectorAll('.text-green-500.ml-2').forEach(discount => discount.textContent = variant.discount + '% off');
+                document.querySelectorAll('.variant-option').forEach(btn => btn.classList.remove('selected-variant'));
+                document.querySelectorAll(`[onclick="updateVariant('${variantId}')"]`).forEach(btn => btn.classList.add('selected-variant'));
+                // Reload the page to refresh variant images
+                location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

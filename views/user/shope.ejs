@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CourtPulse Shop</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" />
 </head>
 
 <body class="bg-gray-100 font-sans">
@@ -18,100 +19,225 @@
         <!-- Filter Sidebar -->
         <aside class="w-full md:w-1/4 bg-white p-4 rounded shadow">
           <h2 class="text-xl font-bold mb-4">Filter Items</h2>
-          <div class="space-y-4">
-            <div>
-              <h3 class="font-semibold">Category</h3>
-              <ul class="list-disc pl-5 space-y-1">
-                <li><a href="#" class="text-purple-600 hover:text-purple-800">Racquets</a></li>
-                <li><a href="#" class="text-purple-600 hover:text-purple-800">Badminton Shoes</a></li>
-                <li><a href="#" class="text-purple-600 hover:text-purple-800">Apparel & Clothing</a></li>
-                <li><a href="#" class="text-purple-600 hover:text-purple-800">Accessories</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 class="font-semibold">Price</h3>
-              <input type="range" min="0" max="5000" class="w-full">
-              <div class="flex justify-between text-sm mt-1">
-                <span>₹0</span><span>₹5000</span>
+          <form id="filterForm">
+            <div class="space-y-4">
+
+              <!-- Sort -->
+              <div>
+                <h3 class="font-semibold">Sort by</h3>
+                <select name="sort" class="w-full p-2 border rounded">
+                  <option value="">-- Select --</option>
+                  <option value="priceLowHigh">Price: Low to High</option>
+                  <option value="priceHighLow">Price: High to Low</option>
+                  <option value="nameAsc">Name: A to Z</option>
+                  <option value="nameDesc">Name: Z to A</option>
+                </select>
               </div>
-            </div>
-            <div>
-              <h3 class="font-semibold">Customer Rating</h3>
-              <div class="flex flex-col space-y-1">
+
+              <!-- Category (Toggle buttons) -->
+              <div>
+                <h3 class="font-semibold mb-2">Category</h3>
+                <div class="flex flex-wrap gap-2">
+                  <% categories.forEach(cat=> { %>
+                    <button type="button" class="category-btn border px-3 py-1 rounded text-sm"
+                      data-id="<%= cat._id %>">
+                      <%= cat.name %>
+                    </button>
+                    <% }) %>
+                      <input type="hidden" name="category" id="selectedCategory">
+                </div>
+              </div>
+
+              <!-- Price Range (₹500 steps) -->
+              <div class="mb-4">
+                <h3 class="font-semibold mb-2">Price Range: ₹<span id="minPrice">0</span> - ₹<span
+                    id="maxPrice">25000</span></h3>
+                <div id="priceSlider"></div>
+
+                <!-- Hidden inputs to send with form or fetch -->
+                <input type="hidden" id="minPriceInput" name="minPrice">
+                <input type="hidden" id="maxPriceInput" name="maxPrice">
+              </div>
+
+
+              <!-- Ratings -->
+              <div>
+                <h3 class="font-semibold">Customer Rating</h3>
+                <div class="flex flex-col space-y-1">
+                  <label class="flex items-center">
+                    <input type="checkbox" name="ratings" value="4" class="mr-2">4 & 5
+                  </label>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="ratings" value="3" class="mr-2">3 & above
+                  </label>
+                </div>
+              </div>
+
+              <!-- Brands -->
+              <div>
+                <h3 class="font-semibold">Brands</h3>
+                <% brands.forEach(brand=> { %>
+                  <label class="flex items-center">
+                    <input type="checkbox" name="brands" value="<%= brand._id %>" class="mr-2">
+                    <%= brand.brandName %>
+                  </label>
+                  <% }) %>
+              </div>
+
+              <!-- Availability -->
+              <div>
+                <h3 class="font-semibold">Availability</h3>
                 <label class="flex items-center">
-                  <input type="checkbox" class="mr-2">4 & 5
-                </label>
-                <label class="flex items-center">
-                  <input type="checkbox" class="mr-2">3 & above
+                  <input type="checkbox" name="inStock" value="true" class="mr-2">In stock
                 </label>
               </div>
-            </div>
-            <div>
-              <h3 class="font-semibold">Brands</h3>
-              <input type="text" placeholder="Search brands..." class="w-full p-2 border rounded">
-              <div class="mt-2">
-                <label class="flex items-center">
-                  <input type="checkbox" class="mr-2">Yonex
-                </label>
-                <label class="flex items-center">
-                  <input type="checkbox" class="mr-2">Li-Ning
-                </label>
+
+              <!-- Submit -->
+              <div class="flex gap-2 mt-4">
+                <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded w-full">
+                  Apply Filters
+                </button>
+                <button type="button" id="clearFiltersBtn"
+                  class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 w-full">
+                  Clear Filters
+                </button>
               </div>
+
             </div>
-            <div>
-              <h3 class="font-semibold">Availability</h3>
-              <label class="flex items-center">
-                <input type="checkbox" class="mr-2">In stock
-              </label>
-            </div>
-          </div>
+          </form>
         </aside>
+
 
         <!-- Product Grid -->
         <section class="w-full md:w-3/4">
           <div class="flex justify-between mb-4 items-center">
             <h2 class="text-xl font-bold">Shop Now</h2>
-            <select class="p-2 border rounded">
-              <option>Sort by</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>Rating</option>
-            </select>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <% if (product && product.length> 0) { %>
-              <% const productsToShow=product.slice(0, 12); %> 
-                <% productsToShow.forEach(product=> { %>
-                  <div class="bg-white p-4 rounded shadow text-center hover:shadow-lg transition-shadow">
-                    <img src="productimg/<%= product.variants[0].images[0] %>" alt="<%= product.variants.name %>"
-                      class="mx-auto h-40 w-40 object-cover">
-                    <h3 class="font-semibold text-lg">
-                      <%= product.productName %>
-                    </h3>
-                    <div class="text-sm text-gray-500 mt-1">Yonex <%= product.productName.split(' ')[1] || '' %></div>
-                  <div> 
-                    <p class="text-green-600 font-bold text-xl">₹<%= product.variants[0].sellingPrice %></p>
-                    <div class="mt-1 flex justify-center gap-2">
-                      <p class="text-gray-400 line-through">₹<%= product.variants[0].originalPrice %></p>
-                      <p class="text-red-500 text-sm"><%= product.variants[0].discount %>% off</p>
-                    </div>
-                  </div>
-                <div class="flex justify-center space-x-2 mt-2">
-                  <button class="bg-purple-600 text-white p-2 rounded hover:bg-purple-800">Add to Cart</button>
-                  <button class="bg-gray-200 text-purple-600 p-2 rounded hover:bg-gray-300">♥</button>
-                </div>
-              </div>
-            <% }); %>
-          <% } else { %>
-            <p>No product available.</p>
-          <% } %>
-        </div>
-      </section>
-    </div>
-  </main>
 
-  <!-- Footer -->
-          <%- include("../../views/partials/user/footer") %>
+          <div id="productContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <% if (product && product.length> 0) { %>
+              <% const productsToShow=product.slice(0, 12); %>
+                <% productsToShow.forEach(product=> { %>
+                  <a href="/productDetail/<%= product._id %>">
+                    <div class="bg-white p-4 rounded shadow text-center hover:shadow-lg transition-shadow">
+                      <img src="productimg/<%= product.variants[0].images[0] %>" alt="<%= product.variants.name %>"
+                        class="mx-auto h-40 w-40 object-cover">
+                      <h3 class="font-semibold text-lg">
+                        <%= product.productName %>
+                      </h3>
+                      <h6 class="font-lite text-sm">
+                        <%= product.brand.brandName %>
+                      </h6>
+                      <!-- <div class="text-sm text-gray-500 mt-1">Yonex <%= product.productName.split(' ')[1] || '' %></div> -->
+                      <div>
+                        <p class="text-green-600 font-bold text-xl">₹<%= product.variants[0].sellingPrice %>
+                        </p>
+                        <div class="mt-1 flex justify-center gap-2">
+                          <p class="text-gray-400 line-through">₹<%= product.variants[0].originalPrice %>
+                          </p>
+                          <p class="text-red-500 text-sm">
+                            <%= product.variants[0].discount %>% off
+                          </p>
+                        </div>
+                      </div>
+                      <div class="flex justify-center space-x-2 mt-2">
+                        <button class="bg-purple-600 text-white p-2 rounded hover:bg-purple-800">Add to Cart</button>
+                        <button class="bg-gray-200 text-purple-600 p-2 rounded hover:bg-gray-300">♥</button>
+                      </div>
+                    </div>
+                  </a>
+                  <% }); %>
+                    <% } else { %>
+                      <p>No product available.</p>
+                      <% } %>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <%- include("../../views/partials/user/footer") %>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
+      <script>
+        const form = document.getElementById('filterForm');
+        const priceRange = document.getElementById('priceRange');
+        const priceValue = document.getElementById('priceValue');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        const selectedCategoryInput = document.getElementById('selectedCategory');
+
+        const priceSlider = document.getElementById('priceSlider');
+        const minPrice = document.getElementById('minPrice');
+        const maxPrice = document.getElementById('maxPrice');
+        const minPriceInput = document.getElementById('minPriceInput');
+        const maxPriceInput = document.getElementById('maxPriceInput');
+
+        // Toggle category selection
+        categoryButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            categoryButtons.forEach(b => b.classList.remove('bg-purple-500', 'text-white'));
+            btn.classList.add('bg-purple-500', 'text-white');
+            selectedCategoryInput.value = btn.dataset.id;
+          });
+        });
+
+        noUiSlider.create(priceSlider, {
+          start: [0, 25000],        // Initial values
+          connect: true,
+          range: {
+            'min': 0,
+            'max': 25000
+          },
+          step: 500,
+          format: {
+            to: value => Math.round(value),
+            from: value => Number(value)
+          }
+        });
+
+        priceSlider.noUiSlider.on('update', function (values, handle) {
+          const min = values[0];
+          const max = values[1];
+
+          minPrice.textContent = min;
+          maxPrice.textContent = max;
+          minPriceInput.value = min;
+          maxPriceInput.value = max;
+        });
+
+        // Fetch data on filter
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const query = new URLSearchParams(formData).toString();
+          window.location.href = `/shop?${query}`;
+        });
+
+
+
+        document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+          window.location.href = '/shop';
+
+          // Reset form values
+          form.reset();
+
+          // Manually uncheck checkboxes if needed
+          form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+          });
+
+          // Send fetch without any filters
+          fetch('/shope')
+            .then(res => res.text())
+            .then(html => {
+              document.getElementById('productContainer').innerHTML = html;
+              history.pushState({}, '', '/shope'); // Optional: updates URL
+            });
+        });
+
+
+      </script>
 
 </body>
+
 </html>

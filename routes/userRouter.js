@@ -20,7 +20,8 @@ router.get('/auth/google/callback',passport.authenticate('google',{failureRedire
     res.redirect('/')
 })
 
-router.get('/shopRaquet',shopController.raquet)
+router.get('/shop',shopController.productPage)
+router.get('/productDetail/:id',shopController.productDetail)
 
 
 module.exports = router

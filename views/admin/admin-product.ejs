@@ -145,7 +145,7 @@
                                         <%= product.brand ? product.brand.brandName : 'N/A' %>
                                     </td>
                                     <td class="py-2 px-4 border-b">
-                                        <%= product.productOffer ? product.productOffer + '%' : 'N/A' %>
+                                        <%= product.productOffer ? product.productOffer + '%' : 0+'%' %>
                                     </td>
                                     <td class="py-2 px-4 border-b">
                                         <%= product.variants.reduce((total, v) => total + (v.quantity || 0), 0) %>
