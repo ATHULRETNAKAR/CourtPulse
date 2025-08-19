@@ -5,7 +5,7 @@ const env = require('dotenv').config();
 
 const loadLogin = async (req, res) => {
     try {
-        if (!req.session.user) {
+        if (!req.session.user || !req.session.userGoogleId) {
             const message = req.session.message;
             req.session.message = null;
             return res.render('login', { message })
@@ -59,7 +59,7 @@ const loadSignup = async (req, res) => {
     try {
         const message = req.session.message;
         req.session.message = null;
-        return res.render('signup',{message})
+        return res.render('signup', { message })
     } catch (error) {
         console.log("Signup Page Not Fount", error)
         res.status(500).send("Internal Server Error")
@@ -78,7 +78,8 @@ const pageNotFound = async (req, res) => {
 
 const loadHomepage = async (req, res) => {
     try {
-        return res.status(200).render('home',{user: req.session.user})
+        let user = req.session.user || req.session.userGoogleId
+        return res.status(200).render('home', { user })
     } catch (error) {
         console.log("Home Page Not Found", error);
         res.status(500).send("Internal Server Error")
@@ -213,18 +214,134 @@ const resendOtp = async (req, res) => {
     }
 }
 
-const logout = async(req,res)=>{
+const logout = async (req, res) => {
     try {
-        req.session.destroy((err)=>{
-            if(err){
-                console.log("Session Destroying Failed",err.message);
+        req.session.destroy((err) => {
+            if (err) {
+                console.log("Session Destroying Failed", err.message);
                 return res.redirect('/pageNotFound');
             }
             return res.redirect('/login')
         })
     } catch (error) {
-        console.log("Logout Error",error);
+        console.log("Logout Error", error);
         res.redirect('/pageNotFound')
+    }
+}
+
+const loadforgot = async (req, res) => {
+    try {
+        const message = req.session.message;
+        req.session.message = null;
+        return res.render('forgotPswEmail', { message })
+    } catch (error) {
+        console.log("Forgot Page Not Found", error)
+        res.status(500).send("Internal Server Error")
+    }
+}
+
+const forgot = async (req, res) => {
+    try {
+        const { email } = req.body
+        const existEmail = await User.findOne({ email })
+        if (!existEmail) {
+            req.session.message = 'Email not exist..! Try again'
+            res.redirect('/forgotPassword')
+        }
+        req.session.userEmail = email
+        const otp = await generateOtp();
+        const emailSent = await sendVerificationEmail(email, otp)
+
+        if (!emailSent) {
+            req.session.message = 'Failed to sent otp'
+            res.redirect('/forgotPassword')
+        }
+
+        req.session.userOtp = otp;
+        res.render('forgotPsw-verify-otp')
+        console.log("OTP Sent", otp)
+
+    } catch (error) {
+        console.error('Login Error', error)
+        req.session.message = "Login Failed. Please Try Again Later";
+        return res.redirect('/login')
+    }
+}
+
+const forgotPswVerify = async (req, res) => {
+    try {
+        const { otp } = req.body
+        if (otp === req.session.userOtp) {
+            console.log('OTP Verified')
+            res.json({ success: true, redirectUrl: "/changePassword" })
+        } else {
+            res.status(400).json({ success: false, message: "Invalid OTP ,Please try again" })
+        }
+    } catch (error) {
+        console.error("Error Verifying OTP", error)
+        res.status(500).json({ success: false, message: "An error occured" })
+    }
+}
+
+const forgotresendOtp = async (req, res) => {
+    try {
+
+        const email = req.session.userEmail;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email Not Found In Session" })
+        }
+
+        const otp = generateOtp()
+        req.session.userOtp = otp;
+        const emailSent = await sendVerificationEmail(email, otp)
+
+        if (emailSent) {
+            console.log("OTP Resent:", otp);
+            res.status(200).json({ success: true, message: "Successfully Resend OTP" });
+        } else {
+            res.status(500).json({ success: false, message: "Failed To Resend OTP" })
+        }
+
+
+    } catch (error) {
+        console.error("Error Resending OTP", error);
+        res.status(500).json({ success: false, message: "Internal Server Error, Please Try Again" })
+    }
+}
+
+const loadChangePsw = async (req, res) => {
+    try {
+        res.render('changePassword')
+    } catch (error) {
+        console.error("Error on loadChangePsw:", error);
+        return res.status(500).send("Something went wrong. Please try again later.");
+    }
+}
+
+const forgotChangePsw = async (req, res) => {
+    try {
+        const email = req.session.userEmail
+        const { newPassword, confirmPassword } = req.body;
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ success: false, message: "Password not matchting" })
+        }
+
+        const hashedPassword = await securePassword(confirmPassword)
+        const user = await User.findOne({ email })
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        user.password = hashedPassword;
+        await user.save()
+        console.log("Password Changed")
+        res.status(200).json({ message: "Password updated successfully" });
+
+    } catch (error) {
+        console.log("Error on forgtChangePsw  " + error)
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
 
@@ -238,5 +355,11 @@ module.exports = {
     verifyOtp,
     resendOtp,
     login,
-    logout
+    logout,
+    loadforgot,
+    forgot,
+    forgotPswVerify,
+    forgotresendOtp,
+    loadChangePsw,
+    forgotChangePsw
 }

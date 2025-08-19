@@ -7,7 +7,7 @@ const productPage = async (req, res) => {
   try {
     const user = req.session.user;
     const page = parseInt(req.query.page) || 1;
-    const itemsPerPage = 12;
+    const itemsPerPage = 6;
     const skip = (page - 1) * itemsPerPage;
 
     const {

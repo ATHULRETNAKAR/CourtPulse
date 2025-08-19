@@ -34,7 +34,22 @@ const adminAuth = (req, res, next) => {
         })
 }
 
+const preventCache = (req, res, next)=> {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+}
+
+const islogin = (req,res,next)=>{
+    const user = req.session.user
+    if(user){
+        return res.redirect('/')
+    }
+    next();
+}
+
 module.exports = {
     userAuth,
     adminAuth,
+    preventCache,
+    islogin
 }

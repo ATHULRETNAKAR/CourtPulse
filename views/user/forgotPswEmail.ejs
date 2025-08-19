@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-200 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-10 rounded-lg shadow-lg w-full max-w-3xl flex h-50">
+
+        <!-- Left Side: Form -->
+        <div class="w-1/2 pr-6">
+            <h2 class="text-2xl font-bold text-center mb-4">Forgot Password ?</h2>
+            <p class="text-center text-gray-600 mb-4">No worries! Please confirm your mail address</p>
+            <p id="error" class="text-red-500 text-sm font-bold mb-2"></p>
+            <% if(typeof message !=='undefined' && message){ %>
+                <div class="text-red-500 text-sm font-bold mt-1 text-center">
+                    <%= message %>
+                </div>
+                <% } %>
+                    <form id="form" action="/forgotPassword" method="post" novalidate>
+                        <div class="mb-4">
+                            <input id="email" type="email" name="email" placeholder="Email address"
+                                class="w-full p-2 border rounded">
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700 mb-4">Send
+                            OTP</button>
+                    </form>
+
+                    <a href="/login"
+                        class="block text-center text-indigo-600 hover:text-indigo-700 text-sm font-medium">Remember
+                        your password ?</a>
+        </div>
+
+        <!-- Right Side: Image -->
+        <div class="w-1/2 flex items-center justify-center">
+            <img src="/images/Forgot password-bro.svg" alt="Forgot Image" class="w-48">
+        </div>
+
+    </div>
+
+    <script>
+        const form = document.getElementById('form');
+        const errormsg = document.getElementById('error')
+        form.addEventListener('submit', function (e) {
+            e.preventDefault()
+            const email = document.getElementById('email').value.trim()
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email) {
+                errormsg.textContent = 'Email is required'
+            } else if (!emailPattern.test(email)) {
+                errormsg.textContent = "Please enter a valid email address!";
+            } else {
+                errormsg.textContent = ''
+                form.submit()
+            }
+        })
+    </script>
+</body>
+
+
+</html>

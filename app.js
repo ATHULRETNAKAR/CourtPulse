@@ -8,6 +8,8 @@ const passport = require('./config/passport')
 const userRouter = require("./routes/userRouter")
 const adminRouter = require("./routes/adminRouter")
 const errorRouter = require("./controllers/error/errorController")
+const flash = require('connect-flash');
+app.use(flash());
 db() // dataBase connected
 
 app.set('view engine', "ejs")
