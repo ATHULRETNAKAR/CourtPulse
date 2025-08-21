@@ -2,11 +2,12 @@ const User = require('../../models/userSchema');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const env = require('dotenv').config();
+const Category = require('../../models/categorySchema')
 
 const loadLogin = async (req, res) => {
     try {
         if (!req.session.user || !req.session.userGoogleId) {
-            const message = req.session.message;
+            const message = req.session.message || req.query.msg;
             req.session.message = null;
             return res.render('login', { message })
         } else {
@@ -78,11 +79,25 @@ const pageNotFound = async (req, res) => {
 
 const loadHomepage = async (req, res) => {
     try {
-        let user = req.session.user || req.session.userGoogleId
-        return res.status(200).render('home', { user })
+        console.log('loadHomepage')
+        const categories = await Category.find()
+        let user = null
+        let search = null
+
+        if (req.session) {
+            if (req.session.user) {
+                user = await User.findOne({ _id: req.session.user });
+            } else if (req.session.userGoogleId) {
+                user = await User.findOne({ googleId: req.session.userGoogleId });
+            }
+        }
+
+        return res.status(200).render('home', { user, categories, search })
     } catch (error) {
         console.log("Home Page Not Found", error);
-        res.status(500).send("Internal Server Error")
+        if (!res.headersSent) {
+            res.status(500).send("Internal Server Error");
+        }
     }
 }
 

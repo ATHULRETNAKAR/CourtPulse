@@ -7,12 +7,13 @@ const env = require('dotenv').config();
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google/callback"
+    callbackURL: "/auth/google/callback",
+    passReqToCallback: true
 },
-    async (accessToken, refreshToken, profile, done) => {
+    async (req, accessToken, refreshToken, profile, done) => {
         try {
             let user = await User.findOne({ googleId: profile.id });
-
+            
             if (user) {
                 return done(null, user);
             }
@@ -43,17 +44,20 @@ passport.use(new GoogleStrategy({
     }));
 
 passport.serializeUser((user, done) => {
-    done(null, user.id)
-})
+    // Store both id and googleId in session
+    done(null, { id: user.id, googleId: user.googleId });
+});
 
-passport.deserializeUser((id, done) => {
-    User.findById(id)
+passport.deserializeUser((data, done) => {
+    User.findById(data.id)
         .then(user => {
-            done(null, user)
+            if (user) {
+                // attach googleId back so it's accessible
+                user.googleId = data.googleId;
+            }
+            done(null, user);
         })
-        .catch(err => {
-            done(err, null)
-        })
-})
+        .catch(err => done(err, null));
+});
 
 module.exports = passport;

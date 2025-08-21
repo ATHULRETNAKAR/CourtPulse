@@ -8,39 +8,36 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 
-<body class="bg-gray-200 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-10 rounded-lg shadow-lg w-full max-w-3xl flex h-50">
-
+<body class="bg-gray-200 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-xl max-w-4xl w-full overflow-hidden md:flex">
         <!-- Left Side: Form -->
-        <div class="w-1/2 pr-6">
-            <h2 class="text-2xl font-bold text-center mb-4">Forgot Password ?</h2>
-            <p class="text-center text-gray-600 mb-4">No worries! Please confirm your mail address</p>
-            <p id="error" class="text-red-500 text-sm font-bold mb-2"></p>
+        <div class="w-full md:w-1/2 p-4">
+            <h2 class="text-xl md:text-2xl font-bold text-purple-600 text-center mb-2">Forgot Password ?</h2>
+            <p class="text-center text-gray-600 text-sm mb-2">No worries! Please confirm your mail address</p>
+            <p id="error" class="text-red-500 text-xs font-bold mb-1"></p>
             <% if(typeof message !=='undefined' && message){ %>
-                <div class="text-red-500 text-sm font-bold mt-1 text-center">
+                <div class="text-red-500 text-xs font-bold mt-1 text-center">
                     <%= message %>
                 </div>
                 <% } %>
                     <form id="form" action="/forgotPassword" method="post" novalidate>
-                        <div class="mb-4">
-                            <input id="email" type="email" name="email" placeholder="Email address"
-                                class="w-full p-2 border rounded">
+                        <div class="mb-2">
+                            <input id="email" type="email" name="email" placeholder="Email"
+                                class="w-full p-2 border rounded text-sm">
                         </div>
                         <button type="submit"
-                            class="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700 mb-4">Send
+                            class="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700 text-sm mb-2">Send
                             OTP</button>
                     </form>
-
                     <a href="/login"
-                        class="block text-center text-indigo-600 hover:text-indigo-700 text-sm font-medium">Remember
+                        class="block text-center text-indigo-600 hover:text-indigo-700 text-xs font-medium">Remember
                         your password ?</a>
         </div>
 
         <!-- Right Side: Image -->
-        <div class="w-1/2 flex items-center justify-center">
-            <img src="/images/Forgot password-bro.svg" alt="Forgot Image" class="w-48">
+        <div class="w-full md:w-1/2 flex items-center justify-center bg-blue-100 p-4 rounded-r-lg">
+            <img src="/images/Forgot password-bro.svg" alt="Forgot Image" class="w-32 md:w-40">
         </div>
-
     </div>
 
     <script>
@@ -61,6 +58,5 @@
         })
     </script>
 </body>
-
 
 </html>

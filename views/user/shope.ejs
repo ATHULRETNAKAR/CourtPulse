@@ -59,7 +59,6 @@
                 <input type="hidden" id="maxPriceInput" name="maxPrice">
               </div>
 
-
               <!-- Ratings -->
               <div>
                 <h3 class="font-semibold">Customer Rating</h3>
@@ -78,7 +77,7 @@
                 <h3 class="font-semibold">Brands</h3>
                 <% brands.forEach(brand=> { %>
                   <label class="flex items-center">
-                    <input type="checkbox" name="brands" value="<%= brand._id %>" class="mr-2">
+                    <input type="checkbox" name="brand" value="<%= brand._id %>" class="mr-2">
                     <%= brand.brandName %>
                   </label>
                   <% }) %>
@@ -94,11 +93,11 @@
 
               <!-- Submit -->
               <div class="flex gap-2 mt-4">
-                <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded w-full">
+                <!-- <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded w-full">
                   Apply Filters
-                </button>
+                </button> -->
                 <button type="button" id="clearFiltersBtn"
-                  class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 w-full">
+                  class="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-600 w-full">
                   Clear Filters
                 </button>
               </div>
@@ -106,7 +105,6 @@
             </div>
           </form>
         </aside>
-
 
         <!-- Product Grid -->
         <section class="w-full md:w-3/4">
@@ -128,7 +126,6 @@
                       <h6 class="font-lite text-sm">
                         <%= product.brand.brandName %>
                       </h6>
-                      <!-- <div class="text-sm text-gray-500 mt-1">Yonex <%= product.productName.split(' ')[1] || '' %></div> -->
                       <div>
                         <p class="text-green-600 font-bold text-xl">₹<%= product.variants[0].sellingPrice %>
                         </p>
@@ -158,19 +155,21 @@
     <!-- Footer -->
     <%- include("../../views/partials/user/footer") %>
 
+
+
       <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
       <script>
         const form = document.getElementById('filterForm');
-        const priceRange = document.getElementById('priceRange');
-        const priceValue = document.getElementById('priceValue');
-        const categoryButtons = document.querySelectorAll('.category-btn');
-        const selectedCategoryInput = document.getElementById('selectedCategory');
-
         const priceSlider = document.getElementById('priceSlider');
         const minPrice = document.getElementById('minPrice');
         const maxPrice = document.getElementById('maxPrice');
         const minPriceInput = document.getElementById('minPriceInput');
         const maxPriceInput = document.getElementById('maxPriceInput');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        const selectedCategoryInput = document.getElementById('selectedCategory');
+        const productContainer = document.getElementById('productContainer');
+        const searchBtn = document.getElementById("searchBtn");
+
 
         // Toggle category selection
         categoryButtons.forEach(btn => {
@@ -178,11 +177,13 @@
             categoryButtons.forEach(b => b.classList.remove('bg-purple-500', 'text-white'));
             btn.classList.add('bg-purple-500', 'text-white');
             selectedCategoryInput.value = btn.dataset.id;
+            applyFilters(); // Trigger filter on category click
           });
         });
 
+        // Initialize price slider
         noUiSlider.create(priceSlider, {
-          start: [0, 25000],        // Initial values
+          start: [0, 25000],
           connect: true,
           range: {
             'min': 0,
@@ -195,49 +196,104 @@
           }
         });
 
+        // Update price display and inputs
         priceSlider.noUiSlider.on('update', function (values, handle) {
-          const min = values[0];
-          const max = values[1];
-
-          minPrice.textContent = min;
-          maxPrice.textContent = max;
-          minPriceInput.value = min;
-          maxPriceInput.value = max;
+          minPrice.textContent = values[0];
+          maxPrice.textContent = values[1];
+          minPriceInput.value = values[0];
+          maxPriceInput.value = values[1];
         });
 
-        // Fetch data on filter
-        form.addEventListener('submit', (e) => {
-          e.preventDefault();
+        //Search 
+        searchBtn.addEventListener("click", () => {
+          applyFilters();
+        });
+
+        searchInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            applyFilters();
+          }
+        });
+
+        // Trigger filter on price slider change
+        priceSlider.noUiSlider.on('change', applyFilters);
+
+        // Function to apply filters via AJAX
+        function applyFilters() {
           const formData = new FormData(form);
-          const query = new URLSearchParams(formData).toString();
-          window.location.href = `/shop?${query}`;
-        });
 
+          // keep it as URLSearchParams object
+          const query = new URLSearchParams(formData);
 
+          const search = document.getElementById("searchInput")?.value.trim();
+          if (search) {
+            query.set("search", search); // this now works
+          }
 
-        document.getElementById('clearFiltersBtn').addEventListener('click', () => {
-          window.location.href = '/shop';
-
-          // Reset form values
-          form.reset();
-
-          // Manually uncheck checkboxes if needed
-          form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = false;
-          });
-
-          // Send fetch without any filters
-          fetch('/shope')
+          fetch(`/shop?${query.toString()}`, {
+            method: 'GET',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
             .then(res => res.text())
             .then(html => {
-              document.getElementById('productContainer').innerHTML = html;
-              history.pushState({}, '', '/shope'); // Optional: updates URL
+              productContainer.innerHTML = extractProductContainer(html);
+              history.pushState({}, '', `/shop?${query.toString()}`);
+            })
+            .catch(err => {
+              console.error('Error fetching products:', err);
+              productContainer.innerHTML = '<p>Error loading products. Please try again.</p>';
             });
+        }
+
+        // Function to extract product container from response HTML
+        function extractProductContainer(html) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const newProductContainer = doc.getElementById('productContainer');
+          return newProductContainer ? newProductContainer.innerHTML : '<p>No products available.</p>';
+        }
+
+        // Handle form submission
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          applyFilters();
         });
 
+        // Handle clear filters
+        document.getElementById('clearFiltersBtn').addEventListener('click', () => {
 
+          window.location.href = '/shop'
+          // Reset form
+          // form.reset();
+          // categoryButtons.forEach(b => b.classList.remove('bg-purple-500', 'text-white'));
+          // selectedCategoryInput.value = '';
+          // priceSlider.noUiSlider.set([0, 25000]);
+
+          // // Fetch unfiltered products
+          // fetch('/shop', {
+          //   method: 'GET',
+          //   headers: {
+          //     'X-Requested-With': 'XMLHttpRequest'
+          //   }
+          // })
+          //   .then(res => res.text())
+          //   .then(html => {
+          //     productContainer.innerHTML = extractProductContainer(html);
+          //     history.pushState({}, '', '/shop');
+          //   })
+          //   .catch(err => {
+          //     console.error('Error clearing filters:', err);
+          //     productContainer.innerHTML = '<p>Error loading products. Please try again.</p>';
+          //   });
+        });
+
+        // Trigger filter on checkbox or select change
+        form.querySelectorAll('input[type="checkbox"], select').forEach(element => {
+          element.addEventListener('change', applyFilters);
+        });
       </script>
-
 </body>
 
 </html>

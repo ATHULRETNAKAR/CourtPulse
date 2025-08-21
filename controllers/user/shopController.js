@@ -1,13 +1,14 @@
 const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
 const Brand = require('../../models/brandSchema');
+const User = require('../../models/userSchema')
 
 
 const productPage = async (req, res) => {
   try {
-    const user = req.session.user;
+    let user = await User.findOne({ _id: req.session.user })
     const page = parseInt(req.query.page) || 1;
-    const itemsPerPage = 6;
+    const itemsPerPage = 12;
     const skip = (page - 1) * itemsPerPage;
 
     const {
@@ -15,13 +16,20 @@ const productPage = async (req, res) => {
       minPrice,
       maxPrice,
       brand,
-      availability,
+      inStock,
       sort,
+      search
     } = req.query;
 
-    console.log(req.body)
 
-    let filter = { status: 'Available' };
+
+    let filter = { status: { $ne: "Discontinued" } };
+
+    // Search with product, category, brand name
+    if (search && search.trim().length > 0) {
+      const regex = new RegExp(search.trim(), "i"); // "i" = case-insensitive
+      filter.productName = regex;
+    }
 
     // Category filter (can be single or array)
     if (category) {
@@ -29,12 +37,22 @@ const productPage = async (req, res) => {
       filter.category = { $in: selectedCategories };
     }
 
+
     // Price filter
     if (minPrice || maxPrice) {
-      filter['variants.sellingPrice'] = {};
-      if (minPrice) filter['variants.sellingPrice'].$gte = parseInt(minPrice);
-      if (maxPrice) filter['variants.sellingPrice'].$lte = parseInt(maxPrice);
+      filter['variants'] = {
+        $elemMatch: {}
+      };
+
+      if (minPrice) filter['variants'].$elemMatch.sellingPrice = { $gte: parseInt(minPrice) };
+      if (maxPrice) {
+        filter['variants'].$elemMatch.sellingPrice = {
+          ...(filter['variants'].$elemMatch.sellingPrice || {}),
+          $lte: parseInt(maxPrice)
+        };
+      }
     }
+
 
     // Brand filter (can be single or array)
     if (brand) {
@@ -43,20 +61,20 @@ const productPage = async (req, res) => {
     }
 
     // Availability
-    if (availability === 'inStock') {
-      filter['variants.stockStatus'] = 'Available';
+    if (inStock) {
+      filter.status = "Available";
     }
 
     // Sort
     let sortOption = {};
-    if (sort === 'priceLowToHigh') {
+    if (sort === 'priceLowHigh') {
       sortOption['variants.sellingPrice'] = 1;
-    } else if (sort === 'priceHighToLow') {
+    } else if (sort === 'priceHighLow') {
       sortOption['variants.sellingPrice'] = -1;
-    } else if (sort === 'nameAZ') {
-      sortOption.name = 1;
-    } else if (sort === 'nameZA') {
-      sortOption.name = -1;
+    } else if (sort === 'nameAsc') {
+      sortOption.productName = 1;
+    } else if (sort === 'nameDesc') {
+      sortOption.productName = -1;
     } else {
       sortOption.createdAt = -1;
     }
@@ -66,14 +84,16 @@ const productPage = async (req, res) => {
       .sort(sortOption)
       .skip(skip)
       .limit(itemsPerPage)
-      .populate('brand category');
+      .populate('brand category variants');
+
+    // console.log(product)
 
     const categories = await Category.find({ status: 'Active' });
     const brands = await Brand.find({ status: 'Active' });
 
     const totalItems = await Product.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-
+    
     res.render('shope', {
       product,
       categories,
@@ -82,6 +102,7 @@ const productPage = async (req, res) => {
       totalPages,
       user,
       query: req.query,
+      search
     });
   } catch (error) {
     console.error('Error fetching Product:', error);

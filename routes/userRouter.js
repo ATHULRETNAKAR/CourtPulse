@@ -3,11 +3,11 @@ const router = express.Router();
 const passport = require('passport');
 const userController = require('../controllers/user/userController');
 const shopController = require('../controllers/user/shopController');
-const { userAuth, adminAuth, preventCache, islogin } = require('../middlewares/auth');
+const { userAuth, adminAuth, preventCache, islogin, checkUserStatus } = require('../middlewares/auth');
 
 
 router.get('/pageNotFound', userController.pageNotFound);
-router.get('/',userController.loadHomepage);
+router.get('/', checkUserStatus, userController.loadHomepage);
 router.get('/login', islogin, preventCache, userController.loadLogin);
 router.post('/login', userController.login);
 router.get('/signup', islogin, preventCache, userController.loadSignup);
@@ -16,7 +16,7 @@ router.post('/verify-otp', userController.verifyOtp);
 router.post('/resend-otp', userController.resendOtp);
 router.get('/logout', userController.logout);
 
-router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' }));
 router.get('/auth/google/callback', (req, res, next) => {
     passport.authenticate('google', (err, user, info) => {
         if (err) {
@@ -38,6 +38,7 @@ router.get('/auth/google/callback', (req, res, next) => {
                 console.error(err);
                 return res.redirect('/pageNotFound');
             }
+            req.session.userGoogleId = user.googleId;
             return res.redirect('/');
         });
     })(req, res, next);
@@ -50,8 +51,8 @@ router.post('/forgotResendOtp', userController.forgotresendOtp);
 router.get('/changePassword', userController.loadChangePsw);
 router.post('/changePassword', userController.forgotChangePsw);
 
-router.get('/shop', shopController.productPage);
-router.get('/productDetail/:id', shopController.productDetail);
+router.get('/shop', checkUserStatus, shopController.productPage);
+router.get('/productDetail/:id', checkUserStatus, shopController.productDetail);
 
 
 module.exports = router 
