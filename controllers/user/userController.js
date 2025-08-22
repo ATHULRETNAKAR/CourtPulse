@@ -3,6 +3,7 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const env = require('dotenv').config();
 const Category = require('../../models/categorySchema')
+const Product = require('../../models/productSchema')
 
 const loadLogin = async (req, res) => {
     try {
@@ -83,6 +84,8 @@ const loadHomepage = async (req, res) => {
         const categories = await Category.find()
         let user = null
         let search = null
+        let products = await Product.find({ isBlocked: false }).populate('brand').sort({ createdAt: -1 });
+
 
         if (req.session) {
             if (req.session.user) {
@@ -92,7 +95,7 @@ const loadHomepage = async (req, res) => {
             }
         }
 
-        return res.status(200).render('home', { user, categories, search })
+        return res.status(200).render('home', { user, categories, search, products })
     } catch (error) {
         console.log("Home Page Not Found", error);
         if (!res.headersSent) {
