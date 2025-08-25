@@ -5,11 +5,11 @@ const customerController = require('../controllers/admin/customerController');
 const categoryController = require('../controllers/admin/categoryController');
 const brandController = require('../controllers/admin/brandController')
 const productController = require('../controllers/admin/productController')
-const { userAuth, adminAuth } = require('../middlewares/auth');
+const { userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus } = require('../middlewares/auth');
 const upload = require('../helpers/multer')
 
 //Login Management
-router.get('/login', adminController.loadLogin);
+router.get('/login',  adminController.loadLogin);
 router.post('/login', adminController.login);
 router.get('/errorpage', adminController.errorpage);
 router.get('/logout', adminController.logout);

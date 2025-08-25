@@ -46,6 +46,13 @@ const islogin = (req, res, next) => {
     }
     next();
 }
+const isloginAdmin = (req, res, next) => {
+    const user = req.session.user
+    if (user) {
+        return res.redirect('/')
+    }
+    next();
+}
 
 const checkUserStatus = async (req, res, next) => {
     try {
@@ -59,33 +66,25 @@ const checkUserStatus = async (req, res, next) => {
 
             if (user.isBlocked) {
                 const blockMessage = "Your account has been blocked by admin";
-                // req.session.destroy((err) => {
-                //     if (err) console.log("Session destroy error", err);
-                //     // Save message in a temp variable before destroying
-                // });
-                // return res.redirect('/login');
-
-                // destroy the session, then store the message somewhere
-                req.session.destroy((err) => {
+                return req.session.destroy((err) => {
                     if (err) console.log("Session destroy error", err);
-
-                    // Use a cookie or temp variable
-                    // res.clearCookie("connect.sid"); // clear session cookie
-                    res.redirect(`/login?msg=${encodeURIComponent(blockMessage)}`);
+                    return res.redirect(`/login?msg=${encodeURIComponent(blockMessage)}`);
                 });
             }
         }
-        next();
+        return next(); 
     } catch (error) {
         console.error("Error checking user status:", error);
-        next();
+        return next(error);
     }
 };
+
 
 module.exports = {
     userAuth,
     adminAuth,
     preventCache,
     islogin,
+    isloginAdmin,
     checkUserStatus
 }

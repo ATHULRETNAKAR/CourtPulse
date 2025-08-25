@@ -6,13 +6,18 @@ const User = require('../../models/userSchema')
 
 const productPage = async (req, res) => {
   try {
-    // Fetch user if needed
-    let user = await User.findOne({ _id: req.session.user });
+    let user = null
+    if (req.session) {
+      if (req.session.user) {
+        user = await User.findOne({ _id: req.session.user, isBlocked: false });
+      } else if (req.session.userGoogleId) {
+        user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false });
+      }
+    }
 
-    // Extract query parameters
     const {
       page = 1,
-      limit = 12, // Match frontend's 12 products per page
+      limit = 12, 
       category,
       minPrice,
       maxPrice,
@@ -20,23 +25,21 @@ const productPage = async (req, res) => {
       inStock,
       sort,
       search,
-      ratings // Added to support ratings filter
+      ratings 
     } = req.query;
 
-    // Convert page and limit to numbers
+
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 12;
     const skip = (pageNum - 1) * limitNum;
 
-    // Build filter object
+
     let filter = { status: { $ne: "Discontinued" } };
 
-    // Search filter
     if (search && search.trim().length > 0) {
       filter.productName = { $regex: search.trim(), $options: 'i' };
     }
 
-    // Category filter
     if (category) {
       const selectedCategories = Array.isArray(category) ? category : [category];
       filter.category = { $in: selectedCategories };
@@ -67,7 +70,7 @@ const productPage = async (req, res) => {
 
     // Availability filter
     if (inStock === 'true') {
-      filter['variants.stock'] = { $gt: 0 }; // Use stock in variants instead of status
+      filter['variants.stock'] = { $gt: 0 }; 
     }
 
     // Sorting logic
@@ -81,7 +84,7 @@ const productPage = async (req, res) => {
     } else if (sort === 'nameDesc') {
       sortOption.productName = -1;
     } else {
-      sortOption.createdAt = -1; // Default sort by newest
+      sortOption.createdAt = -1;
     }
 
     // Fetch products with pagination
@@ -90,26 +93,22 @@ const productPage = async (req, res) => {
       .skip(skip)
       .limit(limitNum)
       .populate('brand category')
-      .lean(); // Use lean for better performance
+      .lean(); 
 
-    // Get total count of matching products
+
     const totalProducts = await Product.countDocuments(filter);
     const totalPages = Math.ceil(totalProducts / limitNum);
 
-    // Check if request is AJAX
     if (req.xhr) {
-      // Return JSON for AJAX requests
       return res.json({
         products,
         totalProducts
       });
     }
 
-    // Fetch categories and brands for rendering
     const categories = await Category.find({ status: 'Active' }).lean();
     const brands = await Brand.find({ status: 'Active' }).lean();
 
-    // Render EJS template for non-AJAX requests
     res.render('shope', {
       product: products,
       totalProducts,
@@ -135,8 +134,7 @@ const productDetail = async (req, res) => {
   try {
     let search = null
     const { id } = req.params
-    const product = await Product.findById(id)
-      .populate('category')
+    const product = await Product.findById(id).populate('category')
 
     const categoryid = product.category
 
@@ -144,7 +142,7 @@ const productDetail = async (req, res) => {
     const selectedVariant = product.variants[0]
     let user = null
     if (req.session.user) {
-      user = await User.findOne({ _id: req.session.user })
+      user = await User.findOne({ _id: req.session.user, isBlocked: false })
     }
     res.render('productDetail', {
       user,

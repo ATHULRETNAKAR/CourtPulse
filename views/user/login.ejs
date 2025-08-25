@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CourtPulse - Welcome Back</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -61,17 +62,23 @@
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
 
                                 <!-- Password Field -->
-                                <div class="space-y-2">
-                                    <input type="password" name="password" placeholder="Password"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
+                                <div class="relative w-full">
+                                    <input type="password" id="passwordInput" name="password" placeholder="Password"
+                                        class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all">
 
-                                    <!-- Forgot Password Link -->
-                                    <div class="text-right">
-                                        <a href="/forgotPassword"
-                                            class="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                                            Forgot password ?
-                                        </a>
-                                    </div>
+                                    <!-- Eye Button -->
+                                    <button type="button" onclick="togglePassword()"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600">
+                                        👁
+                                    </button>
+                                </div>
+
+                                <!-- Forgot Password Link -->
+                                <div class="text-right mt-2">
+                                    <a href="/forgotPassword"
+                                        class="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                                        Forgot password ?
+                                    </a>
                                 </div>
 
                                 <!-- Submit Button -->
@@ -163,6 +170,11 @@
                             if (errorMsg) errorMsg.style.display = 'none';
                             if (successMsg) successMsg.style.display = 'none';
                         }, 5000);
+
+                        function togglePassword() {
+                            const input = document.getElementById("passwordInput");
+                            input.type = (input.type === "password") ? "text" : "password";
+                        }
 
                     </script>
 </body>

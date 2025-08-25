@@ -7,19 +7,20 @@ const Product = require('../../models/productSchema')
 
 const loadLogin = async (req, res) => {
     try {
-        if (!req.session.user || !req.session.userGoogleId) {
+        // Show login only if neither session key exists
+        if (!req.session.user && !req.session.userGoogleId) {
             const message = req.session.message || req.query.msg;
             req.session.message = null;
-            return res.render('login', { message })
-        } else {
-            res.redirect('/')
+            return res.render('login', { message });
         }
-    } catch (error) {
-        console.log("Login Page Not Found", error)
-        res.redirect('/pageNotFound')
-    }
-}
 
+        // Otherwise redirect to home
+        return res.redirect('/');
+    } catch (error) {
+        console.log("Login Page Not Found", error);
+        return res.redirect('/pageNotFound');
+    }
+};
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -82,16 +83,21 @@ const loadHomepage = async (req, res) => {
     try {
         console.log('loadHomepage')
         const categories = await Category.find()
-        let user = null
         let search = null
         let products = await Product.find({ isBlocked: false }).populate('brand').sort({ createdAt: -1 });
+        let user = null
 
 
         if (req.session) {
+            user = await User.findById(req.session.user);
+            if (user?.isBlocked) {
+                req.session.destroy();
+                return res.redirect('/login');
+            }
             if (req.session.user) {
-                user = await User.findOne({ _id: req.session.user });
+                user = await User.findOne({ _id: req.session.user, isBlocked: false });
             } else if (req.session.userGoogleId) {
-                user = await User.findOne({ googleId: req.session.userGoogleId });
+                user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false });
             }
         }
 

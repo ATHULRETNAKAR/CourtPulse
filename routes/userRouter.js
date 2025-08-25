@@ -3,7 +3,7 @@ const router = express.Router();
 const passport = require('passport');
 const userController = require('../controllers/user/userController');
 const shopController = require('../controllers/user/shopController');
-const { userAuth, adminAuth, preventCache, islogin, checkUserStatus } = require('../middlewares/auth');
+const {userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus} = require('../middlewares/auth');
 
 
 router.get('/pageNotFound', userController.pageNotFound);
