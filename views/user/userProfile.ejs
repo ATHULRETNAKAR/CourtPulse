@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - CourtPulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <%- include("../../views/partials/user/header") %>
+
+        <div class="flex mt-4">
+            <!-- Sidebar -->
+            <%- include("../../views/partials/user/profileSideBar") %>
+
+                <!-- Profile Information -->
+                <div class="w-4/5 p-6">
+                    <h2 class="text-2xl font-bold mb-6">Personal Information</h2>
+                    <div class="flex items-start gap-6">
+
+                        <!-- Details Form -->
+                        <form id="profileForm" class="bg-white p-6 rounded-lg shadow-md w-full flex items-start gap-6">
+                            <div class="w-2/3">
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Name</label>
+                                    <input type="text" id="name" value="<%= user.name %>"
+                                        class="w-full p-2 border rounded">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="email">Email
+                                        address</label>
+                                    <div class="relative">
+                                        <input type="email" id="email" value="<%= user.email %>"
+                                            class="w-full p-2 border rounded pr-20" readonly>
+                                        <button type="button" id="changeEmailBtn"
+                                            class="absolute right-2 top-2 bg-orange-600 text-white px-2 py-1 rounded hover:bg-red-700">Change
+                                            Email</button>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="mobile">Mobile
+                                        Number</label>
+                                    <input type="tel" id="mobile" value="<%= user.phone %>"
+                                        class="w-full p-2 border rounded">
+                                </div>
+                                <div class="flex justify-end space-x-4">
+                                    <button type="button" id="cancelBtn"
+                                        class="bg-gray-200 text-gray-700 p-2 rounded hover:bg-gray-300">Cancel</button>
+                                    <button type="submit"
+                                        class="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">Update</button>
+                                    <button type="button"
+                                        class="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">Change
+                                        Password</button>
+                                </div>
+                            </div>
+
+                            <!-- Profile Image Box -->
+                            <div class="w-1/3 flex flex-col items-center">
+                                <div class="w-32 h-32 border-2 border-gray-300 rounded-full overflow-hidden">
+                                    <img src="/userImages/<%= user.profileImage ? user.profileImage : 'DemoProfile.jpg' %>"
+                                        alt="Profile Image" id="profileImagePreview" class="w-full h-full object-cover">
+                                </div>
+                                <input type="file" id="profileImageInput" name="profileImage" accept="image/*" class="hidden">
+                                <button type="button" id="updateImageBtn"
+                                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 mt-4">Update
+                                    Profile Image</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+        </div>
+
+        <!-- Sub-Footer -->
+        <%- include("../../views/partials/user/subFooter") %>
+
+            <script>
+                // Store original values for comparison
+                const originalName = "<%= user.name %>";
+                const originalEmail = "<%= user.email %>";
+                const originalMobile = "<%= user.phone %>";
+                const originalProfileImage = "<%= user.profileImage ? user.profileImage : 'DemoProfile.jpg' %>";
+
+                // Change Email Button Click Handler
+                document.getElementById('changeEmailBtn').addEventListener('click', function () {
+                    Swal.fire({
+                        title: 'Confirm Email Change',
+                        text: 'Are you sure you want to change your email?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, change it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('email').removeAttribute('readonly');
+                            document.getElementById('email').focus();
+                        }
+                    });
+                });
+
+                // Cancel Button Click Handler
+                document.getElementById('cancelBtn').addEventListener('click', function () {
+                    document.getElementById('name').value = originalName;
+                    document.getElementById('email').value = originalEmail;
+                    document.getElementById('email').setAttribute('readonly', true);
+                    document.getElementById('mobile').value = originalMobile;
+                    // Reset profile image if needed (optional, depending on backend logic)
+                    document.getElementById('profileImagePreview').src = `/images/${originalProfileImage}`;
+                });
+
+                // Update Profile Image Button Click Handler
+                document.getElementById('updateImageBtn').addEventListener('click', function () {
+                    document.getElementById('profileImageInput').click();
+                });
+
+                // Handle Profile Image Input Change
+                document.getElementById('profileImageInput').addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            document.getElementById('profileImagePreview').src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+
+                        // Upload image to backend
+                        const formData = new FormData();
+                        formData.append('profileImage', file);
+
+                        fetch('/updateProfileImage', {
+                            method: 'POST',
+                            body: formData,
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire(
+                                        'Success!',
+                                        'Profile image updated successfully.',
+                                        'success'
+                                    );
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        data.message || 'Failed to update profile image.',
+                                        'error'
+                                    );
+                                    // Revert image preview on failure
+                                    document.getElementById('profileImagePreview').src = `/images/${originalProfileImage}`;
+                                }
+                            })
+                            .catch(error => {
+                                Swal.fire(
+                                    'Error!',
+                                    'An error occurred while updating the profile image.',
+                                    'error'
+                                );
+                                // Revert image preview on failure
+                                document.getElementById('profileImagePreview').src = `/images/${originalProfileImage}`;
+                            });
+                    }
+                });
+
+                // Form Submission Handler with Validation and Change Detection
+                document.getElementById('profileForm').addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    const name = document.getElementById('name').value.trim();
+                    const email = document.getElementById('email').value.trim();
+                    const mobile = document.getElementById('mobile').value.trim();
+
+                    // Email Validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        Swal.fire(
+                            'Error!',
+                            'Please enter a valid email address.',
+                            'error'
+                        );
+                        return;
+                    }
+
+                    // Phone Number Validation (10 digits only)
+                    const phoneRegex = /^\d{10}$/;
+                    if (!phoneRegex.test(mobile)) {
+                        Swal.fire(
+                            'Error!',
+                            'Please enter a valid 10-digit mobile number.',
+                            'error'
+                        );
+                        return;
+                    }
+
+                    // Check if any field has changed
+                    if (name === originalName && email === originalEmail && mobile === originalMobile) {
+                        Swal.fire(
+                            'No Changes!',
+                            'No fields have been modified.',
+                            'info'
+                        );
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: 'Do you want to save these changes?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, save it!'
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            try {
+                                const response = await fetch('/updateProfile', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ name, email, mobile }),
+                                });
+
+                                const data = await response.json();
+
+                                if (data.success) {
+                                    Swal.fire(
+                                        'Success!',
+                                        'Profile updated successfully.',
+                                        'success'
+                                    );
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        data.message || 'Failed to update profile.',
+                                        'error'
+                                    );
+                                }
+                            } catch (error) {
+                                Swal.fire(
+                                    'Error!',
+                                    'An error occurred while updating the profile.',
+                                    'error'
+                                );
+                            }
+                        }
+                    });
+                });
+            </script>
+</body>
+
+</html>

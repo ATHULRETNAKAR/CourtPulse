@@ -69,8 +69,8 @@ const productPage = async (req, res) => {
     }
 
     // Availability filter
-    if (inStock === 'true') {
-      filter['variants.stock'] = { $gt: 0 }; 
+    if (inStock) {
+      filter.status = "Available"; 
     }
 
     // Sorting logic
