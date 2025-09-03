@@ -59,6 +59,8 @@ router.get('/productDetail/:id', checkUserStatus, shopController.productDetail);
 router.get('/profile', profileController.loadProfile)
 router.post('/updateProfile', profileController.updateProfile)
 router.post('/updateProfileImage',profUploads,profileController.updateProfileImg)
+router.post('/emailVerification',profileController.changeEmailOTP)
+router.post('/emailVerification/verify',profileController.changeEmailVerification)
 
 
-module.exports = router 
+module.exports = router

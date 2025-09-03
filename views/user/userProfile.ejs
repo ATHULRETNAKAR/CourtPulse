@@ -35,10 +35,11 @@
                                         address</label>
                                     <div class="relative">
                                         <input type="email" id="email" value="<%= user.email %>"
-                                            class="w-full p-2 border rounded pr-20" readonly>
+                                            class="w-full p-2 border rounded pr-24" readonly>
                                         <button type="button" id="changeEmailBtn"
-                                            class="absolute right-2 top-2 bg-orange-600 text-white px-2 py-1 rounded hover:bg-red-700">Change
-                                            Email</button>
+                                            class="absolute right-2 top-1/2 -translate-y-1/2 bg-orange-600 text-white px-2 py-1 rounded hover:bg-red-700">
+                                            Change
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="mb-4">
@@ -64,7 +65,8 @@
                                     <img src="/userImages/<%= user.profileImage ? user.profileImage : 'DemoProfile.jpg' %>"
                                         alt="Profile Image" id="profileImagePreview" class="w-full h-full object-cover">
                                 </div>
-                                <input type="file" id="profileImageInput" name="profileImage" accept="image/*" class="hidden">
+                                <input type="file" id="profileImageInput" name="profileImage" accept="image/*"
+                                    class="hidden">
                                 <button type="button" id="updateImageBtn"
                                     class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 mt-4">Update
                                     Profile Image</button>
@@ -85,22 +87,65 @@
                 const originalMobile = "<%= user.phone %>";
                 const originalProfileImage = "<%= user.profileImage ? user.profileImage : 'DemoProfile.jpg' %>";
 
-                // Change Email Button Click Handler
-                document.getElementById('changeEmailBtn').addEventListener('click', function () {
-                    Swal.fire({
-                        title: 'Confirm Email Change',
-                        text: 'Are you sure you want to change your email?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, change it!'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            document.getElementById('email').removeAttribute('readonly');
-                            document.getElementById('email').focus();
+                document.getElementById('changeEmailBtn').addEventListener('click', async function () {
+                    try {
+
+                        Swal.fire({
+                            title: 'Sending OTP...',
+                            text: 'Please wait while we send the OTP to your email.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Step 1: Request OTP from backend
+                        const response = await fetch('/emailVerification', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: originalEmail }) // send current email
+                        });
+
+                        const data = await response.json();
+
+                        if (!data.success) {
+                            Swal.fire('Error!', data.message || 'Failed to send OTP.', 'error');
+                            return;
                         }
-                    });
+
+                        // Step 2: Ask user to enter OTP
+                        const { value: otp } = await Swal.fire({
+                            title: 'Enter OTP',
+                            input: 'text',
+                            inputLabel: 'We have sent an OTP to your registered email.',
+                            inputPlaceholder: 'Enter OTP here',
+                            inputAttributes: { maxlength: 6, autocapitalize: 'off', autocorrect: 'off' },
+                            showCancelButton: true,
+                            confirmButtonText: 'Verify',
+                        });
+
+                        if (otp) {
+                            // Step 3: Verify OTP with backend
+                            const verifyResponse = await fetch('/emailVerification/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email: originalEmail, otp })
+                            });
+
+                            const verifyData = await verifyResponse.json();
+
+                            if (verifyData.success) {
+                                Swal.fire('Verified!', 'You can now change your email.', 'success');
+                                document.getElementById('email').removeAttribute('readonly');
+                                document.getElementById('email').focus();
+                            } else {
+                                Swal.fire('Error!', verifyData.message || 'Invalid OTP.', 'error');
+                            }
+                        }
+
+                    } catch (error) {
+                        Swal.fire('Error!', 'Something went wrong while verifying email.', 'error');
+                    }
                 });
 
                 // Cancel Button Click Handler

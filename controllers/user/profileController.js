@@ -1,4 +1,5 @@
-const User = require('../../models/userSchema')
+const User = require('../../models/userSchema');
+const nodemailer = require('nodemailer');
 
 
 const loadProfile = async (req, res) => {
@@ -85,10 +86,81 @@ const updateProfileImg = async (req, res) => {
     }
 }
 
+async function sendVerificationEmail(email, otp) {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            port: 587,
+            secure: false,
+            requireTLS: true,
+            auth: {
+                user: process.env.NODEMAILER_EMAIL,
+                pass: process.env.NODEMAILER_PASSWORD
+            }
+        })
+
+        const info = await transporter.sendMail({
+            from: process.env.NODEMAILER_EMAIL,
+            to: email,
+            subject: "Account Verification OTP",
+            text: `Your one time password is ${otp}`,
+            html: `<b>Your OTP is ${otp}</b>`
+        })
+
+        return info.accepted.length > 0
+
+    } catch (error) {
+        console.error('Error to sending email OTP', error)
+        return false
+    }
+}
+
+const changeEmailOTP = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const otp = Math.floor(100000 + Math.random() * 999999).toString()
+
+        const emailSent = await sendVerificationEmail(email, otp)
+
+        if (!emailSent) {
+            return res.json({ success: false, message: "Email Not Sent" })
+        }
+
+        req.session.emailVerificationOtp = otp;
+        console.log(`The OTP is : ${otp}`)
+
+        res.json({ success: true, message: "Email Sent Successfully" })
+
+    } catch (error) {
+        console.log('Failed to send otp : ', error)
+        res.json({ success: false, message: 'Failed to send OTP.' });
+    }
+}
+
+const changeEmailVerification = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        const sentOTP = req.session.emailVerificationOtp
+
+        if (!sentOTP) {
+            return res.json({ success: false, message: "No OTP Found" })
+        }
+        if (sentOTP !== otp) {
+            return res.json({ success: false, message: "Invalid OTP" })
+        }
+        res.json({ success: true, message: "OTP Verified" })
+    } catch (error) {
+        console.log('OTP Verification failed : ', error)
+        res.json({ success: false, message: 'OTP Verification failed' });
+    }
+}
+
 
 
 module.exports = {
     loadProfile,
     updateProfile,
-    updateProfileImg
+    updateProfileImg,
+    changeEmailOTP,
+    changeEmailVerification
 }
