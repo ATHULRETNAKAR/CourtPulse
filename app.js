@@ -3,6 +3,7 @@ const app = express();
 const path = require("path");
 const env = require("dotenv").config();
 const session = require('express-session')
+const MongoStore = require('connect-mongo');
 const db = require("./config/db");
 const passport = require('./config/passport')
 const userRouter = require("./routes/userRouter")
@@ -18,18 +19,22 @@ app.set('views', [
   path.join(__dirname, 'views/admin')
 ])
 
-app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, 'public')))
-app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname,'public')))
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
+
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI || "mongodb://127.0.0.1:27017/firstproject",
+    collectionName: "sessions"
+  }),
   cookie: {
     secure: false,
     httpOnly: true,
-    maxAge: 72 * 60 * 60 * 1000
+    maxAge: 72 * 60 * 60 * 1000 
   }
 }));
 

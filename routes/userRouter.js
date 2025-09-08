@@ -62,5 +62,7 @@ router.post('/updateProfileImage',profUploads,profileController.updateProfileImg
 router.post('/emailVerification',profileController.changeEmailOTP)
 router.post('/emailVerification/verify',profileController.changeEmailVerification)
 
+router.get('/addresses', profileController.loadAddress)
+
 
 module.exports = router

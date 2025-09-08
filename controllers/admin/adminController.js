@@ -21,14 +21,14 @@ const loadLogin = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(email, password)
         const admin = await User.findOne({ isAdmin: true, email: email })
-
+        
         if (admin) {
             const passwordMatch = await bcrypt.compare(password, admin.password);
             if (passwordMatch) {
                 req.session.admin = true;
                 res.redirect('/admin/dashboard')
+                console.log('Admin Logged')
             } else {
                 req.session.message = "Invalid Password"
                 return res.redirect('/admin/login')
