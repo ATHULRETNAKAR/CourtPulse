@@ -3,9 +3,10 @@ const router = express.Router();
 const passport = require('passport');
 const userController = require('../controllers/user/userController');
 const shopController = require('../controllers/user/shopController');
-const profileController = require('../controllers/user/profileController')
+const profileController = require('../controllers/user/profileController');
+const addressController = require('../controllers/user/addressController');
 const {userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus} = require('../middlewares/auth');
-const profUploads = require('../helpers/Prof_multer')
+const profUploads = require('../helpers/Prof_multer');
 
 
 router.get('/pageNotFound', userController.pageNotFound);
@@ -62,7 +63,9 @@ router.post('/updateProfileImage',profUploads,profileController.updateProfileImg
 router.post('/emailVerification',profileController.changeEmailOTP)
 router.post('/emailVerification/verify',profileController.changeEmailVerification)
 
-router.get('/addresses', profileController.loadAddress)
+router.get('/addresses', addressController.loadAddress)
+router.get('/addAddress', addressController.loadAddAddress)
+router.post('/addAddress', addressController.addAddress)
 
 
 module.exports = router

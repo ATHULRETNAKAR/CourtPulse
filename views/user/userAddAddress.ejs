@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Address - CourtPulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-gray-100 font-sans min-h-screen flex flex-col">
+    <!-- Header -->
+    <%- include("../../views/partials/user/header") %>
+
+        <div class="flex mt-4">
+            <!-- Sidebar -->
+            <%- include("../../views/partials/user/profileSideBar") %>
+
+                <!-- Main Content -->
+                <div class="flex-1 p-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold mb-4">Add a new address</h2>
+                        <form class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Name</label>
+                                    <p id="name-error" class="text-red-500 text-sm hidden"></p>
+                                    <input id="name" type="text"
+                                        class="mt-1 border block w-full border-gray-300 rounded-md shadow-sm h-9"
+                                        placeholder="Enter your name">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Mobile Number</label>
+                                    <p id="mobile-error" class="text-red-500 text-sm hidden"></p>
+                                    <input id="mobile" type="text"
+                                        class="mt-1 border block w-full border-gray-300 rounded-md shadow-sm h-9"
+                                        placeholder="Enter your Mobile number">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Pincode</label>
+                                    <p id="pincode-error" class="text-red-500 text-sm hidden"></p>
+                                    <input id="pincode" type="text"
+                                        class="mt-1 border block w-full border-gray-300 rounded-md shadow-sm h-9"
+                                        placeholder="Enter your pincode">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Locality</label>
+                                    <p id="locality-error" class="text-red-500 text-sm hidden"></p>
+                                    <input id="locality" type="text"
+                                        class="mt-1 border block w-full border-gray-300 rounded-md shadow-sm h-9"
+                                        placeholder="Enter your locality">
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700">Address (area, city)</label>
+                                    <p id="address-error" class="text-red-500 text-sm hidden"></p>
+                                    <textarea id="address"
+                                        class="mt-1 border block w-full border-gray-300 rounded-md shadow-sm "
+                                        placeholder="Enter your address" rows="3"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">City/District/Town</label>
+                                    <p id="city-error" class="text-red-500 text-sm hidden"></p>
+                                    <input id="city" type="text"
+                                        class="mt-1 border block w-full border-gray-300 rounded-md shadow-sm h-9"
+                                        placeholder="Enter your city">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">State</label>
+                                    <p id="state-error" class="text-red-500 text-sm hidden"></p>
+                                    <select id="state"
+                                        class="mt-1 border block w-full border-gray-300 rounded-md shadow-sm h-9">
+                                        <option>-- select state --</option>
+                                        <option>Kerala</option>
+                                        <option>Tamil Nadu</option>
+                                        <option>Karnataka</option>
+                                        <option>Andhra Pradesh</option>
+                                        <option>Maharashtra</option>
+                                        <!-- Add state options here -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Landmark (optional)</label>
+                                    <p id="landmark-error" class="text-red-500 text-sm hidden"></p>
+                                    <input id="landmark" type="text"
+                                        class="mt-1 border block w-full border-gray-300 rounded-md shadow-sm h-9"
+                                        placeholder="Enter landmark (optional)">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Alternate phone number
+                                        (optional)</label>
+                                    <p id="alternate-error" class="text-red-500 text-sm hidden"></p>
+                                    <input id="alternate" type="text"
+                                        class="mt-1 border block w-full border-gray-300 rounded-md shadow-sm h-9"
+                                        placeholder="Alternate Mobile number (optional)">
+                                </div>
+                            </div>
+                            <p id="addressType-error" class="text-red-500 text-sm hidden"></p>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <input type="radio" id="home" name="addressType" value="home" class="mr-2">
+                                    <label for="home" class="text-sm text-gray-700">Home</label>
+                                </div>
+                                <div>
+                                    <input type="radio" id="work" name="addressType" value="work" class="mr-2">
+                                    <label for="work" class="text-sm text-gray-700">Work</label>
+                                </div>
+                            </div>
+                            <div class="flex justify-end space-x-4">
+                                <button type="button"
+                                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md">Cancel</button>
+                                <button type="submit"
+                                    class="bg-purple-600 text-white px-4 py-2 rounded-md">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+        </div>
+
+        <!-- Sub-Footer -->
+        <%- include("../../views/partials/user/subFooter") %>
+
+            <script>
+                const form = document.querySelector('form')
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const name = document.getElementById('name').value.trim();
+                    const mobile = document.getElementById('mobile').value.trim();
+                    const pincode = document.getElementById('pincode').value.trim();
+                    const locality = document.getElementById('locality').value.trim();
+                    const address = document.getElementById('address').value.trim();
+                    const city = document.getElementById('city').value.trim();
+                    const state = document.getElementById('state').value.trim();
+                    const landmark = document.getElementById('landmark').value.trim();
+                    const alternate = document.getElementById('alternate').value.trim();
+                    const addressType = document.querySelector('input[name="addressType"]:checked')?.value;
+
+
+                    document.querySelectorAll('.text-red-500').forEach(el => {
+                        el.textContent = "";
+                        el.classList.add('hidden')
+                    })
+
+                    let valid = true;
+
+                    if (!name) {
+                        document.getElementById('name-error').textContent = "Name is required";
+                        document.getElementById('name-error').classList.remove('hidden')
+                        valid = false;
+                    }
+
+                    if (!mobile) {
+                        document.getElementById('mobile-error').textContent = 'Mobile number is required';
+                        document.getElementById('mobile-error').classList.remove('hidden');
+                        valid = false;
+                    } else if (!/^\d{10}$/.test(mobile)) {
+                        document.getElementById('mobile-error').textContent = 'Mobile number must be 10 digits';
+                        document.getElementById('mobile-error').classList.remove('hidden');
+                        valid = false;
+                    }
+
+                    if (!pincode) {
+                        document.getElementById('pincode-error').textContent = 'Pincode is required';
+                        document.getElementById('pincode-error').classList.remove('hidden');
+                        valid = false;
+                    } else if (!/^\d{6}$/.test(pincode)) {
+                        document.getElementById('pincode-error').textContent = 'Pincode must be 6 digits';
+                        document.getElementById('pincode-error').classList.remove('hidden');
+                        valid = false;
+                    }
+
+                    if (!locality) {
+                        document.getElementById('locality-error').textContent = 'Locality is required';
+                        document.getElementById('locality-error').classList.remove('hidden');
+                        valid = false;
+                    }
+
+                    if (!address) {
+                        document.getElementById('address-error').textContent = 'Address is required';
+                        document.getElementById('address-error').classList.remove('hidden');
+                        valid = false;
+                    }
+
+                    if (!city) {
+                        document.getElementById('city-error').textContent = 'City is required';
+                        document.getElementById('city-error').classList.remove('hidden');
+                        valid = false;
+                    }
+
+                    if (state === '-- select state --') {
+                        document.getElementById('state-error').textContent = 'State is required';
+                        document.getElementById('state-error').classList.remove('hidden');
+                        valid = false;
+                    }
+
+                    if (!addressType) {
+                        document.getElementById('addressType-error').textContent = 'Address type is required';
+                        document.getElementById('addressType-error').classList.remove('hidden');
+                        valid = false;
+                    }
+
+                    if (landmark) {
+                        if (landmark.length < 3) {
+                            document.getElementById('landmark-error').textContent = 'Landmark must be at least 3 characters';
+                            document.getElementById('landmark-error').classList.remove('hidden');
+                            valid = false;
+                        }
+                    }
+
+                    if (alternate) {
+                        if (!/^\d{10}$/.test(alternate)) {
+                            document.getElementById('alternate-error').textContent = 'Alternate phone must be 10 digits';
+                            document.getElementById('alternate-error').classList.remove('hidden');
+                            valid = false;
+                        }
+                    }
+
+                    if (valid) {
+                        const data = {
+                            name,
+                            mobile,
+                            pincode,
+                            locality,
+                            address,
+                            city,
+                            state,
+                            landmark,
+                            alternate,
+                            addressType
+                        }
+
+                        try {
+                            const response = await fetch('/addAddress', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(data)
+                            })
+
+                            const result = await response.json()
+
+                            if (response.ok) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: result.message || 'Address added successfully!',
+                                }).then(() => {
+                                    window.location.href = '/addresses';
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: result.message || 'Failed to add address',
+                                });
+                            }
+
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.message || 'Something went wrong'
+                            });
+                        }
+                    }
+                })
+            </script>
+</body>
+
+</html>

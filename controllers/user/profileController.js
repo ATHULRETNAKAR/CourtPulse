@@ -155,27 +155,6 @@ const changeEmailVerification = async (req, res) => {
     }
 }
 
-const loadAddress = async (req, res) => {
-    try {
-        let user;
-        let search = null;
-        if (req.session.user) {
-            user = await User.findOne({ _id: req.session.user, isBlocked: false });
-        } else if (req.session.userGoogleId) {
-            user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false });
-        }
-
-        if (!user) {
-            return res.status(404).send('User not found');
-        }
-
-        res.render('userAddress', { search, user });
-    } catch (error) {
-        console.log('Failed to load the Address Page : ', error)
-    }
-}
-
-
 
 module.exports = {
     loadProfile,
@@ -183,5 +162,4 @@ module.exports = {
     updateProfileImg,
     changeEmailOTP,
     changeEmailVerification,
-    loadAddress
 }
