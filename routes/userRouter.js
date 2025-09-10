@@ -66,6 +66,9 @@ router.post('/emailVerification/verify',profileController.changeEmailVerificatio
 router.get('/addresses', addressController.loadAddress)
 router.get('/addAddress', addressController.loadAddAddress)
 router.post('/addAddress', addressController.addAddress)
+router.get('/editAddress/:id', addressController.loadEditAddress)
+router.put('/editAddress', addressController.editAddress)
+router.delete('/deleteAddress/:id', addressController.deleteAddress)
 
 
 module.exports = router

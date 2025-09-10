@@ -107,8 +107,111 @@ const addAddress = async (req, res) => {
     }
 }
 
+const loadEditAddress = async (req, res) => {
+    try {
+        const addressId = req.params.id;
+        req.session.addressId = addressId
+        let user;
+        let search = null;
+        if (req.session.user) {
+            user = await User.findOne({ _id: req.session.user, isBlocked: false });
+        } else if (req.session.userGoogleId) {
+            user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false });
+        }
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        const userAddressDoc = await Address.findOne({ "addresses._id": addressId }, { "addresses.$": 1 });
+        if (!userAddressDoc) return res.status(404).send("Address not found");
+
+        const address = userAddressDoc.addresses[0];
+
+        return res.render('userEditAddress', { search, user, address });
+    } catch (error) {
+        console.error("Failed to load Edit Address Page : ", error);
+        res.status(500).send("Server error");
+    }
+}
+
+const editAddress = async (req, res) => {
+    try {
+
+        const { name, mobile, pincode, locality, address, city, state, landmark, altPhone, addressType } = req.body;
+
+        let userId;
+        if (req.session.user) {
+            userId = await User.findOne({ _id: req.session.user, isBlocked: false });
+        } else if (req.session.userGoogleId) {
+            userId = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false });
+        }
+
+        const addressId = req.session.addressId;
+
+        const updated = await Address.findOneAndUpdate(
+            { userId: userId, "addresses._id": addressId },
+            {
+                $set: {
+                    "addresses.$.name": name,
+                    "addresses.$.mobile": mobile,
+                    "addresses.$.pincode": pincode,
+                    "addresses.$.locality": locality,
+                    "addresses.$.address": address,
+                    "addresses.$.city": city,
+                    "addresses.$.state": state,
+                    "addresses.$.landmark": landmark,
+                    "addresses.$.altPhone": altPhone,
+                    "addresses.$.addressType": addressType,
+                },
+            },
+            { new: true }
+        );
+
+        if (!updated) {
+            return res.status(404).json({ success: false, message: "Address not found" });
+        }
+
+        console.log("Address Deleted Successfully")
+        return res.status(200).json({ success: true, message: "Address updated successfully", data: updated });
+
+    } catch (error) {
+        console.error("Failed to Edit Address ", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+}
+
+const deleteAddress = async (req, res) => {
+    try {
+
+        let user;
+        if (req.session.user) {
+            user = await User.findOne({ _id: req.session.user, isBlocked: false });
+        } else if (req.session.userGoogleId) {
+            user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false });
+        }
+
+        const addressId = req.params.id;
+
+        const deleted = await Address.findOneAndUpdate({ userId: user._id }, { $pull: { addresses: { _id: addressId } } }, { new: true })
+
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: "Address Not Found" });
+        }
+
+        res.status(200).json({ success: true, message: "Address deleted successfully" })
+
+    } catch (error) {
+        console.error("Error deleting address:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
 module.exports = {
     loadAddress,
     loadAddAddress,
-    addAddress
+    addAddress,
+    loadEditAddress,
+    editAddress,
+    deleteAddress
 }

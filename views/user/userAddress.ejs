@@ -36,8 +36,12 @@
                                         <div>
                                             <p class="font-semibold">
                                                 <%= address.name %>,
-                                                    <span class="text-gray-600"><%= address.mobile %></span>
-                                                    <span class="font-bold text-blue-500"><%= address.addressType.toUpperCase() %></span>  
+                                                    <span class="text-gray-600">
+                                                        <%= address.mobile %>
+                                                    </span>
+                                                    <span class="font-bold text-blue-500">
+                                                        <%= address.addressType.toUpperCase() %>
+                                                    </span>
                                             </p>
                                             <p>
                                                 <%= address.address %>, <%= address.locality %>, <%= address.city %>,
@@ -85,8 +89,8 @@
                             fetch(`/deleteAddress/${addressId}`, {
                                 method: 'DELETE',
                             })
-                                .then(res => res.json())
-                                .then(data => {
+                                .then(async (res) => {
+                                    const data = await res.json();
                                     if (res.ok) {
                                         Swal.fire({
                                             icon: 'success',
@@ -103,7 +107,7 @@
                                         });
                                     }
                                 })
-                                .catch(err => {
+                                .catch(() => {
                                     Swal.fire({
                                         icon: 'error',
                                         title: 'Error',
@@ -113,6 +117,7 @@
                         }
                     });
                 }
+
             </script>
 </body>
 
