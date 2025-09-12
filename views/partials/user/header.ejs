@@ -48,7 +48,7 @@
           </button>
 
           <!-- Wishlist/Heart Icon -->
-          <button class="p-2 text-gray-600 hover:text-purple-600 transition-colors relative">
+          <a href="/wishlist" class="p-2 text-gray-600 hover:text-purple-600 transition-colors relative">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
@@ -57,10 +57,10 @@
             <!-- Wishlist count badge (optional) -->
             <span
               class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">3</span>
-          </button>
+          </a>
 
           <!-- Shopping Cart Icon -->
-          <button class="p-2 text-gray-600 hover:text-purple-600 transition-colors relative">
+          <a href="/cart" class="p-2 text-gray-600 hover:text-purple-600 transition-colors relative">
             <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -69,7 +69,7 @@
             <!-- Cart count badge (optional) -->
             <span
               class="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">2</span>
-          </button>
+          </a>
 
           <% if (!user) { %>
             <!-- Show Login & Signup if not logged in -->

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtPulse</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <%- include('../../views/partials/user/header') %>
+
+        <div class="container mx-auto p-6 flex-row flex-1">
+            <h2 class="text-2xl font-bold mb-4">Discover items in your cart</h2>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="w-full md:w-2/3 bg-white p-4 rounded shadow">
+                    <% if (cartItems && cartItems.length> 0) { %>
+                        <div class="space-y-4">
+                            <% cartItems.forEach(item=> { %>
+                                <div id="cart-item-<%= item.variant._id %>"
+                                    class="flex items-center justify-between p-4 border rounded">
+                                    <img src="/productimg/<%= item.variant.images[0] %>" alt="<%= item.product.name %>"
+                                        class="w-20 h-20 object-cover rounded">
+                                    <div class="flex-1 mx-4">
+                                        <h3 class="font-semibold">
+                                            <%= item.product.name %>
+                                        </h3>
+                                        <p class="text-gray-600">₹<%= item.price.toLocaleString() %>
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-2 py-1 bg-gray-200 rounded"
+                                            onclick="updateQuantity('<%= item.product._id %>','<%= item.variant._id%>', 'decrease')">-</button>
+                                        <span id="quantity-<%= item.variant._id %>" class="w-8 text-center">
+                                            <%= item.quantity %>
+                                        </span>
+                                        <button class="px-2 py-1 bg-gray-200 rounded"
+                                            onclick="updateQuantity('<%= item.product._id %>', '<%= item.variant._id %>', 'increase')">+</button>
+                                    </div>
+                                    <p id="itemTotal-<%= item.variant._id %>" class="font-bold ml-4">₹<%=
+                                            item.totalPrice.toLocaleString() %>
+                                    </p>
+                                    <button class="px-4 py-2 bg-purple-600 text-white rounded ml-4"
+                                        onclick="removeFromCart('<%= item.product._id %>','<%= item.variant._id %>')">Remove</button>
+                                </div>
+                                <% }); %>
+                        </div>
+                        <% } else { %>
+                            <p class="text-gray-500 text-center py-8">Your cart is empty. <a href="/shop"
+                                    class="text-blue-500">Continue shopping</a></p>
+                            <% } %>
+                </div>
+                <div class="w-full md:w-1/3 bg-white p-4 rounded shadow">
+                    <h3 class="font-bold mb-4">Order Summary</h3>
+                    <div class="space-y-2">
+                        <% if (cartItems && cartItems.length> 0) { %>
+                            <% cartItems.forEach(item=> { %>
+                                <div class="flex justify-between">
+                                    <span>
+                                        <%= item.quantity %> x <%= item.product.name %>
+                                    </span>
+                                    <span>₹<%= item.totalPrice.toLocaleString() %></span>
+                                </div>
+                                <% }); %>
+                                    <% } %>
+                                        <div class="flex justify-between">
+                                            <span>Delivery Charges</span>
+                                            <span>₹<%= deliveryCharge.toLocaleString() %></span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span>Platform Fee</span>
+                                            <span>₹<%= platformFee.toLocaleString() %></span>
+                                        </div>
+                                        <div class="flex justify-between font-bold border-t pt-2">
+                                            <span>Total in Rupees</span>
+                                            <span id="cartTotal">₹<%= (totalAmount + deliveryCharge +
+                                                    platformFee).toLocaleString() %>
+                                            </span>
+                                        </div>
+                    </div>
+                    <% if (cartItems && cartItems.length> 0) { %>
+                        <button class="w-full mt-4 px-4 py-2 bg-purple-600 text-white rounded">Continue</button>
+                        <% } else { %>
+                            <button
+                                class="w-full mt-4 px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">Continue</button>
+                            <% } %>
+                </div>
+            </div>
+            <h2 class="text-2xl font-bold mt-6 mb-4">Discover more items similar your cart</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <% if (similarItems && similarItems.length> 0) { %>
+                    <% similarItems.forEach(item=> { %>
+                        <a href="/productDetail/<%= item.id %>">
+                            <div class="bg-white p-4 rounded shadow text-center">
+                                <img src="/productimg/<%= item.variants[0].images[0] %>" alt="<%= item.name %>"
+                                    class="mx-auto mb-2 w-20 h-20 object-cover rounded">
+                                <h3 class="font-semibold">
+                                    <%= item.productName %>
+                                </h3>
+                                <p class="text-gray-600">
+                                    ₹<%= item.variants[0].sellingPrice.toLocaleString() %>
+                                        <span class="line-through text-red-500">₹<%=
+                                                item.variants[0].originalPrice.toLocaleString() %></span>
+                                </p>
+                            </div>
+                        </a>
+                        <% }); %>
+                            <% } else { %>
+                                <p class="col-span-full text-gray-500 text-center py-8">No similar items found.</p>
+                                <% } %>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <%- include('../../views/partials/user/subFooter') %>
+
+            <script>
+                // Placeholder functions for cart actions - implement with fetch/AJAX to backend
+                function updateQuantity(productId, variantId, action) {
+                    fetch('/updateCart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId, variantId, action })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                document.getElementById("quantity-" + variantId).textContent = data.item.quantity;
+                                document.getElementById("itemTotal-" + variantId).textContent = "₹" + data.totalAmount.toLocaleString();
+                                document.getElementById("cartTotal").textContent = "₹" + data.totalAmount.toLocaleString()
+                                location.reload()
+                            } else {
+                                Swal.fire('Error', data.message, "error")
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            Swal.fire('Error', "Failed to update quantity", "error")
+                        })
+                }
+
+                function removeFromCart(productId, variantId) {
+                    fetch('/removeCart', {
+                        method: 'DELETE',
+                        headers: { "Content-Type": 'application/json' },
+                        body: JSON.stringify({ productId, variantId })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                const itemRow = document.getElementById("cart-item-" + variantId);
+                                if (itemRow) itemRow.remove();
+
+                                document.getElementById("cartTotal").textContent = "₹" + data.newCartTotal.toLocaleString();
+
+                                if (data.remainingItems === 0) {
+                                    document.querySelector(".w-full.md\\:w-2\\/3").innerHTML =
+                                        `<p class="text-gray-500 text-center py-8">
+                                            Your cart is empty. <a href="/shop" class="text-blue-500">Continue shopping</a>
+                                        </p>`;
+                                }
+
+                            } else {
+                                Swal.fire('Error', data.message, 'error')
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            Swal.fire('Error', "Failed to remove item", "error")
+                        })
+                }
+            </script>
+</body>
+
+</html>

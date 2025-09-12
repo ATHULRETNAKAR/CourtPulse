@@ -5,6 +5,7 @@ const userController = require('../controllers/user/userController');
 const shopController = require('../controllers/user/shopController');
 const profileController = require('../controllers/user/profileController');
 const addressController = require('../controllers/user/addressController');
+const cartController = require('../controllers/user/cartController');
 const {userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus} = require('../middlewares/auth');
 const profUploads = require('../helpers/Prof_multer');
 
@@ -57,18 +58,23 @@ router.post('/changePassword', userController.forgotChangePsw);
 router.get('/shop', checkUserStatus, shopController.productPage);
 router.get('/productDetail/:id', checkUserStatus, shopController.productDetail);
 
-router.get('/profile', profileController.loadProfile)
-router.post('/updateProfile', profileController.updateProfile)
-router.post('/updateProfileImage',profUploads,profileController.updateProfileImg)
-router.post('/emailVerification',profileController.changeEmailOTP)
-router.post('/emailVerification/verify',profileController.changeEmailVerification)
+router.get('/profile', profileController.loadProfile);
+router.post('/updateProfile', profileController.updateProfile);
+router.post('/updateProfileImage',profUploads,profileController.updateProfileImg);
+router.post('/emailVerification',profileController.changeEmailOTP);
+router.post('/emailVerification/verify',profileController.changeEmailVerification);
 
-router.get('/addresses', addressController.loadAddress)
-router.get('/addAddress', addressController.loadAddAddress)
-router.post('/addAddress', addressController.addAddress)
-router.get('/editAddress/:id', addressController.loadEditAddress)
-router.put('/editAddress', addressController.editAddress)
-router.delete('/deleteAddress/:id', addressController.deleteAddress)
+router.get('/addresses', addressController.loadAddress);
+router.get('/addAddress', addressController.loadAddAddress);
+router.post('/addAddress', addressController.addAddress);
+router.get('/editAddress/:id', addressController.loadEditAddress);
+router.put('/editAddress', addressController.editAddress);
+router.delete('/deleteAddress/:id', addressController.deleteAddress);
+
+router.get('/cart', cartController.loadCart);
+router.post('/addToCart', cartController.addToCart);
+router.post('/updateCart', cartController.updateQuantity);
+router.delete('/removeCart', cartController.removeFromCart);
 
 
 module.exports = router

@@ -17,7 +17,7 @@ const productPage = async (req, res) => {
 
     const {
       page = 1,
-      limit = 12, 
+      limit = 12,
       category,
       minPrice,
       maxPrice,
@@ -25,7 +25,7 @@ const productPage = async (req, res) => {
       inStock,
       sort,
       search,
-      ratings 
+      ratings
     } = req.query;
 
 
@@ -70,7 +70,7 @@ const productPage = async (req, res) => {
 
     // Availability filter
     if (inStock) {
-      filter.status = "Available"; 
+      filter.status = "Available";
     }
 
     // Sorting logic
@@ -93,7 +93,7 @@ const productPage = async (req, res) => {
       .skip(skip)
       .limit(limitNum)
       .populate('brand category')
-      .lean(); 
+      .lean();
 
 
     const totalProducts = await Product.countDocuments(filter);
@@ -140,10 +140,14 @@ const productDetail = async (req, res) => {
 
     const relatedProducts = await Product.find({ category: categoryid, _id: { $ne: id } })
     const selectedVariant = product.variants[0]
-    let user = null
+    
+    let user;
     if (req.session.user) {
-      user = await User.findOne({ _id: req.session.user, isBlocked: false })
+      user = await User.findOne({ _id: req.session.user, isBlocked: false });
+    } else if (req.session.userGoogleId) {
+      user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false });
     }
+
     res.render('productDetail', {
       user,
       product,
