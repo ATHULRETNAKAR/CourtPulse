@@ -47,8 +47,16 @@
         }
 
         .badge-discontinued {
-            background-color: #e5e7eb;
+            background-color: #386bd1;
             color: #4b5563;
+        }
+
+        .deleted-row {
+            opacity: 0.5;
+        }
+
+        .deleted-row td {
+            text-decoration: line-through;
         }
     </style>
 </head>
@@ -58,228 +66,268 @@
         <!-- Sidebar -->
         <%- include('../../views/partials/admin/sidebar') %>
 
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
-            <!-- Header -->
-            <%- include('../../views/partials/admin/header') %>
+            <!-- Main Content -->
+            <div class="flex-1 flex flex-col">
+                <!-- Header -->
+                <%- include('../../views/partials/admin/header') %>
 
-            <!-- Dashboard Content -->
-            <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <!-- Page Header -->
-                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                        <h2 class="text-2xl font-semibold text-gray-800">Product Management</h2>
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                            <!-- Search Section -->
-                            <div class="flex items-center gap-2">
-                                <div class="relative flex-1 sm:w-64">
-                                    <input type="text" placeholder="Search products..."
-                                        class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                        value="<%= search || '' %>" id="productSearchInput">
-                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                    <button type="button" id="clearSearchBtn"
-                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors <%= search ? '' : 'hidden' %>"
-                                        title="Clear search">
-                                        <i class="fas fa-times text-sm"></i>
-                                    </button>
+                    <!-- Dashboard Content -->
+                    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+                        <div class="bg-white p-6 rounded-lg shadow-lg">
+                            <!-- Page Header -->
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                                <h2 class="text-2xl font-semibold text-gray-800">Product Management</h2>
+                                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                    <!-- Search Section -->
+                                    <div class="flex items-center gap-2">
+                                        <div class="relative flex-1 sm:w-64">
+                                            <input type="text" placeholder="Search products..."
+                                                class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                                value="<%= search || '' %>" id="productSearchInput">
+                                            <i
+                                                class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                            <button type="button" id="clearSearchBtn"
+                                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors <%= search ? '' : 'hidden' %>"
+                                                title="Clear search">
+                                                <i class="fas fa-times text-sm"></i>
+                                            </button>
+                                        </div>
+                                        <button type="button" id="searchBtn"
+                                            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center space-x-2 transition-colors whitespace-nowrap">
+                                            <i class="fas fa-search"></i>
+                                            <span class="hidden sm:inline">Search</span>
+                                        </button>
+                                    </div>
+                                    <a href="/admin/addProduct"
+                                        class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center justify-center space-x-2 transition-colors">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Add New Product</span>
+                                    </a>
                                 </div>
-                                <button type="button" id="searchBtn"
-                                    class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center space-x-2 transition-colors whitespace-nowrap">
-                                    <i class="fas fa-search"></i>
-                                    <span class="hidden sm:inline">Search</span>
-                                </button>
                             </div>
-                            <a href="/admin/addProduct"
-                                class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center justify-center space-x-2 transition-colors">
-                                <i class="fas fa-plus"></i>
-                                <span>Add New Product</span>
-                            </a>
-                        </div>
-                    </div>
 
-                    <!-- Search Results Info -->
-                    <% if (search && search.trim() !== '') { %>
-                    <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
-                                <i class="fas fa-info-circle text-blue-500"></i>
-                                <span class="text-sm text-blue-700">
-                                    Showing results for "<strong><%= search %></strong>"
-                                    <% if (products && products.length > 0) { %>
-                                    - <%= products.length %> result<%= products.length !== 1 ? 's' : '' %> found
-                                    <% } else { %>
-                                    - No results found
-                                    <% } %>
-                                </span>
-                            </div>
-                            <button type="button" onclick="clearSearch()"
-                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                Clear search
-                            </button>
-                        </div>
-                    </div>
-                    <% } %>
-
-                    <div class="table-container">
-                        <table class="min-w-full bg-white border border-gray-200">
-                            <thead>
-                                <tr class="bg-gray-100 text-left text-gray-600">
-                                    <th class="py-2 px-4 border-b">Product Name</th>
-                                    <th class="py-2 px-4 border-b">Brand</th>
-                                    <th class="py-2 px-4 border-b">Discount</th>
-                                    <th class="py-2 px-4 border-b">Stock</th>
-                                    <th class="py-2 px-4 border-b">Category</th>
-                                    <th class="py-2 px-4 border-b">No. Variants</th>
-                                    <th class="py-2 px-4 border-b">Status</th>
-                                    <th class="py-2 px-4 border-b">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% if (products && products.length > 0) { %>
-                                <% products.forEach(product => { %>
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="py-2 px-4 border-b">
-                                        <%= product.productName || 'N/A' %>
-                                    </td>
-                                    <td class="py-2 px-4 border-b">
-                                        <%= product.brand ? product.brand.brandName : 'N/A' %>
-                                    </td>
-                                    <td class="py-2 px-4 border-b">
-                                        <%= product.productOffer ? product.productOffer + '%' : 0+'%' %>
-                                    </td>
-                                    <td class="py-2 px-4 border-b">
-                                        <%= product.variants.reduce((total, v) => total + (v.quantity || 0), 0) %>
-                                    </td>
-                                    <td class="py-2 px-4 border-b">
-                                        <%= product.category ? product.category.name : 'N/A' %>
-                                    </td>
-                                    <td class="py-2 px-4 border-b">
-                                        <div class="flex items-center space-x-2 cursor-pointer"
-                                            onclick="toggleVariants('<%= product._id %>')">
-                                            <span class="px-2 py-1 rounded bg-yellow-100 text-yellow-800">
-                                                <%= product.variants?.length || 0 %> Variant
+                            <!-- Search Results Info -->
+                            <% if (search && search.trim() !=='' ) { %>
+                                <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-info-circle text-blue-500"></i>
+                                            <span class="text-sm text-blue-700">
+                                                Showing results for "<strong>
+                                                    <%= search %>
+                                                </strong>"
+                                                <% if (products && products.length> 0) { %>
+                                                    - <%= products.length %> result<%= products.length !==1 ? 's' : ''
+                                                            %> found
+                                                            <% } else { %>
+                                                                - No results found
+                                                                <% } %>
                                             </span>
-                                            <i class="fas fa-chevron-down text-sm" id="icon-<%= product._id %>"></i>
                                         </div>
-                                    </td>
-                                    <td class="py-2 px-4 border-b">
-                                        <span class="px-2 py-1 rounded <%= product.status === 'Available' ? 'badge-available' : product.status === 'Out of Stock' ? 'badge-outofstock' : 'badge-discontinued' %>">
-                                            <%= product.status %>
-                                        </span>
-                                    </td>
-                                    <td class="py-2 px-4 border-b">
-                                        <div class="flex space-x-2">
-                                            <a href="/admin/editProduct/<%= product._id %>"
-                                                class="text-blue-600 hover:text-blue-800">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button onclick="confirmDelete('<%= product._id %>')"
-                                                class="text-red-600 hover:text-red-800">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr id="variants-<%= product._id %>" class="hidden bg-gray-50">
-                                    <td colspan="8" class="py-2 px-4 border-b">
-                                        <div class="overflow-x-auto">
-                                            <table class="w-full text-sm text-left text-gray-700 border">
-                                                <thead class="bg-gray-100 text-xs text-gray-600 uppercase">
-                                                    <tr>
-                                                        <th class="px-3 py-2 border">Size</th>
-                                                        <th class="px-3 py-2 border">Color</th>
-                                                        <th class="px-3 py-2 border">Quantity</th>
-                                                        <th class="px-3 py-2 border">Original Price</th>
-                                                        <th class="px-3 py-2 border">Discount (%)</th>
-                                                        <th class="px-3 py-2 border">Selling Price</th>
-                                                        <th class="px-3 py-2 border">Stock Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% product.variants.forEach(variant => { %>
-                                                    <tr>
-                                                        <td class="px-3 py-2 border">
-                                                            <%= variant.size || 'N/A' %>
-                                                        </td>
-                                                        <td class="px-3 py-2 border">
-                                                            <%= variant.color || 'N/A' %>
-                                                        </td>
-                                                        <td class="px-3 py-2 border">
-                                                            <%= variant.quantity || 0 %>
-                                                        </td>
-                                                        <td class="px-3 py-2 border">
-                                                            <%= variant.originalPrice || 0 %>
-                                                        </td>
-                                                        <td class="px-3 py-2 border">
-                                                            <%= variant.discount || 0 %>
-                                                        </td>
-                                                        <td class="px-3 py-2 border">
-                                                            <%= variant.sellingPrice || 0 %>
-                                                        </td>
-                                                        <td class="px-3 py-2 border">
-                                                            <%= variant.stockStatus || 'N/A' %>
-                                                        </td>
-                                                    </tr>
-                                                    <% }) %>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <% }) %>
-                                <% } else { %>
-                                <tr>
-                                    <td colspan="8" class="text-center py-8 text-gray-500">
-                                        <% if (search && search.trim() !== '') { %>
-                                        <div class="flex flex-col items-center space-y-2">
-                                            <i class="fas fa-search text-3xl text-gray-300"></i>
-                                            <p>No products found matching "<%= search %>"</p>
-                                            <button onclick="clearSearch()" class="text-primary hover:text-indigo-700 text-sm font-medium">
-                                                Clear search to see all products
-                                            </button>
-                                        </div>
-                                        <% } else { %>
-                                        No products found.
-                                        <% } %>
-                                    </td>
-                                </tr>
+                                        <button type="button" onclick="clearSearch()"
+                                            class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            Clear search
+                                        </button>
+                                    </div>
+                                </div>
                                 <% } %>
-                            </tbody>
-                        </table>
-                    </div>
 
-                    <!-- Pagination -->
-                    <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-4 border-t border-gray-200 gap-4">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-sm text-gray-700">Show result:</span>
-                            <select class="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                onchange="changePageSize(this.value)">
-                                <option value="2" <%= limit == 2 ? 'selected' : '' %>>2</option>
-                                <option value="5" <%= limit == 5 ? 'selected' : '' %>>5</option>
-                                <option value="10" <%= limit == 10 ? 'selected' : '' %>>10</option>
-                                <option value="20" <%= limit == 20 ? 'selected' : '' %>>20</option>
-                            </select>
+                                    <div class="table-container">
+                                        <table class="min-w-full bg-white border border-gray-200">
+                                            <thead>
+                                                <tr class="bg-gray-100 text-left text-gray-600">
+                                                    <th class="py-2 px-4 border-b">Product Name</th>
+                                                    <th class="py-2 px-4 border-b">Brand</th>
+                                                    <th class="py-2 px-4 border-b">Discount</th>
+                                                    <th class="py-2 px-4 border-b">Stock</th>
+                                                    <th class="py-2 px-4 border-b">Category</th>
+                                                    <th class="py-2 px-4 border-b">No. Variants</th>
+                                                    <th class="py-2 px-4 border-b">Status</th>
+                                                    <th class="py-2 px-4 border-b">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% if (products && products.length> 0) { %>
+                                                    <% products.forEach(product=> { %>
+                                                        <tr
+                                                            class="hover:bg-gray-50 transition-colors <%= product.isDeleted ? 'deleted-row' : '' %>">
+                                                            <td class="py-2 px-4 border-b">
+                                                                <%= product.productName || 'N/A' %>
+                                                            </td>
+                                                            <td class="py-2 px-4 border-b">
+                                                                <%= product.brand ? product.brand.brandName : 'N/A' %>
+                                                            </td>
+                                                            <td class="py-2 px-4 border-b">
+                                                                <%= product.productOffer ? product.productOffer + '%' :
+                                                                    0+'%' %>
+                                                            </td>
+                                                            <td class="py-2 px-4 border-b">
+                                                                <%= product.variants.reduce((total, v)=> total +
+                                                                    (v.quantity || 0), 0) %>
+                                                            </td>
+                                                            <td class="py-2 px-4 border-b">
+                                                                <%= product.category ? product.category.name : 'N/A' %>
+                                                            </td>
+                                                            <td class="py-2 px-4 border-b">
+                                                                <div class="flex items-center space-x-2 cursor-pointer"
+                                                                    onclick="toggleVariants('<%= product._id %>')">
+                                                                    <span
+                                                                        class="px-2 py-1 rounded bg-yellow-100 text-yellow-800">
+                                                                        <%= product.variants?.length || 0 %> Variant
+                                                                    </span>
+                                                                    <i class="fas fa-chevron-down text-sm"
+                                                                        id="icon-<%= product._id %>"></i>
+                                                                </div>
+                                                            </td>
+                                                            <td class="py-2 px-4 border-b">
+                                                                <span
+                                                                    class="px-2 py-1 rounded <%= product.status === 'Available' ? 'badge-available' : product.status === 'Out of Stock' ? 'badge-outofstock' : 'badge-discontinued' %>">
+                                                                    <%= product.status %>
+                                                                </span>
+                                                            </td>
+                                                            <td class="py-2 px-4 border-b">
+                                                                <div class="flex space-x-2">
+                                                                    <% if (!product.isDeleted) { %>
+                                                                        <a href="/admin/editProduct/<%= product._id %>"
+                                                                            class="text-blue-600 hover:text-blue-800">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </a>
+                                                                        <button
+                                                                            onclick="confirmDelete('<%= product._id %>')"
+                                                                            class="text-red-600 hover:text-red-800">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </button>
+                                                                        <% } else { %>
+                                                                            <button
+                                                                                onclick="undoDelete('<%= product._id %>')"
+                                                                                class="text-green-600 hover:text-green-800">
+                                                                                <i class="fas fa-undo"></i> Undo
+                                                                            </button>
+                                                                            <% } %>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr id="variants-<%= product._id %>" class="hidden bg-gray-50">
+                                                            <td colspan="8" class="py-2 px-4 border-b">
+                                                                <div class="overflow-x-auto">
+                                                                    <table
+                                                                        class="w-full text-sm text-left text-gray-700 border">
+                                                                        <thead
+                                                                            class="bg-gray-100 text-xs text-gray-600 uppercase">
+                                                                            <tr>
+                                                                                <th class="px-3 py-2 border">Size</th>
+                                                                                <th class="px-3 py-2 border">Color</th>
+                                                                                <th class="px-3 py-2 border">Quantity
+                                                                                </th>
+                                                                                <th class="px-3 py-2 border">Original
+                                                                                    Price</th>
+                                                                                <th class="px-3 py-2 border">Discount
+                                                                                    (%)</th>
+                                                                                <th class="px-3 py-2 border">Selling
+                                                                                    Price</th>
+                                                                                <th class="px-3 py-2 border">Stock
+                                                                                    Status</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <% product.variants.forEach(variant=> { %>
+                                                                                <tr>
+                                                                                    <td class="px-3 py-2 border">
+                                                                                        <%= variant.size || 'N/A' %>
+                                                                                    </td>
+                                                                                    <td class="px-3 py-2 border">
+                                                                                        <%= variant.color || 'N/A' %>
+                                                                                    </td>
+                                                                                    <td class="px-3 py-2 border">
+                                                                                        <%= variant.quantity || 0 %>
+                                                                                    </td>
+                                                                                    <td class="px-3 py-2 border">
+                                                                                        <%= variant.originalPrice || 0
+                                                                                            %>
+                                                                                    </td>
+                                                                                    <td class="px-3 py-2 border">
+                                                                                        <%= variant.discount || 0 %>
+                                                                                    </td>
+                                                                                    <td class="px-3 py-2 border">
+                                                                                        <%= variant.sellingPrice || 0 %>
+                                                                                    </td>
+                                                                                    <td class="px-3 py-2 border">
+                                                                                        <%= variant.stockStatus || 'N/A'
+                                                                                            %>
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <% }) %>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <% }) %>
+                                                            <% } else { %>
+                                                                <tr>
+                                                                    <td colspan="8"
+                                                                        class="text-center py-8 text-gray-500">
+                                                                        <% if (search && search.trim() !=='' ) { %>
+                                                                            <div
+                                                                                class="flex flex-col items-center space-y-2">
+                                                                                <i
+                                                                                    class="fas fa-search text-3xl text-gray-300"></i>
+                                                                                <p>No products found matching "<%=
+                                                                                        search %>"</p>
+                                                                                <button onclick="clearSearch()"
+                                                                                    class="text-primary hover:text-indigo-700 text-sm font-medium">
+                                                                                    Clear search to see all products
+                                                                                </button>
+                                                                            </div>
+                                                                            <% } else { %>
+                                                                                No products found.
+                                                                                <% } %>
+                                                                    </td>
+                                                                </tr>
+                                                                <% } %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Pagination -->
+                                    <div
+                                        class="flex flex-col sm:flex-row items-center justify-between px-4 py-4 border-t border-gray-200 gap-4">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm text-gray-700">Show result:</span>
+                                            <select
+                                                class="border border-gray-300 rounded px-2 md:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                                onchange="changePageSize(this.value)">
+                                                <option value="2" <%=limit==2 ? 'selected' : '' %>>2</option>
+                                                <option value="5" <%=limit==5 ? 'selected' : '' %>>5</option>
+                                                <option value="10" <%=limit==10 ? 'selected' : '' %>>10</option>
+                                                <option value="20" <%=limit==20 ? 'selected' : '' %>>20</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center space-x-1 md:space-x-2">
+                                            <button
+                                                class="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 rounded hover:bg-gray-100"
+                                                <%=currentPage===1 ? 'disabled' : '' %> onclick="previousPage()"
+                                                title="Previous Page">
+                                                <i class="fas fa-chevron-left text-sm"></i>
+                                            </button>
+                                            <% for (let i=1; i <=totalPages; i++) { %>
+                                                <button
+                                                    class="px-2 md:px-3 py-1 <%= currentPage === i ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100' %> rounded text-sm"
+                                                    onclick="goToPage(<%= i %>)">
+                                                    <%= i %>
+                                                </button>
+                                                <% } %>
+                                                    <button
+                                                        class="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+                                                        <%=currentPage===totalPages ? 'disabled' : '' %>
+                                                        onclick="nextPage()" title="Next Page">
+                                                        <i class="fas fa-chevron-right text-sm"></i>
+                                                    </button>
+                                        </div>
+                                    </div>
                         </div>
-                        <div class="flex items-center space-x-1 md:space-x-2">
-                            <button class="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 rounded hover:bg-gray-100"
-                                <%= currentPage === 1 ? 'disabled' : '' %> onclick="previousPage()" title="Previous Page">
-                                <i class="fas fa-chevron-left text-sm"></i>
-                            </button>
-                            <% for (let i = 1; i <= totalPages; i++) { %>
-                            <button class="px-2 md:px-3 py-1 <%= currentPage === i ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100' %> rounded text-sm"
-                                onclick="goToPage(<%= i %>)">
-                                <%= i %>
-                            </button>
-                            <% } %>
-                            <button class="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
-                                <%= currentPage === totalPages ? 'disabled' : '' %> onclick="nextPage()" title="Next Page">
-                                <i class="fas fa-chevron-right text-sm"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
+                    </main>
+            </div>
     </div>
 
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
@@ -297,7 +345,7 @@
         function confirmDelete(productId) {
             Swal.fire({
                 title: 'Are you sure?',
-                text: "You won't be able to revert this!",
+                text: "This product will be deleted and can be restored using the Undo button.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -305,16 +353,48 @@
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/admin/addProduct/${productId}`, {
+                    fetch(`/admin/deleteProduct/${productId}`, {
                         method: 'DELETE',
                         headers: { 'Content-type': 'application/json' }
                     })
                         .then(res => {
                             if (res.ok) {
-                                Swal.fire('Deleted!', 'Product has been deleted.', 'success')
-                                    .then(() => location.reload());
+                                Swal.fire('Deleted!', 'Product has been deleted.', 'success').then(() => {
+                                    location.reload();
+                                });
                             } else {
                                 throw new Error('Failed to delete');
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire('Error', 'Something went wrong!', 'error');
+                        });
+                }
+            });
+        }
+
+        function undoDelete(productId) {
+            Swal.fire({
+                title: 'Restore Product?',
+                text: "This will restore the deleted product.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, restore it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admin/undoProduct/${productId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-type': 'application/json' }
+                    })
+                        .then(res => {
+                            if (res.ok) {
+                                Swal.fire('Restored!', 'Product has been restored.', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                throw new Error('Failed to restore');
                             }
                         })
                         .catch(() => {
@@ -420,4 +500,5 @@
         });
     </script>
 </body>
+
 </html>

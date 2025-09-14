@@ -29,18 +29,19 @@ router.delete('/category/:id', categoryController.deleteCategory);
 
 
 //Brand Management
-router.get('/brand', brandController.brandInfo)
-router.post('/brand', brandController.addBrand)
-router.put('/brand/:id', brandController.editBrand)
+router.get('/brand', brandController.brandInfo);
+router.post('/brand', brandController.addBrand);
+router.put('/brand/:id', brandController.editBrand);
 
 
 //Product Management
-router.get('/productInfo', productController.productInfo)
-router.get('/addProduct', productController.addProduct)
-router.post('/addProduct', upload, productController.addProductpost)
-router.delete('/addProduct/:id', productController.productDelete)
-router.put('/editProduct/:id',upload, productController.productEditPut)
-router.get('/editProduct/:id',upload, productController.editProduct)
+router.get('/productInfo', productController.productInfo);
+router.get('/addProduct', productController.addProduct);
+router.post('/addProduct', upload, productController.addProductpost);
+router.delete('/deleteProduct/:id', productController.productDelete);
+router.patch('/undoProduct/:id', productController.productUndo);
+router.put('/editProduct/:id',upload, productController.productEditPut);
+router.get('/editProduct/:id',upload, productController.editProduct);
 router.post('/removeProductImage', productController.removeProductImage);
 
 

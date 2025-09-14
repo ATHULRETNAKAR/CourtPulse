@@ -231,6 +231,7 @@
                                                     product.productStatus==='Discontinued' ? 'selected' : '' %>
                                                     >Discontinued</option>
                                             </select>
+                                            <p id="productStatus-error" class="text-red-500 text-sm hidden"></p>
                                         </div>
 
                                         <!-- Product Description -->
@@ -326,6 +327,8 @@
                                                                         ? 'selected' : '' %>>XXXL</option>
                                                                 </optgroup>
                                                             </select>
+                                                            <p id="variant-size-error-<%= index %>"
+                                                                class="text-red-500 text-sm hidden"></p>
                                                         </div>
                                                         <div>
                                                             <label
@@ -334,6 +337,8 @@
                                                             <input type="text" name="variants[<%= index %>][color]"
                                                                 class="w-full p-2 border rounded mt-1"
                                                                 placeholder="Enter color" value="<%= variant.color %>">
+                                                            <p id="variant-color-error-<%= index %>"
+                                                                class="text-red-500 text-sm hidden"></p>
                                                         </div>
                                                         <div>
                                                             <label class="block text-sm font-medium text-gray-700">Stock
@@ -347,6 +352,8 @@
                                                                     <%=variant.stockStatus==='Out of Stock' ? 'selected'
                                                                     : '' %>>Out of Stock</option>
                                                             </select>
+                                                            <p id="variant-stockstatus-error-<%= index %>"
+                                                                class="text-red-500 text-sm hidden"></p>
                                                         </div>
                                                         <div>
                                                             <label class="block text-sm font-medium text-gray-700">Stock
@@ -356,6 +363,8 @@
                                                                 class="w-full p-2 border rounded mt-1"
                                                                 placeholder="Enter stock limit"
                                                                 value="<%= variant.quantity %>">
+                                                            <p id="variant-quantity-error-<%= index %>"
+                                                                class="text-red-500 text-sm hidden"></p>
                                                         </div>
                                                         <div>
                                                             <label
@@ -366,6 +375,8 @@
                                                                 class="w-full p-2 border rounded mt-1"
                                                                 placeholder="Enter base price"
                                                                 value="<%= variant.originalPrice %>">
+                                                            <p id="variant-originalprice-error-<%= index %>"
+                                                                class="text-red-500 text-sm hidden"></p>
                                                         </div>
                                                         <div>
                                                             <label
@@ -377,6 +388,8 @@
                                                                 class="w-full p-2 border rounded mt-1"
                                                                 placeholder="Enter discount percentage"
                                                                 value="<%= variant.discount %>">
+                                                            <p id="variant-discount-error-<%= index %>"
+                                                                class="text-red-500 text-sm hidden"></p>
                                                         </div>
                                                         <div>
                                                             <label
@@ -387,6 +400,8 @@
                                                                 class="w-full p-2 border rounded mt-1 bg-white"
                                                                 placeholder="Enter selling price"
                                                                 value="<%= variant.sellingPrice %>">
+                                                            <p id="variant-sellingprice-error-<%= index %>"
+                                                                class="text-red-500 text-sm hidden"></p>
                                                         </div>
                                                         <div class="md:col-span-2">
                                                             <label class="block text-sm font-medium text-gray-700">Add
@@ -412,6 +427,8 @@
                                                                     </div>
                                                                     <% } %>
                                                             </div>
+                                                            <p id="variant-images-error-<%= index %>"
+                                                                class="text-red-500 text-sm hidden"></p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -505,6 +522,7 @@
                             <option value="XXXL">XXXL</option>
                         </optgroup>
                     </select>
+                    <p id="variant-size-error-${variantIndex}" class="text-red-500 text-sm hidden"></p>
                 </div>
             `;
 
@@ -520,6 +538,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Product Colour</label>
                         <input type="text" name="variants[${variantIndex}][color]" class="w-full p-2 border rounded mt-1" placeholder="Enter color">
+                        <p id="variant-color-error-${variantIndex}" class="text-red-500 text-sm hidden"></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Stock Status</label>
@@ -527,22 +546,27 @@
                             <option value="In Stock">In Stock</option>
                             <option value="Out of Stock">Out of Stock</option>
                         </select>
+                        <p id="variant-stockstatus-error-${variantIndex}" class="text-red-500 text-sm hidden"></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Stock Quantity</label>
                         <input type="number" min="0" name="variants[${variantIndex}][quantity]" class="w-full p-2 border rounded mt-1" placeholder="Enter stock limit">
+                        <p id="variant-quantity-error-${variantIndex}" class="text-red-500 text-sm hidden"></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Original Price / MRP</label>
                         <input oninput="updateSellingPrice(this)" type="number" min="0" name="variants[${variantIndex}][originalPrice]" class="w-full p-2 border rounded mt-1" placeholder="Enter base price">
+                        <p id="variant-originalprice-error-${variantIndex}" class="text-red-500 text-sm hidden"></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Discount Percentage</label>
                         <input oninput="updateSellingPrice(this)" type="number" min="0" max="100" name="variants[${variantIndex}][discount]" class="w-full p-2 border rounded mt-1" placeholder="Enter discount percentage">
+                        <p id="variant-discount-error-${variantIndex}" class="text-red-500 text-sm hidden"></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Selling Price</label>
                         <input type="number" min="0" name="variants[${variantIndex}][sellingPrice]" class="w-full p-2 border rounded mt-1 bg-white" placeholder="Enter selling price">
+                        <p id="variant-sellingprice-error-${variantIndex}" class="text-red-500 text-sm hidden"></p>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Add Photos</label>
@@ -557,6 +581,7 @@
                                 </div>
                             <% } %>
                         </div>
+                        <p id="variant-images-error-${variantIndex}" class="text-red-500 text-sm hidden"></p>
                     </div>
                 </div>
             `;
@@ -752,7 +777,105 @@
                 isValid = false;
             }
 
+            const productStatus = document.querySelector('select[name="productStatus"]').value;
+            if (!productStatus) {
+                document.getElementById('productStatus-error').innerText = 'Product status is required';
+                document.getElementById('productStatus-error').classList.remove('hidden');
+                isValid = false;
+            }
+
             return isValid;
+        }
+
+        function validateVariant(variantDiv, index) {
+            let isValid = true;
+            const variantErrors = ['size', 'color', 'stockstatus', 'quantity', 'originalprice', 'discount', 'sellingprice', 'images'].map(field => `variant-${field}-error-${index}`);
+            variantErrors.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+
+            const categorySelect = document.getElementById('categorySelect');
+            const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+            const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
+
+            const sizeField = variantDiv.querySelector('select[name$="[size]"]');
+            const size = sizeField ? sizeField.value : 'N/A';
+            if (categoryType === 'size' && (!size || size === 'N/A')) {
+                document.getElementById(`variant-size-error-${index}`).innerText = 'Valid size is required for this category';
+                document.getElementById(`variant-size-error-${index}`).classList.remove('hidden');
+                isValid = false;
+            }
+
+            const color = variantDiv.querySelector('input[name$="[color]"]').value.trim();
+            if (!color) {
+                document.getElementById(`variant-color-error-${index}`).innerText = 'Color is required';
+                document.getElementById(`variant-color-error-${index}`).classList.remove('hidden');
+                isValid = false;
+            }
+
+            const stockStatus = variantDiv.querySelector('select[name$="[stockStatus]"]').value;
+            if (!stockStatus) {
+                document.getElementById(`variant-stockstatus-error-${index}`).innerText = 'Stock status is required';
+                document.getElementById(`variant-stockstatus-error-${index}`).classList.remove('hidden');
+                isValid = false;
+            }
+
+            const quantity = parseInt(variantDiv.querySelector('input[name$="[quantity]"]').value);
+            if (isNaN(quantity) || quantity < 0) {
+                document.getElementById(`variant-quantity-error-${index}`).innerText = 'Stock quantity must be a non-negative integer';
+                document.getElementById(`variant-quantity-error-${index}`).classList.remove('hidden');
+                isValid = false;
+            }
+
+            const originalPrice = parseFloat(variantDiv.querySelector('input[name$="[originalPrice]"]').value);
+            if (isNaN(originalPrice) || originalPrice <= 0) {
+                document.getElementById(`variant-originalprice-error-${index}`).innerText = 'Original price must be greater than 0';
+                document.getElementById(`variant-originalprice-error-${index}`).classList.remove('hidden');
+                isValid = false;
+            }
+
+            const discount = parseFloat(variantDiv.querySelector('input[name$="[discount]"]').value);
+            if (isNaN(discount) || discount < 0 || discount > 100) {
+                document.getElementById(`variant-discount-error-${index}`).innerText = 'Discount must be between 0 and 100';
+                document.getElementById(`variant-discount-error-${index}`).classList.remove('hidden');
+                isValid = false;
+            }
+
+            const sellingPrice = parseFloat(variantDiv.querySelector('input[name$="[sellingPrice]"]').value);
+            if (isNaN(sellingPrice) || sellingPrice <= 0) {
+                document.getElementById(`variant-sellingprice-error-${index}`).innerText = 'Selling price must be greater than 0';
+                document.getElementById(`variant-sellingprice-error-${index}`).classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (sellingPrice >= originalPrice) {
+                document.getElementById(`variant-sellingprice-error-${index}`).innerText = 'Selling price must be less than original price';
+                document.getElementById(`variant-sellingprice-error-${index}`).classList.remove('hidden');
+                isValid = false;
+            }
+
+            const images = [];
+            let imageCount = 0;
+            variantDiv.querySelectorAll('input[name$="[images][]"]').forEach(input => {
+                if (input.files[0]) {
+                    images.push(input.files[0]);
+                    imageCount++;
+                } else if (isEdit) {
+                    const preview = input.nextElementSibling;
+                    if (preview && preview.tagName === 'IMG' && preview.src && !preview.classList.contains('hidden')) {
+                        imageCount++;
+                    }
+                }
+            });
+
+            if (imageCount < 3) {
+                document.getElementById(`variant-images-error-${index}`).innerText = 'At least 3 images are required per variant';
+                document.getElementById(`variant-images-error-${index}`).classList.remove('hidden');
+                isValid = false;
+            }
+
+            return { isValid, images };
         }
 
         function updateVariantSizes() {
@@ -808,10 +931,16 @@
 
             const variants = [];
             let hasVariant = false;
-            let validImages = true;
+            let allVariantsValid = true;
 
-            document.querySelectorAll('#variantsSection .bg-gray-100').forEach(variantDiv => {
+            document.querySelectorAll('#variantsSection .bg-gray-100').forEach((variantDiv, index) => {
                 hasVariant = true;
+                const { isValid, images } = validateVariant(variantDiv, index);
+                if (!isValid) {
+                    allVariantsValid = false;
+                    return;
+                }
+
                 const sizeField = variantDiv.querySelector('select[name$="[size]"]');
                 const size = sizeField ? sizeField.value : 'N/A';
                 const color = variantDiv.querySelector('input[name$="[color]"]').value.trim();
@@ -820,57 +949,6 @@
                 const originalPrice = variantDiv.querySelector('input[name$="[originalPrice]"]').value;
                 const discount = variantDiv.querySelector('input[name$="[discount]"]').value;
                 const sellingPrice = variantDiv.querySelector('input[name$="[sellingPrice]"]').value;
-
-                const categorySelect = document.getElementById('categorySelect');
-                const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
-                const categoryType = selectedCategory ? selectedCategory.getAttribute('data-type') : 'nosize';
-
-                if (categoryType === 'size' && (!size || size === 'N/A')) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Incomplete Variant Data',
-                        text: 'Please select a valid size for each variant in shoe or apparel categories.',
-                        confirmButtonColor: '#6366f1'
-                    });
-                    validImages = false;
-                    return;
-                }
-
-                if (!color || !stockStatus || !quantity || !originalPrice || !discount || !sellingPrice) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Incomplete Variant Data',
-                        text: 'Please fill all fields for each variant.',
-                        confirmButtonColor: '#6366f1'
-                    });
-                    validImages = false;
-                    return;
-                }
-
-                const images = [];
-                let imageCount = 0;
-                variantDiv.querySelectorAll('input[name$="[images][]"]').forEach(input => {
-                    if (input.files[0]) {
-                        images.push(input.files[0]);
-                        imageCount++;
-                    } else if (isEdit) {
-                        const preview = input.nextElementSibling;
-                        if (preview && preview.tagName === 'IMG' && preview.src && !preview.classList.contains('hidden')) {
-                            imageCount++;
-                        }
-                    }
-                });
-
-                if (imageCount < 3) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Insufficient Images',
-                        text: 'Each variant must have at least 3 images.',
-                        confirmButtonColor: '#6366f1'
-                    });
-                    validImages = false;
-                    return;
-                }
 
                 variants.push({ size, color, stockStatus, quantity, originalPrice, discount, sellingPrice, images });
             });
@@ -885,7 +963,13 @@
                 return;
             }
 
-            if (!validImages) {
+            if (!allVariantsValid) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Variant Validation Failed',
+                    text: 'Please correct the errors in variant fields.',
+                    confirmButtonColor: '#6366f1'
+                });
                 return;
             }
 

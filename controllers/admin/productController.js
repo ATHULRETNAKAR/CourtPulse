@@ -34,7 +34,7 @@ const productInfo = async (req, res) => {
 
         const query = {};
         if (search) {
-            query.name = { $regex: search, $options: 'i' }; 
+            query.name = { $regex: search, $options: 'i' };
         }
 
         const totalItems = await Category.countDocuments(query);
@@ -105,16 +105,50 @@ const addProductpost = async (req, res) => {
 const productDelete = async (req, res) => {
     try {
         const { id } = req.params
-        const deleteProduct = await Product.findOneAndDelete({ _id: id })
-        if (!deleteProduct) {
+        const product = await Product.findById({ _id: id })
+
+        if (!product) {
             return res.status(404).json({ success: false, message: "Product Not Found" })
         }
+
+        if (product.isDeleted) {
+            return res.status(400).json({ success: false, message: "Product Already deleted " })
+        }
+
+        product.isDeleted = true;
+        await product.save();
+
         res.status(200).json({ success: true, message: "Product Deleted Successfully" })
     } catch (error) {
         console.error("Error deleting product", error)
         res.status(500).json({ success: false, message: "Server error while deleting product" })
     }
 }
+
+
+const productUndo = async (req, res) => {
+    try {
+        const { id } = req.params
+        const product = await Product.findById({ _id: id })
+
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product Not Found" })
+        }
+
+        if (!product.isDeleted) {
+            return res.status(400).json({ success: false, message: "Product is not deleted" })
+        }
+
+        product.isDeleted = false;
+        await product.save();
+        
+        res.status(200).json({ success: true, message: "Product Restored Successfully" })
+    } catch (error) {
+        console.error("Error restoring product", error);
+        res.status(500).json({ success: false, message: "Server error while restoring product" });
+    }
+}
+
 
 const editProduct = async (req, res) => {
     try {
@@ -201,7 +235,7 @@ const productEditPut = async (req, res) => {
     }
 }
 
-const removeProductImage = async(req,res)=>{
+const removeProductImage = async (req, res) => {
     try {
         const { productId, variantIndex, imageName } = req.body;
 
@@ -238,6 +272,7 @@ module.exports = {
     addProduct,
     addProductpost,
     productDelete,
+    productUndo,
     productEditPut,
     editProduct,
     removeProductImage

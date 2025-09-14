@@ -76,6 +76,10 @@ const productSchema = new Schema({
     variants: {
         type: [variantSchema],
         required: true
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 

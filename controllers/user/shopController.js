@@ -88,13 +88,37 @@ const productPage = async (req, res) => {
     }
 
     // Fetch products with pagination
-    const products = await Product.find(filter)
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limitNum)
-      .populate('brand category')
-      .lean();
-
+    const products = await Product.aggregate([
+      {
+        $match: {
+          ...filter,
+          isDeleted: false
+        }
+      },
+      {
+        $lookup: {
+          from: "brands",
+          localField: "brand",
+          foreignField: "_id",
+          as: "brand"
+        }
+      },
+      { $unwind: "$brand" },
+      { $match: { "brand.status": "Active" } },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category"
+        }
+      },
+      { $unwind: "$category" },
+      { $match: { "category.status": "Active" } },
+      { $sort: sortOption },
+      { $skip: skip },
+      { $limit: limitNum }
+    ]);
 
     const totalProducts = await Product.countDocuments(filter);
     const totalPages = Math.ceil(totalProducts / limitNum);
@@ -140,7 +164,7 @@ const productDetail = async (req, res) => {
 
     const relatedProducts = await Product.find({ category: categoryid, _id: { $ne: id } })
     const selectedVariant = product.variants[0]
-    
+
     let user;
     if (req.session.user) {
       user = await User.findOne({ _id: req.session.user, isBlocked: false });
