@@ -36,7 +36,12 @@ const loadCart = async (req, res) => {
                         size: variant.size,
                         color: variant.color,
                         images: variant.images
-                    } : null,
+                    } : {
+                        _id: null,
+                        size: "N/A",
+                        color: "N/A",
+                        images: ["/default-placeholder.png"]
+                    },
                     price: item.price,
                     quantity: item.quantity,
                     totalPrice: item.totalPrice
@@ -162,7 +167,7 @@ const updateQuantity = async (req, res) => {
         }
 
         if (action === "increase") {
-            if (item.quantity < 4) {  
+            if (item.quantity < 4) {
                 item.quantity += 1;
             } else {
                 return res.json({ success: false, message: "Maximum 4 items allowed" });

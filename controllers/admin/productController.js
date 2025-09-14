@@ -4,6 +4,8 @@ const Category = require('../../models/categorySchema');
 const User = require('../../models/userSchema');
 const mongoose = require('mongoose');
 const { search } = require('../../routes/adminRouter');
+const path = require("path");
+const fs = require("fs");
 
 const addProduct = async (req, res) => {
     try {
