@@ -156,9 +156,10 @@ const productPage = async (req, res) => {
 
 const productDetail = async (req, res) => {
   try {
+    let reviews = null
     let search = null
     const { id } = req.params
-    const product = await Product.findById(id).populate('category')
+    const product = await Product.findById(id).populate('category').populate('brand')
 
     const categoryid = product.category
 
@@ -177,7 +178,8 @@ const productDetail = async (req, res) => {
       product,
       relatedProducts,
       selectedVariant,
-      search
+      search,
+      reviews
     })
 
   } catch (error) {
