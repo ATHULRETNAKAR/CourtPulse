@@ -41,6 +41,7 @@ const updateProfile = async (req, res) => {
 
         user.name = name || user.name;
         user.phone = mobile || user.mobile;
+        
         if (email && email !== user.email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {

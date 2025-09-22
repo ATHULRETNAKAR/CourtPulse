@@ -127,8 +127,36 @@ const loadEditAddress = async (req, res) => {
         if (!userAddressDoc) return res.status(404).send("Address not found");
 
         const address = userAddressDoc.addresses[0];
-
         return res.render('userEditAddress', { search, user, address });
+    } catch (error) {
+        console.error("Failed to load Edit Address Page : ", error);
+        res.status(500).send("Server error");
+    }
+}
+
+const loadEditAddressCheckOut = async (req, res) => {
+    try {
+        const addressId = req.params.id;
+        req.session.addressId = addressId
+        let user;
+        let search = null;
+        if (req.session.user) {
+            user = await User.findOne({ _id: req.session.user, isBlocked: false });
+        } else if (req.session.userGoogleId) {
+            user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false });
+        }
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        const userAddressDoc = await Address.findOne({ "addresses._id": addressId }, { "addresses.$": 1 });
+        if (!userAddressDoc) return res.status(404).send("Address not found");
+
+        const address = userAddressDoc.addresses[0];
+
+        return res.status(201).json({ address })
+
     } catch (error) {
         console.error("Failed to load Edit Address Page : ", error);
         res.status(500).send("Server error");
@@ -212,6 +240,7 @@ module.exports = {
     loadAddAddress,
     addAddress,
     loadEditAddress,
+    loadEditAddressCheckOut,
     editAddress,
     deleteAddress
 }

@@ -49,9 +49,11 @@ const loadCart = async (req, res) => {
             })
         }
 
-        let deliveryCharge = 100
         let totalAmount = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
-        let platformFee = 30
+
+        let deliveryCharge = totalAmount > 1000 ? 0 : 100;
+        
+        let platformFee = totalAmount > 5000 ? 0 : 30
 
         let similarItems = []
         if (cartItems.length > 0) {
@@ -78,12 +80,16 @@ const loadCart = async (req, res) => {
 
 const addToCart = async (req, res) => {
     try {
-        console.log("Triggred addToCart")
         let user;
         if (req.session.user) {
             user = await User.findOne({ _id: req.session.user, isBlocked: false });
         } else if (req.session.userGoogleId) {
             user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false });
+        }
+
+        if (!user) {
+            console.log('User Not Found')
+            return res.status(404).json({ success: false, message: "User Not Found. Please Login..!" })
         }
 
         const { productId, variantId } = req.body;
@@ -92,7 +98,7 @@ const addToCart = async (req, res) => {
 
         const product = await Product.findById(productId)
         if (!product) {
-            return res.status(404).json({ success: false, messsage: "Product Not Found" })
+            return res.status(404).json({ success: false, message: "Product Not Found" })
         }
 
         const variant = product.variants.id(variantId)
@@ -137,7 +143,7 @@ const addToCart = async (req, res) => {
 
     } catch (error) {
         console.log('Product Failed to Add Cart : ', error);
-        res.status(500).send('Server Error')
+        res.status(500).json({ success: false, message: 'Server Error' })
     }
 }
 

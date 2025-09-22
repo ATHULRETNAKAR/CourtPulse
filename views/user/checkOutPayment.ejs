@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtPulse</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <%- include('../../views/partials/user/header') %>
+
+        <div class="container mx-auto p-6 flex-1">
+            <div class="flex flex-col md:flex-row gap-6">
+
+                <!-- Address Section (3/4 width) -->
+                <div class="w-full md:w-3/4">
+                    <div class="bg-white p-6 rounded-lg shadow-md h-full">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">Select Payment Method</h2>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Order Summary (1/4 width) -->
+                <div class="w-full md:w-1/4">
+                    <div class="bg-white p-4 rounded shadow">
+                        <!-- Order Summary -->
+                        <h3 class="font-bold mb-2 pt-4">Order Summary</h3>
+                        <div class="space-y-2 border-b pb-4">
+                            <% if (cartItems && cartItems.length> 0) { %>
+                                <% cartItems.forEach(item=> { %>
+                                    <div class="flex justify-between">
+                                        <span>
+                                            <%= item.quantity %> x <%= item.product.name %>
+                                        </span>
+                                        <span>₹<%= item.totalPrice.toLocaleString() %></span>
+                                    </div>
+                                    <% }) %>
+                                        <% } %>
+                        </div>
+                        <div>
+                            <h3 class="font-bold mb-2 pt-4">Price Breakup</h3>
+                            <div class="flex justify-between">
+                                <span>Delivery Charges</span>
+                                <span>₹<%= deliveryCharge.toLocaleString() %></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Platform Fee</span>
+                                <span>₹<%= platformFee.toLocaleString() %></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Coupon Discount</span>
+                                <span id="couponDiscount"></span>
+                            </div>
+                            <div class="flex justify-between font-bold border-t pt-2 mt-4">
+                                <span>Grand Total</span>
+                                <span id="cartTotal">₹<%= (totalAmount + deliveryCharge + platformFee).toLocaleString()
+                                        %></span>
+                            </div>
+                        </div>
+
+                        <% if (cartItems && cartItems.length> 0) { %>
+                            <button onclick="proceedToPayment()"
+                                class="w-full mt-4 px-4 py-2 bg-purple-600 text-white rounded">Continue</button>
+                            <% } else { %>
+                                <button
+                                    class="w-full mt-4 px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">Continue</button>
+                                <% } %>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- Footer -->
+        <%- include('../../views/partials/user/subFooter') %>
+
+            <script>
+
+                // Proceed to payment
+                function proceedToPayment() {
+                    const selected = document.querySelector('input[name="selectedAddress"]:checked');
+                    if (!selected) {
+                        Swal.fire('Select Address', 'Please select an address to proceed', 'warning');
+                        return;
+                    }
+                    
+                    fetch('/checkoutSelectAddress', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ addressId: selected.value })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.href = data.redirectUrl
+                            } else {
+                                Swal.fire('Error', data.message || 'Failed to proceed', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Error', 'Something went wrong', 'error');
+                        });
+                }
+
+                // Preselect first address if available
+                window.addEventListener('load', () => {
+                    const radios = document.querySelectorAll('input[name="selectedAddress"]');
+                    if (radios.length > 0) {
+                        radios[0].checked = true;
+                    }
+                });
+
+
+            </script>
+
+</body>
+
+</html>

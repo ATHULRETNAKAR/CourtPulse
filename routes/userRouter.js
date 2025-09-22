@@ -6,6 +6,7 @@ const shopController = require('../controllers/user/shopController');
 const profileController = require('../controllers/user/profileController');
 const addressController = require('../controllers/user/addressController');
 const cartController = require('../controllers/user/cartController');
+const checkOutController = require('../controllers/user/checkOutController');
 const {userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus} = require('../middlewares/auth');
 const profUploads = require('../helpers/Prof_multer');
 
@@ -75,6 +76,11 @@ router.get('/cart', cartController.loadCart);
 router.post('/addToCart', cartController.addToCart);
 router.post('/updateCart', cartController.updateQuantity);
 router.delete('/removeCart', cartController.removeFromCart);
+
+router.get('/checkOutAddress', checkOutController.loadCheckOutAddress);
+router.get('/editAddressCheckOut/:id', addressController.loadEditAddressCheckOut);
+router.post('/checkoutSelectAddress', checkOutController.checkoutSelectAddress);
+router.get('/checkOutPayment', checkOutController.loadCheckOutPayment);
 
 
 module.exports = router

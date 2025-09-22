@@ -89,8 +89,8 @@
                     <h1 class="text-3xl font-bold text-gray-900 mb-2">
                         <%= product.productName %>
                     </h1>
-                    <h1 class="text-purple-600 font-bold ml-2">
-                        Brand : "<%= product.brand.brandName %>"
+                    <h1 class="text-gray-500 font-bold ml-2 uppercase">
+                        <%= product.brand.brandName %>
                     </h1>
 
                     <div class="flex items-center mb-4">
@@ -429,9 +429,14 @@
                             } else {
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Oops...',
+                                    title: 'Sorry',
                                     text: data.message || 'Something went wrong!',
-                                });
+                                    confirmButtonText: 'Login'
+                                }).then((result) => {
+                                    if(result.isConfirmed){
+                                        window.location.href = "/login"
+                                    }
+                                })
                             }
                         })
                         .catch(err => {
@@ -439,7 +444,7 @@
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
-                                text: 'Failed to add product to cart.',
+                                text: data.message || 'Failed to add product to cart.',
                             });
                         });
                 }
