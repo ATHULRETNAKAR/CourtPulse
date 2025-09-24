@@ -71,6 +71,10 @@
                     <div>
                         <h3 class="font-bold mb-2 pt-4">Price Breakup</h3>
                         <div class="flex justify-between">
+                            <span>Total Amount</span>
+                            <span>₹<%= totalAmount.toLocaleString() %></span>
+                        </div>
+                        <div class="flex justify-between">
                             <span>Delivery Charges</span>
                             <span>₹<%= deliveryCharge.toLocaleString() %></span>
                         </div>
@@ -81,7 +85,7 @@
                         <div class="flex justify-between font-bold border-t pt-2 mt-4">
                             <span>Grand Total</span>
                             <span id="cartTotal">₹<%= (totalAmount + deliveryCharge + platformFee).toLocaleString() %>
-                                    </span>
+                            </span>
                         </div>
                     </div>
                     <% if (cartItems && cartItems.length> 0) { %>

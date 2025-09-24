@@ -109,6 +109,10 @@
                         <div>
                             <h3 class="font-bold mb-2 pt-4">Price Breakup</h3>
                             <div class="flex justify-between">
+                                <span>Total Amount</span>
+                                <span>₹<%= totalAmount.toLocaleString() %></span>
+                            </div>
+                            <div class="flex justify-between">
                                 <span>Delivery Charges</span>
                                 <span>₹<%= deliveryCharge.toLocaleString() %></span>
                             </div>
@@ -118,12 +122,12 @@
                             </div>
                             <div class="flex justify-between">
                                 <span>Coupon Discount</span>
-                                <span id="couponDiscount"></span>
+                                <span id="couponDiscount">₹0</span>
                             </div>
                             <div class="flex justify-between font-bold border-t pt-2 mt-4">
                                 <span>Grand Total</span>
-                                <span id="cartTotal">₹<%= (totalAmount + deliveryCharge + platformFee).toLocaleString()
-                                        %></span>
+                                <span id="cartTotal">₹<%= ((totalAmount + deliveryCharge + platformFee) -
+                                        0).toLocaleString() %></span>
                             </div>
                         </div>
 
@@ -439,11 +443,11 @@
                         Swal.fire('Select Address', 'Please select an address to proceed', 'warning');
                         return;
                     }
-                    
+
                     fetch('/checkoutSelectAddress', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ addressId: selected.value })
+                        body: JSON.stringify({ addressId: selected.value, discount: 0 })
                     })
                         .then(res => res.json())
                         .then(data => {

@@ -1,6 +1,9 @@
 const User = require('../../models/userSchema');
 const Cart = require('../../models/cartSchema');
 const Address = require('../../models/addressSchema');
+const Order = require('../../models/orderSchema');
+const { search } = require('../../routes/userRouter');
+const Product = require('../../models/productSchema');
 
 const loadCheckOutAddress = async (req, res) => {
     try {
@@ -67,8 +70,10 @@ const loadCheckOutAddress = async (req, res) => {
 
 const checkoutSelectAddress = async (req, res) => {
     try {
-        const { addressId } = req.body
-        console.log("CheckOUt : ", addressId)
+        const { addressId, discount } = req.body
+
+        req.session.addressId = addressId;
+        req.session.discount = discount;
 
         return res.status(200).json({ success: true, redirectUrl: '/checkOutPayment' })
     } catch (error) {
@@ -98,7 +103,6 @@ const loadCheckOutPayment = async (req, res) => {
             cartItems = cart.items.map((item) => {
                 let product = item.productId;
                 let variant = product.variants.id(item.variantId);
-                console.log("Hello ", variant)
                 return {
                     product: {
                         _id: product._id,
@@ -126,8 +130,6 @@ const loadCheckOutPayment = async (req, res) => {
 
         const totalAmount = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
-        console.log(typeof totalAmount)
-
         const deliveryCharge = totalAmount > 1000 ? 0 : 100;
 
         const platformFee = totalAmount > 5000 ? 0 : 30
@@ -135,13 +137,97 @@ const loadCheckOutPayment = async (req, res) => {
         res.render('checkOutPayment', { search, user, cartItems, totalAmount, deliveryCharge, platformFee })
     } catch (error) {
         console.log("Failed to load loadCheckOutPayment Page : ", error);
-        res.send(500).json({ success: false, message: "Internal Server Error" })
+        res.status(500).json({ success: false, message: "Internal Server Error" })
     }
 }
 
+const checkOutPayment = async (req, res) => {
+    try {
+        let user;
+        let search = null
+        if (req.session.user) {
+            user = await User.findOne({ _id: req.session.user, isBlocked: false })
+        } else if (req.session.userGoogleId) {
+            user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false })
+        }
+
+        if (!user) {
+            console.log('User Not Found');
+            return res.status(401).render('login');
+        };
+
+        const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
+
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({ success: false, message: "Cart is empty" });
+        }
+
+        const orderedItems = cart.items.map((item) => ({
+            product: item.productId._id,
+            quantity: item.quantity,
+            price: item.totalPrice
+        }));
+
+        const selectedAddress = req.session.addressId;
+
+        if (!selectedAddress) {
+            return res.status(400).json({ success: false, message: "No delivey address found" })
+        }
+
+        const addressDoc = await Address.findOne({ userId: user._id, "addresses._id": selectedAddress }, { "addresses.$": 1 })
+
+        if (!addressDoc) {
+            return res.status(400).json({ success: false, message: "Address not found" });
+        }
+
+        const { paymentMethod, totalAmount, deliveryCharge, platformFee } = req.body;
+
+        const order = new Order({
+            userId: user._id,
+            orderedItems,
+            totalPrice: totalAmount,
+            finalAmount: totalAmount + deliveryCharge + platformFee,
+            discount: 0,
+            address: addressDoc.addresses[0]._id,
+            paymentMethod: paymentMethod.toUpperCase(),
+            paymentStatus: paymentMethod.toLowerCase() === 'cod' ? "Pending" : "Paid"
+        })
+
+        console.log(order)
+        await order.save();
+        return res.status(200).json({ success: true, redirectUrl: '/orderSuccessPage' });
+    } catch (error) {
+        console.error("Failed in checkOutPayment : ", error);
+        res.status(500).json({ success: false, message: "Interval Server Error" })
+    }
+}
+
+const loadOrderSuccess = async (req, res) => {
+    try {
+        let user;
+        let search = null
+        if (req.session.user) {
+            user = await User.findOne({ _id: req.session.user, isBlocked: false })
+        } else if (req.session.userGoogleId) {
+            user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false })
+        }
+
+        if (!user) {
+            console.log('User Not Found');
+            return res.status(401).render('login');
+        }
+
+
+        res.render('orderComplete', { search, user })
+    } catch (error) {
+        console.error("Failed in loadOrderSuccess : ", error)
+    }
+}
 
 module.exports = {
     loadCheckOutAddress,
     checkoutSelectAddress,
-    loadCheckOutPayment
+    loadCheckOutPayment,
+    checkOutPayment,
+    loadOrderSuccess
 }

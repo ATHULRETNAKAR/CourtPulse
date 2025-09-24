@@ -16,13 +16,39 @@
         <div class="container mx-auto p-6 flex-1">
             <div class="flex flex-col md:flex-row gap-6">
 
-                <!-- Address Section (3/4 width) -->
+                <!-- Payment Section (3/4 width) -->
                 <div class="w-full md:w-3/4">
                     <div class="bg-white p-6 rounded-lg shadow-md h-full">
                         <div class="flex justify-between items-center mb-6">
                             <h2 class="text-2xl font-bold">Select Payment Method</h2>
                         </div>
-                        
+                        <div>
+                            <form id="paymentForm" class="space-y-4">
+                                <label
+                                    class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
+                                    <input type="radio" name="paymentMethod" value="razorpay" class="text-blue-600"
+                                        checked>
+                                    <span>Razorpay</span>
+                                </label>
+                                <label
+                                    class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
+                                    <input type="radio" name="paymentMethod" value="cod" class="text-blue-600">
+                                    <span>Cash on Delivery (COD)</span>
+                                </label>
+
+                                <label
+                                    class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
+                                    <input type="radio" name="paymentMethod" value="upi" class="text-blue-600">
+                                    <span>UPI</span>
+                                </label>
+
+                                <label
+                                    class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
+                                    <input type="radio" name="paymentMethod" value="wallet" class="text-blue-600">
+                                    <span>Wallet</span>
+                                </label>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -46,6 +72,10 @@
                         <div>
                             <h3 class="font-bold mb-2 pt-4">Price Breakup</h3>
                             <div class="flex justify-between">
+                                <span>Total Amount</span>
+                                <span>₹<%= totalAmount.toLocaleString() %></span>
+                            </div>
+                            <div class="flex justify-between">
                                 <span>Delivery Charges</span>
                                 <span>₹<%= deliveryCharge.toLocaleString() %></span>
                             </div>
@@ -55,17 +85,17 @@
                             </div>
                             <div class="flex justify-between">
                                 <span>Coupon Discount</span>
-                                <span id="couponDiscount"></span>
+                                <span id="couponDiscount">₹0</span>
                             </div>
                             <div class="flex justify-between font-bold border-t pt-2 mt-4">
                                 <span>Grand Total</span>
-                                <span id="cartTotal">₹<%= (totalAmount + deliveryCharge + platformFee).toLocaleString()
+                                <span id="cartTotal">₹<%= ((totalAmount + deliveryCharge + platformFee) - 0).toLocaleString()
                                         %></span>
                             </div>
                         </div>
 
                         <% if (cartItems && cartItems.length> 0) { %>
-                            <button onclick="proceedToPayment()"
+                            <button onclick="confirmOrder()"
                                 class="w-full mt-4 px-4 py-2 bg-purple-600 text-white rounded">Continue</button>
                             <% } else { %>
                                 <button
@@ -81,46 +111,52 @@
         <!-- Footer -->
         <%- include('../../views/partials/user/subFooter') %>
 
-            <script>
 
-                // Proceed to payment
-                function proceedToPayment() {
-                    const selected = document.querySelector('input[name="selectedAddress"]:checked');
-                    if (!selected) {
-                        Swal.fire('Select Address', 'Please select an address to proceed', 'warning');
-                        return;
-                    }
-                    
-                    fetch('/checkoutSelectAddress', {
+            <script>
+                async function confirmOrder() {
+                    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+                    const data = {
+                        paymentMethod: paymentMethod,
+                        totalAmount: <%= totalAmount %>,
+                        deliveryCharge: <%= deliveryCharge %>,
+                        platformFee: <%= platformFee %>
+                };
+
+                try {
+                    const response = await fetch('/confirmOrder', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ addressId: selected.value })
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                location.href = data.redirectUrl
-                            } else {
-                                Swal.fire('Error', data.message || 'Failed to proceed', 'error');
-                            }
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Order Placed',
+                            text: result.message || 'Payment Successfull Order Placed',
+                            confirmButtonText: 'OK'
                         })
-                        .catch(err => {
-                            console.error(err);
-                            Swal.fire('Error', 'Something went wrong', 'error');
+                            .then(() => {
+                                window.location.href = result.redirectUrl
+                            })
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed',
+                            text: result.message
                         });
-                }
-
-                // Preselect first address if available
-                window.addEventListener('load', () => {
-                    const radios = document.querySelectorAll('input[name="selectedAddress"]');
-                    if (radios.length > 0) {
-                        radios[0].checked = true;
                     }
-                });
-
-
+                } catch (error) {
+                    console.log("Error from checkOut Payment : ", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Something went wrong. Please try again.'
+                    })
+                }
+            }
             </script>
-
 </body>
 
 </html>

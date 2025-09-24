@@ -7,7 +7,8 @@ const profileController = require('../controllers/user/profileController');
 const addressController = require('../controllers/user/addressController');
 const cartController = require('../controllers/user/cartController');
 const checkOutController = require('../controllers/user/checkOutController');
-const {userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus} = require('../middlewares/auth');
+const orderController = require('../controllers/user/orderController');
+const { userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus } = require('../middlewares/auth');
 const profUploads = require('../helpers/Prof_multer');
 
 
@@ -61,9 +62,9 @@ router.get('/productDetail/:id', checkUserStatus, shopController.productDetail);
 
 router.get('/profile', profileController.loadProfile);
 router.post('/updateProfile', profileController.updateProfile);
-router.post('/updateProfileImage',profUploads,profileController.updateProfileImg);
-router.post('/emailVerification',profileController.changeEmailOTP);
-router.post('/emailVerification/verify',profileController.changeEmailVerification);
+router.post('/updateProfileImage', profUploads, profileController.updateProfileImg);
+router.post('/emailVerification', profileController.changeEmailOTP);
+router.post('/emailVerification/verify', profileController.changeEmailVerification);
 
 router.get('/addresses', addressController.loadAddress);
 router.get('/addAddress', addressController.loadAddAddress);
@@ -71,6 +72,8 @@ router.post('/addAddress', addressController.addAddress);
 router.get('/editAddress/:id', addressController.loadEditAddress);
 router.put('/editAddress', addressController.editAddress);
 router.delete('/deleteAddress/:id', addressController.deleteAddress);
+
+router.get('/orders', orderController.loadOrders)
 
 router.get('/cart', cartController.loadCart);
 router.post('/addToCart', cartController.addToCart);
@@ -81,6 +84,8 @@ router.get('/checkOutAddress', checkOutController.loadCheckOutAddress);
 router.get('/editAddressCheckOut/:id', addressController.loadEditAddressCheckOut);
 router.post('/checkoutSelectAddress', checkOutController.checkoutSelectAddress);
 router.get('/checkOutPayment', checkOutController.loadCheckOutPayment);
+router.post('/confirmOrder', checkOutController.checkOutPayment);
+router.get('/orderSuccessPage', checkOutController.loadOrderSuccess);
 
 
 module.exports = router
