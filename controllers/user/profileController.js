@@ -118,7 +118,14 @@ async function sendVerificationEmail(email, otp) {
 
 const changeEmailOTP = async (req, res) => {
     try {
+        console.log('Triggred')
         const { email } = req.body;
+
+        const existingUser = await User.findOne({ email });
+        if(existingUser){
+            return res.send(400).json({ success: false, message:"Email already in use"})
+        };
+
         const otp = Math.floor(100000 + Math.random() * 999999).toString()
 
         const emailSent = await sendVerificationEmail(email, otp)

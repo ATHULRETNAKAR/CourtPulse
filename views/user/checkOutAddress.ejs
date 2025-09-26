@@ -114,11 +114,11 @@
                             </div>
                             <div class="flex justify-between">
                                 <span>Delivery Charges</span>
-                                <span>₹<%= deliveryCharge.toLocaleString() %></span>
+                                <span id="deliveryCharge">₹<%= deliveryCharge.toLocaleString() %></span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Platform Fee</span>
-                                <span>₹<%= platformFee.toLocaleString() %></span>
+                                <span id="platformFee">₹<%= platformFee.toLocaleString() %></span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Coupon Discount</span>
@@ -444,10 +444,13 @@
                         return;
                     }
 
+                    const deliveryCharge = parseFloat(document.getElementById('deliveryCharge').innerText.replace(/[^\d.-]/g, ""));
+                    const platformFee = parseFloat(document.getElementById('platformFee').innerText.replace(/[^\d.-]/g, ""));
+
                     fetch('/checkoutSelectAddress', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ addressId: selected.value, discount: 0 })
+                        body: JSON.stringify({ addressId: selected.value, discount: 0, deliveryCharge, platformFee })
                     })
                         .then(res => res.json())
                         .then(data => {

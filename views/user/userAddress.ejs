@@ -19,15 +19,14 @@
             <%- include("../../views/partials/user/profileSideBar") %>
 
                 <!-- Main Content -->
-                <div class="flex-1 p-6">
+                <div class="flex-1 px-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold">Manage Addresses</h2>
+                        <a href="/addAddress" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                            Add New Address
+                        </a>
+                    </div>
                     <div class="bg-white p-6 rounded-lg shadow-md h-full">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-bold">Manage Addresses</h2>
-                            <a href="/addAddress"
-                                class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
-                                Add New Address
-                            </a>
-                        </div>
                         <div class="space-y-4">
                             <% if (addresses && addresses.length> 0) { %>
                                 <% addresses.forEach(address=> { %>

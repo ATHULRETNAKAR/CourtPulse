@@ -73,7 +73,8 @@ router.get('/editAddress/:id', addressController.loadEditAddress);
 router.put('/editAddress', addressController.editAddress);
 router.delete('/deleteAddress/:id', addressController.deleteAddress);
 
-router.get('/orders', orderController.loadOrders)
+router.get('/orders', orderController.loadOrders);
+router.get('/orderDetails/:id', orderController.loadOrderDetails);
 
 router.get('/cart', cartController.loadCart);
 router.post('/addToCart', cartController.addToCart);

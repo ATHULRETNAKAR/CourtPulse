@@ -32,6 +32,14 @@ const orderSchema = new Schema({
         type: Number,
         required: true
     },
+    platformFee: {
+        type: Number,
+        default: 0
+    },
+    deliveryCharge: {
+        type: Number,
+        default: 0
+    },
     discount: {
         type: Number,
         default: 0
@@ -41,13 +49,49 @@ const orderSchema = new Schema({
         required: true
     },
     address: {
-        type: Schema.Types.ObjectId,
-        ref: "Address",
-        required: true
+        name: {
+            type: String,
+            required: true
+        },
+        mobile: {
+            type: String,
+            required: true
+        },
+        pincode: {
+            type: String,
+            required: true
+        },
+        locality: {
+            type: String,
+            required: true
+        },
+        addressLine: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: true
+        },
+        state: {
+            type: String,
+            required: true
+        },
+        landmark: {
+            type: String,
+            default: ""
+        },
+        altPhone: {
+            type: String
+        },
+        addressType: {
+            type: String,
+            enum: ["home", "work"], required: true
+        }
     },
     paymentMethod: {
         type: String,
-        enum: [ "RAZORPAY", "COD", "CARD", "UPI", "WALLET" ],
+        enum: ["RAZORPAY", "COD", "CARD", "UPI", "WALLET"],
         required: true
     },
     paymentStatus: {

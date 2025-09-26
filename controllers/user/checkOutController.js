@@ -70,10 +70,13 @@ const loadCheckOutAddress = async (req, res) => {
 
 const checkoutSelectAddress = async (req, res) => {
     try {
-        const { addressId, discount } = req.body
+        console.log(req.body)
+        const { addressId, discount, deliveryCharge, platformFee } = req.body
 
         req.session.addressId = addressId;
         req.session.discount = discount;
+        req.session.deliveryCharge = deliveryCharge;
+        req.session.platformFee = platformFee;
 
         return res.status(200).json({ success: true, redirectUrl: '/checkOutPayment' })
     } catch (error) {
@@ -180,21 +183,38 @@ const checkOutPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: "Address not found" });
         }
 
+        const shippingAddress = addressDoc.addresses[0];
+
         const { paymentMethod, totalAmount, deliveryCharge, platformFee } = req.body;
 
         const order = new Order({
             userId: user._id,
             orderedItems,
             totalPrice: totalAmount,
+            platformFee: req.session.platformFee,
+            deliveryCharge: req.session.deliveryCharge,
             finalAmount: totalAmount + deliveryCharge + platformFee,
             discount: 0,
-            address: addressDoc.addresses[0]._id,
+            address: {
+                name: shippingAddress.name,
+                mobile: shippingAddress.mobile,
+                pincode: shippingAddress.pincode,
+                locality: shippingAddress.locality,
+                addressLine: shippingAddress.address,
+                city: shippingAddress.city,
+                state: shippingAddress.state,
+                landmark: shippingAddress.landmark,
+                altPhone: shippingAddress.altPhone,
+                addressType: shippingAddress.addressType
+            },
             paymentMethod: paymentMethod.toUpperCase(),
             paymentStatus: paymentMethod.toLowerCase() === 'cod' ? "Pending" : "Paid"
         })
 
-        console.log(order)
         await order.save();
+
+        await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] } });
+
         return res.status(200).json({ success: true, redirectUrl: '/orderSuccessPage' });
     } catch (error) {
         console.error("Failed in checkOutPayment : ", error);

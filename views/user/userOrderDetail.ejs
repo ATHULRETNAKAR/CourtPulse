@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - CourtPulse</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <%- include("../../views/partials/user/header") %>
+
+        <div class="flex flex-1 mt-4">
+            <!-- Sidebar -->
+            <%- include("../../views/partials/user/profileSideBar") %>
+
+                <!-- Main Content: Order + Shipping + Price -->
+                <div class="flex-1 flex px-4">
+                    <!-- Order Details Column -->
+                    <div class="flex-1 bg-white p-6 rounded shadow-md">
+                        <h1 class="text-2xl font-bold mb-2">Order Details</h1>
+                        <div class="flex justify-between pb-4 border-b">
+                            <p> Order Id - <%= order.orderId %>
+                            </p>
+                        </div>
+
+                        <!-- Items -->
+                        <% order.orderedItems.forEach((item, index)=> { %>
+                            <div class="border-b py-4 flex items-start space-x-4">
+                                <p class="text-lg">
+                                    <%= index + 1 %>.
+                                </p>
+                                <div class="flex-1">
+                                    <p class="font-bold">
+                                        <%= item.product.productName %>
+                                    </p>
+                                    <p>Quantity - x<%= item.quantity %>
+                                    </p>
+                                    <p>₹<%= item.price %>
+                                    </p>
+                                </div>
+                                <% if (item.product.va && item.product.images.length> 0) { %>
+                                    <img src="/productImg/<%= item.product.images %>"
+                                        alt="<%= item.product.productName %>" class="w-20 h-20 object-contain">
+                                    <% } %>
+                                        <div class="flex items-center space-x-2">
+                                            <%
+    const statusColors = {
+        "Pending": "bg-yellow-100 text-yellow-600",
+        "Processing": "bg-blue-200 text-blue-700",
+        "Shipped": "bg-indigo-200 text-indigo-700",
+        "Delivered": "bg-green-100 text-green-600",
+        "Cancelled": "bg-red-100 text-red-600",
+        "Return Request": "bg-orange-200 text-orange-700",
+        "Returned": "bg-gray-100 text-gray-600"
+    };
+
+    const badgeClass = statusColors[order.status] || "bg-gray-100 text-gray-600";
+%>
+
+<span class="<%= badgeClass %> px-2 py-1 rounded flex items-center">
+    <%= order.status %>
+</span>
+                                                <% if (order.status==='Delivered' ) { %>
+                                                    <button
+                                                        class="bg-red-500 text-white px-4 py-1 rounded return-product"
+                                                        data-id="<%= item._id %>">Return</button>
+                                                    <button
+                                                        class="bg-purple-600 text-white px-4 py-1 rounded add-rating"
+                                                        data-id="<%= item._id %>">Add Rating</button>
+                                                    <% } else if (order.status !=='Cancelled' ) { %>
+                                                        <button
+                                                            class="bg-red-500 text-white px-4 py-1 rounded cancel-product"
+                                                            data-id="<%= item._id %>">Cancel</button>
+                                                        <% } %>
+                                        </div>
+                            </div>
+                            <% }); %>
+
+                                <div class="mt-4 text-right">
+                                    <% if (order.status==='Delivered' ) { %>
+                                        <button class="bg-red-500 text-white px-6 py-2 rounded return-order"
+                                            data-id="<%= order._id %>">Return Order</button>
+                                        <% } else { %>
+                                            <button class="bg-red-500 text-white px-6 py-2 rounded cancel-order"
+                                                data-id="<%= order._id %>">Cancel Order</button>
+                                            <% } %>
+                                </div>
+                    </div>
+
+                    <!-- Right Column (Shipping + Price) -->
+                    <div class="w-1/3 flex flex-col pl-4">
+                        <a href="#"
+                            class="bg-white text-gray-600 font-bold flex items-center justify-center gap-2 px-4 py-2 rounded hover:bg-gray-200 border mb-2">
+                            <!-- Printer Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6.75 7.5V4.875A2.25 2.25 0 019 2.625h6a2.25 2.25 0 012.25 2.25V7.5M6.75 7.5h10.5m-10.5 0A2.25 2.25 0 004.5 9.75v6.375A2.25 2.25 0 006.75 18.375h10.5a2.25 2.25 0 002.25-2.25V9.75a2.25 2.25 0 00-2.25-2.25m-10.5 9v3.375A2.25 2.25 0 008.25 21.75h7.5a2.25 2.25 0 002.25-2.25V16.5" />
+                            </svg>
+
+                            Invoice Download
+                        </a>
+
+                        <!-- Shipping Details -->
+                        <div class="bg-white p-6 rounded  shadow-md">
+                            <h2 class="text-gray-600 font-bold border-b pb-2 mb-2">Shipping Details</h2>
+                            <% if (order.address) { %>
+                                <p class="font-bold">
+                                    <%= order.address.name %>
+                                </p>
+                                <p>
+                                    <%= order.address.addressLine %>
+                                </p>
+                                <p>Pincode. <%= order.address.pincode %>
+                                </p>
+                                <p><span>
+                                        <%= order.address.city%>,
+                                    </span><span>
+                                        <%= order.address.state%>
+                                    </span></p>
+                                <p>Ph. <%= order.address.mobile %>
+                                </p>
+                                <p>Alt Ph. <%= order.address.altPhone ? order.address.altPhone : "N/A" %>
+                                </p>
+                                <% } else { %>
+                                    <p>No shipping details available</p>
+                                    <% } %>
+
+                                        <!-- Price Details -->
+
+                                        <h2 class="text-gray-600 font-bold pt-4  mb-2">Price Details</h2>
+                                        <div class="border p-4 rounded">
+                                            <div class="flex justify-between">
+                                                <p>Price (<%= order.orderedItems.length %> items)</p>
+                                                <p>₹<%= order.totalPrice.toFixed(2) %>
+                                                </p>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <p>Coupon Discount</p>
+                                                <p>₹<%= order.discount %>
+                                                </p>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <p>Platform Fee</p>
+                                                <p>₹<%= order.platformFee %>
+                                                </p>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <p>Delivery Charge</p>
+                                                <p>₹<%= order.deliveryCharge %>
+                                                </p>
+                                            </div>
+                                            <div class="text-gray-600 flex justify-between font-bold">
+                                                <p>Grand Total</p>
+                                                <p>₹<%= order.finalAmount.toFixed(2) %>
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Order Action Button -->
+
+                                        <div class="mt-2 text-gray-600 text-center border rounded">Payment Method: <%=
+                                                order.paymentMethod %>
+                                        </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+        <!-- Sub-Footer -->
+        <%- include("../../views/partials/user/subFooter") %>
+
+            <script>
+                // Functionality with fetch
+                document.querySelectorAll('.cancel-product').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.dataset.id;
+                        await fetch(`/api/cancel/product/${id}`, { method: 'POST' });
+                        alert('Product cancelled');
+                    });
+                });
+
+                document.querySelectorAll('.return-product').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.dataset.id;
+                        await fetch(`/api/return/product/${id}`, { method: 'POST' });
+                        alert('Product returned');
+                    });
+                });
+
+                document.querySelectorAll('.add-rating').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.dataset.id;
+                        // Assuming simple post; in reality, might need rating data
+                        await fetch(`/api/review/product/${id}`, { method: 'POST', body: JSON.stringify({ rating: 5 }) }); // Placeholder
+                        alert('Rating added');
+                    });
+                });
+
+                const cancelOrderBtn = document.querySelector('.cancel-order');
+                if (cancelOrderBtn) {
+                    cancelOrderBtn.addEventListener('click', async () => {
+                        const id = cancelOrderBtn.dataset.id;
+                        await fetch(`/api/cancel/order/${id}`, { method: 'POST' });
+                        alert('Order cancelled');
+                    });
+                }
+
+                const returnOrderBtn = document.querySelector('.return-order');
+                if (returnOrderBtn) {
+                    returnOrderBtn.addEventListener('click', async () => {
+                        const id = returnOrderBtn.dataset.id;
+                        await fetch(`/api/return/order/${id}`, { method: 'POST' });
+                        alert('Order returned');
+                    });
+                }
+            </script>
+</body>
+
+</html>
