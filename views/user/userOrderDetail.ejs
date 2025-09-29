@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details - CourtPulse</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-100 font-sans min-h-screen flex flex-col">
     <!-- Header -->
     <%- include("../../views/partials/user/header") %>
 
@@ -32,45 +33,51 @@
                                 <p class="text-lg">
                                     <%= index + 1 %>.
                                 </p>
-                                <div class="flex-1">
-                                    <p class="font-bold">
-                                        <%= item.product.productName %>
-                                    </p>
-                                    <p>Quantity - x<%= item.quantity %>
-                                    </p>
-                                    <p>₹<%= item.price %>
-                                    </p>
-                                </div>
-                                <% if (item.product.va && item.product.images.length> 0) { %>
-                                    <img src="/productImg/<%= item.product.images %>"
-                                        alt="<%= item.product.productName %>" class="w-20 h-20 object-contain">
+                                <% if (item.product.variants && item.product.variants.length> 0 &&
+                                    item.product.variants[0].images && item.product.variants[0].images.length > 0) { %>
+                                    <img src="/productImg/<%= item.product.variants[0].images[0] %>"
+                                        alt="<%= item.product.productName %>" class="w-20 h-20 object-contain rounded">
                                     <% } %>
+                                        <div class="flex-1">
+                                            <p class="font-bold">
+                                                <%= item.product.productName %>
+                                            </p>
+                                            <% if(item.product.variants[0].color) { %>
+                                                <p>Color - <%= item.product.variants[0].color %>
+                                                </p>
+                                                <% } %>
+                                                    <% if(item.product.variants[0].size !=="N/A" ) { %>
+                                                        <p>Size - <%= item.product.variants[0].size %>
+                                                        </p>
+                                                        <% } %>
+                                                            <p>Quantity - x<%= item.quantity %>
+                                                            </p>
+                                                            <p>₹<%= item.price %>
+                                                            </p>
+                                        </div>
                                         <div class="flex items-center space-x-2">
-                                            <%
-    const statusColors = {
-        "Pending": "bg-yellow-100 text-yellow-600",
-        "Processing": "bg-blue-200 text-blue-700",
-        "Shipped": "bg-indigo-200 text-indigo-700",
-        "Delivered": "bg-green-100 text-green-600",
-        "Cancelled": "bg-red-100 text-red-600",
-        "Return Request": "bg-orange-200 text-orange-700",
-        "Returned": "bg-gray-100 text-gray-600"
-    };
+                                            <% const statusColors={ "Pending" : "bg-yellow-100 text-yellow-600"
+                                                , "Processing" : "bg-blue-200 text-blue-700" , "Shipped"
+                                                : "bg-indigo-200 text-indigo-700" , "Delivered"
+                                                : "bg-green-100 text-green-600" , "Cancelled"
+                                                : "bg-red-100 text-red-600" , "Return Request"
+                                                : "bg-orange-200 text-orange-700" , "Returned"
+                                                : "bg-gray-100 text-gray-600" }; const
+                                                badgeClass=statusColors[order.status] || "bg-gray-100 text-gray-600" ;
+                                                %>
 
-    const badgeClass = statusColors[order.status] || "bg-gray-100 text-gray-600";
-%>
-
-<span class="<%= badgeClass %> px-2 py-1 rounded flex items-center">
-    <%= order.status %>
-</span>
-                                                <% if (order.status==='Delivered' ) { %>
+                                                <span class="<%= badgeClass %> px-2 py-1 rounded flex items-center">
+                                                    <%= item.status %>
+                                                </span>
+                                                <% if (item.status==='Delivered' ) { %>
                                                     <button
                                                         class="bg-red-500 text-white px-4 py-1 rounded return-product"
                                                         data-id="<%= item._id %>">Return</button>
                                                     <button
                                                         class="bg-purple-600 text-white px-4 py-1 rounded add-rating"
                                                         data-id="<%= item._id %>">Add Rating</button>
-                                                    <% } else if (order.status !=='Cancelled' ) { %>
+                                                    <% } else if (item.status !=='Cancelled' && item.status
+                                                        !=='Returned' ) { %>
                                                         <button
                                                             class="bg-red-500 text-white px-4 py-1 rounded cancel-product"
                                                             data-id="<%= item._id %>">Cancel</button>
@@ -83,7 +90,7 @@
                                     <% if (order.status==='Delivered' ) { %>
                                         <button class="bg-red-500 text-white px-6 py-2 rounded return-order"
                                             data-id="<%= order._id %>">Return Order</button>
-                                        <% } else { %>
+                                        <% } else if (order.status !=='Cancelled' && order.status !=='Returned' ) { %>
                                             <button class="bg-red-500 text-white px-6 py-2 rounded cancel-order"
                                                 data-id="<%= order._id %>">Cancel Order</button>
                                             <% } %>
@@ -174,12 +181,76 @@
         <%- include("../../views/partials/user/subFooter") %>
 
             <script>
-                // Functionality with fetch
                 document.querySelectorAll('.cancel-product').forEach(btn => {
                     btn.addEventListener('click', async () => {
-                        const id = btn.dataset.id;
-                        await fetch(`/api/cancel/product/${id}`, { method: 'POST' });
-                        alert('Product cancelled');
+
+                        try {
+                            const id = btn.dataset.id;
+                            const response = await fetch('/cancelTitle', { method: 'GET' });
+                            const data = await response.json();
+                            const titles = data.titles
+                            const { value: formValues } = await Swal.fire({
+                                title: 'Cancel Product',
+                                html: `
+                                    <div class="flex flex-col gap-3 text-left">
+                                        <label for="cancelTitle" class="font-semibold text-gray-700">Select Reason:</label>
+                                        <select id="cancelTitle" class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            ${titles.map(title => `<option value="${title}">${title}</option>`).join('')}
+                                        </select>
+                                    
+                                        <label for="cancelReason" class="font-semibold text-gray-700 mt-2">Additional Details:</label>
+                                        <textarea id="cancelReason" placeholder="Provide more context" 
+                                            class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" rows="3"></textarea>
+                                    </div>
+                                `,
+                                focusConfirm: false,
+                                showCancelButton: true,
+                                confirmButtonText: 'Submit',
+                                cancelButtonText: 'Close',
+                                customClass: {
+                                    popup: 'p-6 rounded-lg shadow-lg border border-gray-200',
+                                    confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md',
+                                    cancelButton: 'bg-gray-300 hover:bg-gray-400 text-gray-800 px-5 py-2 rounded-md'
+                                },
+                                preConfirm: () => {
+                                    const selectedTitle = Swal.getPopup().querySelector('#cancelTitle').value;
+                                    const additionalReason = Swal.getPopup().querySelector('#cancelReason').value;
+
+                                    if (!selectedTitle || !additionalReason) {
+                                        Swal.showValidationMessage(`Please provid a cancellation reason`);
+                                    }
+
+                                    return { selectedTitle, additionalReason };
+                                }
+                            });
+
+                            if (formValues) {
+                                const cancelResponse = await fetch(`/cancelProduct/${id}`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(formValues)
+                                })
+
+                                const response = await cancelResponse.json();
+
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: response.message || 'Product Cancelled',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire('Error', response.message || 'Cancellation Failed')
+                                }
+                            }
+
+                        } catch (error) {
+                            console.error('Error From Backend : ', error);
+                            Swal.fire('Error', 'Something went wrong.', 'error');
+                        }
                     });
                 });
 
@@ -201,12 +272,73 @@
                 });
 
                 const cancelOrderBtn = document.querySelector('.cancel-order');
-                if (cancelOrderBtn) {
-                    cancelOrderBtn.addEventListener('click', async () => {
-                        const id = cancelOrderBtn.dataset.id;
-                        await fetch(`/api/cancel/order/${id}`, { method: 'POST' });
-                        alert('Order cancelled');
-                    });
+                try {
+                    if (cancelOrderBtn) {
+                        cancelOrderBtn.addEventListener('click', async () => {
+                            const id = cancelOrderBtn.dataset.id;
+                            const response = await fetch(`/cancelOrderTitle`, { method: 'GET' });
+                            const data = await response.json();
+                            const titles = data.titles
+                            const { value: formValues } = await Swal.fire({
+                                title: 'Cancel Order',
+                                html: `
+                                    <div class="flex flex-col gap-3 text-left">
+                                        <label for="cancelTitle" class="font-semibold text-gray-700">Select Reason:</label>
+                                        <select id="cancelTitle" class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            ${titles.map(title => `<option value="${title}">${title}</option>`).join('')}
+                                        </select>
+                                    
+                                        <label for="cancelReason" class="font-semibold text-gray-700 mt-2">Additional Details:</label>
+                                        <textarea id="cancelReason" placeholder="Provide more context" 
+                                            class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" rows="3"></textarea>
+                                    </div>
+                                `,
+                                focusConfirm: false,
+                                showCancelButton: true,
+                                confirmButtonText: 'Submit',
+                                cancelButtonText: 'Close',
+                                customClass: {
+                                    popup: 'p-6 rounded-lg shadow-lg border border-gray-200',
+                                    confirmButton: 'bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md',
+                                    cancelButton: 'bg-gray-300 hover:bg-gray-400 text-gray-800 px-5 py-2 rounded-md'
+                                },
+                                preConfirm: () => {
+                                    const selectedTitle = Swal.getPopup().querySelector('#cancelTitle').value;
+                                    const additionalReason = Swal.getPopup().querySelector('#cancelReason').value;
+
+                                    if (!selectedTitle || !additionalReason) {
+                                        Swal.showValidationMessage(`Please provid a cancellation reason`);
+                                    }
+
+                                    return { selectedTitle, additionalReason };
+                                }
+                            });
+
+                            if (formValues) {
+                                const response = await fetch(`/cancelOrder/${id}`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(formValues)
+                                });
+                                const data = await response.json();
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: data.message || 'Order Cancelled',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire('Error', data.message || 'Cancellation Failed')
+                                }
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error From Backend : ', error);
+                    Swal.fire('Error', 'Something went wrong.', 'error');
                 }
 
                 const returnOrderBtn = document.querySelector('.return-order');

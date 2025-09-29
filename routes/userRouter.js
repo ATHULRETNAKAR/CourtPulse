@@ -75,6 +75,10 @@ router.delete('/deleteAddress/:id', addressController.deleteAddress);
 
 router.get('/orders', orderController.loadOrders);
 router.get('/orderDetails/:id', orderController.loadOrderDetails);
+router.get('/cancelTitle', orderController.loadCancelTitles);
+router.post('/cancelProduct/:id', orderController.cancelProduct);
+router.get('/cancelOrderTitle', orderController.loadCancelTitlesProduct);
+router.post('/cancelOrder/:id', orderController.cancelOrder);
 
 router.get('/cart', cartController.loadCart);
 router.post('/addToCart', cartController.addToCart);

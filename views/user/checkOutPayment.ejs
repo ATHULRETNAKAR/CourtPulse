@@ -89,8 +89,8 @@
                             </div>
                             <div class="flex justify-between font-bold border-t pt-2 mt-4">
                                 <span>Grand Total</span>
-                                <span id="cartTotal">₹<%= ((totalAmount + deliveryCharge + platformFee) - 0).toLocaleString()
-                                        %></span>
+                                <span id="cartTotal">₹<%= ((totalAmount + deliveryCharge + platformFee) -
+                                        0).toLocaleString() %></span>
                             </div>
                         </div>
 
@@ -120,7 +120,7 @@
                         paymentMethod: paymentMethod,
                         totalAmount: <%= totalAmount %>,
                         deliveryCharge: <%= deliveryCharge %>,
-                        platformFee: <%= platformFee %>
+                            platformFee: <%= platformFee %>
                 };
 
                 try {
@@ -132,10 +132,13 @@
                     const result = await response.json();
                     if (result.success) {
                         Swal.fire({
+                            title: '<h2 class="text-2xl font-bold text-green-600">🎉 Order Placed Successfully!</h2>',
+                            html: '<p class="text-gray-700">Thank you for shopping with us.<br>Your order has been placed and will be processed shortly.</p>',
                             icon: 'success',
-                            title: 'Order Placed',
-                            text: result.message || 'Payment Successfull Order Placed',
-                            confirmButtonText: 'OK'
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#16a34a', 
+                            background: '#f9fafb', 
+                            backdrop: ` rgba(5,0,0,0.4) url("/images/order-placed.gif")  center top no-repeat `
                         })
                             .then(() => {
                                 window.location.href = result.redirectUrl

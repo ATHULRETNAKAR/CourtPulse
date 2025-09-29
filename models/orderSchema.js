@@ -26,6 +26,27 @@ const orderSchema = new Schema({
         price: {
             type: Number,
             default: 0
+        },
+        cancelletionTitle: {
+            type: String,
+            enum: ["Changed mind", "Found better choice", "Wrong size selected", "Wrong color selected", "Product not needed anymore", "Ordered by mistake", "Found cheaper elsewhere", "Delivery taking too long", "Duplicate order placed", "Others"]
+        },
+        cancelletionReason: {
+            type: String,
+            required: false
+        },
+        returnTitle: {
+            type: String,
+            enum: ["Item damaged", "Defective product received", "Wrong item delivered", "Missing parts/accessories", "Size issue", "Color mismatch", "Quality issue", "Product not as described", "Expired product received", "Not expected", "No longer needed", "Ordered by mistake", "Gift not suitable", "Others"]
+        },
+        returnReason: {
+            type: String,
+            required: false,
+        },
+        status: {
+            type: String,
+            enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Request', 'Returned'],
+            default: 'Pending'
         }
     }],
     totalPrice: {
@@ -112,6 +133,22 @@ const orderSchema = new Schema({
         type: Date,
         default: Date.now,
         required: true
+    },
+    cancelletionTitle: {
+        type: String,
+        enum: ["Changed mind", "Found better choice", "Product not needed anymore", "Ordered by mistake", "Found cheaper elsewhere", "Delivery taking too long", "Duplicate order placed", "Others"]
+    },
+    cancelletionReason: {
+        type: String,
+        required: false
+    },
+    returnTitle: {
+        type: String,
+        enum: ["Item damaged", "Defective product received", "Wrong item delivered", "Missing parts/accessories", "Size issue", "Color mismatch", "Quality issue", "Product not as described", "Expired product received", "Not expected", "No longer needed", "Ordered by mistake", "Gift not suitable", "Others"]
+    },
+    returnReason: {
+        type: String,
+        required: false,
     },
     couponApplied: {
         type: Boolean,
