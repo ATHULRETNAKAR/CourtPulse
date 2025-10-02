@@ -1,5 +1,6 @@
-const User = require('../../models/userSchema')
+const User = require('../../models/userSchema');
 const Orders = require('../../models/orderSchema');
+const Product = require('../../models/productSchema');
 
 const loadOrders = async (req, res) => {
     try {
@@ -80,11 +81,34 @@ const cancelProduct = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Cancellation Reason Not Found' });
         }
 
-        const orderedItem = await Orders.findOne({ orderId: req.session.orderedOrderId, 'orderedItems._id': itemId });
-
-        if (!orderedItem) {
+        const order = await Orders.findOne({ orderId: req.session.orderedOrderId, 'orderedItems._id': itemId })
+            .populate('orderedItems.product')
+            .populate('orderedItems.variantId');
+        if (!order) {
             return res.status(404).json({ success: false, message: "Product Not Found in Order" });
         }
+
+        const orderedItem = order.orderedItems.find(item => item._id.toString() === itemId);
+        if (!orderedItem) {
+            return res.status(404).json({ success: false, message: 'Ordered Item Not Found' });
+        }
+
+        const product = await Product.findOne({ _id:orderedItem.product, 'variants._id': orderedItem.variantId  });
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product Not Found' });
+        }
+
+        const variant = product.variants.id(orderedItem.variantId)
+        console.log('This is matching vairant : ', variant)
+
+        if (variant) {
+            variant.quantity += orderedItem.quantity;
+            if(variant.stockStatus === 'Out of Stock'){
+                variant.stockStatus = 'In Stock';
+            };
+            await product.save();
+        }
+
 
         const updatePrductCancel = await Orders.findOneAndUpdate(
             { orderId: req.session.orderedOrderId, 'orderedItems._id': itemId },
@@ -102,6 +126,7 @@ const cancelProduct = async (req, res) => {
             await updatePrductCancel.save();
             return res.status(200).json({ success: true, message: 'Product Cancelled Successfully' })
         }
+
 
         updatePrductCancel.save();
         return res.status(200).json({ success: true, message: 'Product Cancelled Successfully' })

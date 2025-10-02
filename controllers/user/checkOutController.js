@@ -159,14 +159,36 @@ const checkOutPayment = async (req, res) => {
             return res.status(401).render('login');
         };
 
-        const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
+        const cart = await Cart.findOne({ userId: user._id })
+            .populate('items.productId')
+            .populate('items.variantId');
 
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ success: false, message: "Cart is empty" });
         }
 
+        for (const item of cart.items) {
+            const product = await Product.findOne({ _id: item.productId._id });
+            if (!product) {
+                return res.status(400).json({ success: false, message: "Product not found" });
+            }
+
+            const variant = product.variants.id(item.variantId._id);
+            if (!variant) {
+                return res.status(400).json({ success: false, message: "Variant not found" });
+            }
+
+            if (variant.quantity < item.quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Insufficient stock for ${product.productName}, Only ${variant.quantity} Left!`
+                });
+            }
+        }
+
         const orderedItems = cart.items.map((item) => ({
             product: item.productId._id,
+            variantId: item.variantId._id,
             quantity: item.quantity,
             price: item.totalPrice
         }));
@@ -210,8 +232,23 @@ const checkOutPayment = async (req, res) => {
             paymentMethod: paymentMethod.toUpperCase(),
             paymentStatus: paymentMethod.toLowerCase() === 'cod' ? "Pending" : "Paid"
         })
-
         await order.save();
+
+        for (const item of orderedItems) {
+            const product = await Product.findOne({ _id: item.product });
+
+            if (product) {
+                const variant = product.variants.id(item.variantId);
+                if (variant) {
+                    variant.quantity -= item.quantity;
+                    if (variant.quantity <= 0) {
+                        variant.quantity = 0;
+                        variant.stockStatus = "Out of Stock";
+                    }
+                    await product.save();
+                }
+            }
+        }
 
         await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] } });
 

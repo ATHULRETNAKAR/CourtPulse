@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtPulse - Customer Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 ">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <%- include("../../views/partials/admin/sidebar") %>
+
+            <!-- Main Content -->
+            <div class="flex-1 flex flex-col ">
+
+                <!-- Header -->
+                <%- include("../../views/partials/admin/header") %>
+
+                    <!-- Main Content -->
+                    <div class="flex-1 flex px-4 pt-4">
+                        <!-- Order Details Column -->
+                        <div class="flex-1 bg-white p-6 rounded shadow-md">
+                            <h1 class="text-2xl font-bold mb-2">Order Details</h1>
+                            <div class="flex flex-col justify-between pb-4 border-b">
+                                <p> Order Id - <%= order.orderId %>
+                                </p>
+
+                                <h2 class="text-l text-gray-600">
+                                    User: <span class="text-gray-600 font-semibold">
+                                        <%= order.userId.name %>
+                                    </span>
+                                    <h2 class="text-l text-gray-600">
+                                        Email ID: <span class="text-gray-600 font-semibold">
+                                            <%= order.userId.email %>
+                                        </span>
+                                    </h2>
+                                    <h2 class="text-l text-gray-600">
+                                        Order Date: <span class="text-gray-600 font-semibold">
+                                            <%= order.formattedDate %>
+                                        </span>
+                                    </h2>
+                            </div>
+
+                            <!-- Items -->
+                            <% order.orderedItems.forEach((item, index)=> { %>
+                                <div class="border-b py-4 flex items-start space-x-4">
+                                    <p class="text-lg">
+                                        <%= index + 1 %>.
+                                    </p>
+                                    <% if (item.product.variants && item.product.variants.length> 0 &&
+                                        item.product.variants[0].images && item.product.variants[0].images.length > 0) {
+                                        %>
+                                        <img src="/productImg/<%= item.product.variants[0].images[0] %>"
+                                            alt="<%= item.product.productName %>"
+                                            class="w-20 h-20 object-contain rounded">
+                                        <% } %>
+                                            <div class="flex-1">
+                                                <p class="font-bold">
+                                                    <%= item.product.productName %>
+                                                </p>
+                                                <% if(item.product.variants[0].color) { %>
+                                                    <p>Color - <%= item.product.variants[0].color %>
+                                                    </p>
+                                                    <% } %>
+                                                        <% if(item.product.variants[0].size !=="N/A" ) { %>
+                                                            <p>Size - <%= item.product.variants[0].size %>
+                                                            </p>
+                                                            <% } %>
+                                                                <p>Quantity - x<%= item.quantity %>
+                                                                </p>
+                                                                <p>₹<%= item.price %>
+                                                                </p>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <% const statusColors={ "Pending" : "bg-yellow-100 text-yellow-600"
+                                                    , "Processing" : "bg-blue-200 text-blue-700" , "Shipped"
+                                                    : "bg-indigo-200 text-indigo-700" , "Delivered"
+                                                    : "bg-green-100 text-green-600" , "Cancelled"
+                                                    : "bg-red-100 text-red-600" , "Return Request"
+                                                    : "bg-orange-200 text-orange-700" , "Returned"
+                                                    : "bg-gray-100 text-gray-600" }; const
+                                                    badgeClass=statusColors[item.status] || "bg-gray-100 text-gray-600"
+                                                    ; %>
+
+                                                    <span class="<%= badgeClass %> px-2 py-1 rounded flex items-center">
+                                                        <%= item.status %>
+                                                    </span>
+                                                    <% if (item.status !=='Cancelled' && item.status !=='Returned' && item.status !== 'Delivered') {
+                                                        %>
+                                                        <select
+                                                            class="product-status bg-white border border-gray-300 px-2 py-1 rounded"
+                                                            data-id="<%= item._id %>">
+                                                            <% const statuses=['Pending', 'Processing' , 'Shipped'
+                                                                , 'Delivered' , 'Cancelled' , 'Return Request'
+                                                                , 'Returned' ]; statuses.forEach(status=> {
+                                                                const isSelected = status === item.status;
+                                                                const isDisabled = false;
+                                                                %>
+                                                                <option value="<%= status %>" <%=isSelected ? 'selected'
+                                                                    : '' %>
+                                                                    <%= isDisabled ? 'disabled' : '' %>>
+                                                                        <%= status %>
+                                                                </option>
+                                                                <% }); %>
+                                                        </select>
+                                                        <% } %>
+                                            </div>
+                                </div>
+                                <% }); %>
+
+                                    <div class="mt-4 text-right">
+                                            <% if (order.status !=='Cancelled' && order.status !=='Returned' && order.status !== 'Delivered') {
+                                                %>
+                                                <button class="bg-red-500 text-white px-6 py-2 rounded cancel-order"
+                                                    data-id="<%= order._id %>">Cancel Order</button>
+                                                <% } %>
+                                    </div>
+                        </div>
+
+                        <!-- Right Column (Shipping + Price) -->
+                        <div class="w-1/3 flex flex-col pl-4">
+
+                            <!-- Shipping Details -->
+                            <div class="bg-white p-6 rounded  shadow-md">
+                                <h2 class="text-gray-600 font-bold border-b pb-2 mb-2">Shipping Details</h2>
+                                <% if (order.address) { %>
+                                    <p class="font-bold">
+                                        <%= order.address.name %>
+                                    </p>
+                                    <p>
+                                        <%= order.address.addressLine %>
+                                    </p>
+                                    <p>Pincode. <%= order.address.pincode %>
+                                    </p>
+                                    <p><span>
+                                            <%= order.address.city%>,
+                                        </span><span>
+                                            <%= order.address.state%>
+                                        </span></p>
+                                    <p>Ph. <%= order.address.mobile %>
+                                    </p>
+                                    <p>Alt Ph. <%= order.address.altPhone ? order.address.altPhone : "N/A" %>
+                                    </p>
+                                    <% } else { %>
+                                        <p>No shipping details available</p>
+                                        <% } %>
+
+                                            <!-- Price Details -->
+
+                                            <h2 class="text-gray-600 font-bold pt-4  mb-2">Price Details</h2>
+                                            <div class="border p-4 rounded">
+                                                <div class="flex justify-between">
+                                                    <p>Price (<%= order.orderedItems.length %> items)</p>
+                                                    <p>₹<%= order.totalPrice.toFixed(2) %>
+                                                    </p>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <p>Coupon Discount</p>
+                                                    <p>₹<%= order.discount %>
+                                                    </p>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <p>Platform Fee</p>
+                                                    <p>₹<%= order.platformFee %>
+                                                    </p>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <p>Delivery Charge</p>
+                                                    <p>₹<%= order.deliveryCharge %>
+                                                    </p>
+                                                </div>
+                                                <div class="text-gray-600 flex justify-between font-bold">
+                                                    <p>Grand Total</p>
+                                                    <p>₹<%= order.finalAmount.toFixed(2) %>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Order Action Button -->
+
+                                            <div class="mt-2 text-gray-600 text-center border rounded">Payment Method:
+                                                <%= order.paymentMethod %>
+                                            </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const statusOrder = {
+                'Pending': 0,
+                'Processing': 1,
+                'Shipped': 2,
+                'Delivered': 3,
+                'Cancelled': 4,
+                'Return Request': 5,
+                'Returned': 6
+            }
+
+            const allStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Request', 'Returned'];
+
+            function disablePastStatuses(select) {
+                const currentStatus = select.value;
+                const currentOrder = statusOrder[currentStatus];
+
+                Array.from(select.options).forEach(option => {
+                    const optionOrder = statusOrder[option.value];
+                    if (optionOrder < currentOrder) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                })
+            }
+
+            const selects = document.querySelectorAll('.product-status');
+            selects.forEach(disablePastStatuses);
+
+            selects.forEach(select => {
+                select.addEventListener('change', function () {
+                    const newStatus = this.value;
+                    const dataId = this.dataset.id;
+                    const currentStatus = this.value;
+
+                    disablePastStatuses(this)
+
+                    Swal.fire({
+                        title: 'Confirm Update',
+                        text: `Are you sure you want to update the status to "${newStatus}"?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, update it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const response = fetch('/admin/orderDetais/updateStatus', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    id: dataId,
+                                    status: newStatus
+                                })
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Updated!',
+                                            text: data.message || 'Status has been updated successfully.',
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        })
+                                            .then(() => {
+                                                location.reload()
+                                            })
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Error!',
+                                            text: data.message || 'Failed to update status.',
+                                            icon: 'error'
+                                        });
+
+                                        this.value = data.previousStatus || currentStatus; // Assuming backend provides previous if needed
+                                        disablePastStatuses(this);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: 'An error occurred while updating the status.',
+                                        icon: 'error'
+                                    });
+                                    // Revert
+                                    this.value = currentStatus;
+                                    disablePastStatuses(this);
+                                });
+                        } else {
+                            this.value = currentStatus;
+                            disablePastStatuses(this);
+                        }
+                    });
+                })
+            })
+        })
+    </script>
+
+</body>
+
+</html>

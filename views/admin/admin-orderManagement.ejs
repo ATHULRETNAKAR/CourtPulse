@@ -23,19 +23,19 @@
     </script>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 ">
     <div class="flex h-screen">
         <!-- Sidebar -->
         <%- include("../../views/partials/admin/sidebar") %>
 
             <!-- Main Content -->
-            <div class="flex-1 flex flex-col overflow-hidden">
+            <div class="flex-1 flex flex-col ">
                 
                 <!-- Header -->
                 <%- include("../../views/partials/admin/header") %>
 
                     <!-- Main Content -->
-                    <main class="flex-1 px-4">
+                    <main class="flex-1 px-4 overflow-y-auto pt-4">
                         <div class="flex justify-between items-center mb-6">
                             <h1 class="text-2xl font-bold text-gray-800">My Orders</h1>
                             <div class="relative">
@@ -49,7 +49,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="bg-white p-6 rounded-lg shadow-md h-full">
+                        <div class="bg-white p-6 rounded-lg shadow-md min-h-full">
 
                             <div class="space-y-4">
                                 <% if (orders && orders.length> 0) { %>
@@ -57,20 +57,30 @@
                                         <% if (order.orderedItems && order.orderedItems.length> 0) { %>
                                             <% const firstItem=order.orderedItems[0]; %>
                                                 <% const itemCount=order.orderedItems.length; %>
-                                                    <a href="/orderDetails/<%= order.orderId %>" class="block">
+                                                    <a href="/admin/orderDetails/<%= order.orderId %>/<%= order.userId._id %>" class="block">
                                                         <div
                                                             class="bg-white rounded-lg border shadow-md p-4 flex items-center space-x-4 hover:bg-gray-50 cursor-pointer">
                                                             <img src="/productImg/<%= firstItem.product.variants[0].images[0] %>"
                                                                 alt="<%= firstItem.product.productName %>"
                                                                 class="w-16 h-16 object-contain rounded-md">
 
-                                                            <div class="flex-1 space-y-2">
+                                                            <div class="flex-1 flex-col">
                                                                 <h2 class="text-l font-semibold text-purple-600">
                                                                     Order ID: <span class="text-purple-400">
                                                                         <%= order.orderId %>
                                                                     </span>
                                                                 </h2>
-                                                                <p class="text-sm text-gray-600">Items: <%= itemCount %>
+                                                                <h2 class="text-l text-gray-600">
+                                                                    User: <span class="text-gray-600 font-semibold">
+                                                                        <%= order.userId.name %>
+                                                                    </span>
+                                                                </h2>
+                                                                <h2 class="text-l text-gray-600">
+                                                                    Order Date: <span class="text-gray-600 font-semibold">
+                                                                        <%= order.formattedDate %>
+                                                                    </span>
+                                                                </h2>
+                                                                <p class="text-sm text-gray-600 ">Items: <%= itemCount %>
                                                                         <%= itemCount> 1 ? 'products' : 'product' %></p>
                                                                 <p class="text-lg font-bold text-red-700">₹ <%=
                                                                         order.finalAmount.toFixed(2) %>
@@ -110,208 +120,6 @@
             </div>
     </div>
 
-    <script>
-        // Customer management functions
-        function editData(dataId) {
-            // Redirect to edit customer page or open modal
-            window.location.href = `/admin/customers/edit/${dataId}`;
-        }
-
-        // Toggle customer status with SweetAlert confirmation
-        function toggleDataStatus(userId, dataName, action) {
-            const isBlocking = action === 'block';
-            const actionText = isBlocking ? 'block' : 'unblock';
-            const actionTextCapitalized = isBlocking ? 'Block' : 'Unblock';
-
-            Swal.fire({
-                title: `${actionTextCapitalized} User?`,
-                text: `Are you sure you want to ${actionText} ${dataName}?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: isBlocking ? '#ef4444' : '#10b981',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: `Yes, ${actionText}!`,
-                cancelButtonText: 'Cancel',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Show loading
-                    Swal.fire({
-                        title: `${actionTextCapitalized}ing user...`,
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        showConfirmButton: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    // Send AJAX request to toggle customer status
-                    // IMPORTANT: The URL here should match your backend route for toggling status
-                    fetch(`/admin/customers/${userId}/toggle-status`, {
-                        method: 'PATCH', // Use PATCH for partial updates
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({
-                            action: action // 'block' or 'unblock'
-                        })
-                    })
-                        .then(response => {
-                            if (!response.ok) {
-                                return response.json().then(err => { throw new Error(err.message || 'Server error'); });
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                // Update UI immediately
-                                updateDataStatusUI(userId, data.newStatus, dataName);
-
-                                // Show success message
-                                Swal.fire({
-                                    title: 'Success!',
-                                    text: `User has been ${actionText}ed successfully.`,
-                                    icon: 'success',
-                                    confirmButtonColor: '#6366f1',
-                                    timer: 2000,
-                                    timerProgressBar: true
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: data.message || `Failed to ${actionText} user.`,
-                                    icon: 'error',
-                                    confirmButtonColor: '#6366f1'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                title: 'Error!',
-                                text: `Network error occurred while trying to ${actionText} user: ${error.message}`,
-                                icon: 'error',
-                                confirmButtonColor: '#6366f1'
-                            });
-                        });
-                }
-            });
-        }
-
-        // Update customer status in UI
-        function updateDataStatusUI(userId, newStatus, dataName) {
-            const statusBadge = document.getElementById(`status-badge-${userId}`);
-            const actionBtn = document.getElementById(`action-btn-${userId}`);
-
-            if (statusBadge && actionBtn) {
-                // Update status badge
-                statusBadge.textContent = newStatus;
-                statusBadge.className = `inline-flex px-2 md:px-3 py-1 text-xs font-medium rounded-full ${newStatus === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`;
-
-                // Update action button
-                if (newStatus === 'Active') {
-                    actionBtn.className = 'p-1.5 md:p-2 text-gray-400 hover:text-red-600 transition-colors rounded hover:bg-red-50';
-                    actionBtn.title = 'Block User';
-                    actionBtn.onclick = () => toggleDataStatus(userId, dataName, 'block');
-                    actionBtn.innerHTML = '<i class="fas fa-ban text-sm"></i>';
-                } else {
-                    actionBtn.className = 'p-1.5 md:p-2 text-gray-400 hover:text-green-600 transition-colors rounded hover:bg-green-50';
-                    actionBtn.title = 'Unblock User';
-                    actionBtn.onclick = () => toggleDataStatus(userId, dataName, 'unblock');
-                    actionBtn.innerHTML = '<i class="fas fa-check-circle text-sm"></i>';
-                }
-            }
-        }
-
-        // Pagination functions
-        function goToPage(page) {
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('page', page);
-            urlParams.set('limit', <%= limit %>); // Ensure limit is carried over
-            urlParams.set('search', '<%= search %>'); // Ensure search is carried over
-            window.location.search = urlParams.toString();
-        }
-
-        function previousPage() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentPage = parseInt(urlParams.get('page')) || 1;
-            if (currentPage > 1) {
-                urlParams.set('page', currentPage - 1);
-                urlParams.set('limit', <%= limit %>);
-                urlParams.set('search', '<%= search %>');
-                window.location.search = urlParams.toString();
-            }
-        }
-
-        function nextPage() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentPage = parseInt(urlParams.get('page')) || 1;
-            urlParams.set('page', currentPage + 1);
-            urlParams.set('limit', <%= limit %>);
-            urlParams.set('search', '<%= search %>');
-            window.location.search = urlParams.toString();
-        }
-
-        function changePageSize(size) {
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('limit', size);
-            urlParams.set('page', 1); // Reset to first page when changing limit
-            urlParams.set('search', '<%= search %>');
-            window.location.search = urlParams.toString();
-        }
-
-        // Search functionality
-        document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.querySelector('input[placeholder="Search here"]');
-            let searchTimeout;
-
-            if (searchInput) {
-                searchInput.addEventListener('input', function () {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        const searchTerm = this.value.trim();
-                        const urlParams = new URLSearchParams(window.location.search);
-                        if (searchTerm) {
-                            urlParams.set('search', searchTerm);
-                        } else {
-                            urlParams.delete('search');
-                        }
-                        urlParams.set('page', 1); // Reset to first page on new search
-                        urlParams.set('limit', <%= limit %>); // Ensure limit is carried over
-                        window.location.search = urlParams.toString();
-                    }, 500);
-                });
-            }
-
-            // Export functionality
-            const exportBtn = document.querySelector('button:has(.fa-download)');
-            if (exportBtn) {
-                exportBtn.addEventListener('click', function () {
-                    window.location.href = '/admin/customers/export';
-                });
-            }
-
-            // Mobile menu functionality
-            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-            const mobileMenu = document.getElementById('mobileMenu');
-            const closeMobileMenu = document.getElementById('closeMobileMenu');
-
-            if (mobileMenuBtn && mobileMenu) {
-                mobileMenuBtn.addEventListener('click', function () {
-                    mobileMenu.classList.remove('hidden');
-                });
-            }
-
-            if (closeMobileMenu && mobileMenu) {
-                closeMobileMenu.addEventListener('click', function () {
-                    mobileMenu.classList.add('hidden');
-                });
-            }
-        });
-    </script>
 </body>
 
 </html>

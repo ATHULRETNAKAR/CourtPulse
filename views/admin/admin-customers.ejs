@@ -113,14 +113,7 @@
                                                     </td>
                                                     <td class="px-4 md:px-6 py-4">
                                                         <div class="flex items-center space-x-2">
-                                                            <!-- Edit/View Button -->
-                                                            <button
-                                                                class="p-1.5 md:p-2 text-gray-400 hover:text-blue-600 transition-colors rounded hover:bg-blue-50"
-                                                                onclick="editData('<%= data[i]._id %>')"
-                                                                title="Edit Customer">
-                                                                <i class="fas fa-edit text-sm"></i>
-                                                            </button>
-
+                                                            
                                                             <!-- Block/Unblock Button -->
                                                             <% if (data[i].isBlocked===false) { %>
                                                                 <button

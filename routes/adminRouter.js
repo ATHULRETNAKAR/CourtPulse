@@ -3,10 +3,11 @@ const router = express.Router();
 const adminController = require('../controllers/admin/adminController');
 const customerController = require('../controllers/admin/customerController');
 const categoryController = require('../controllers/admin/categoryController');
-const brandController = require('../controllers/admin/brandController')
-const productController = require('../controllers/admin/productController')
+const brandController = require('../controllers/admin/brandController');
+const productController = require('../controllers/admin/productController');
+const orderController = require('../controllers/admin/orderController');
 const { userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus } = require('../middlewares/auth');
-const upload = require('../helpers/multer')
+const upload = require('../helpers/multer');
 
 //Login Management
 router.get('/login',  adminController.loadLogin);
@@ -44,5 +45,9 @@ router.put('/editProduct/:id',upload, productController.productEditPut);
 router.get('/editProduct/:id',upload, productController.editProduct);
 router.post('/removeProductImage', productController.removeProductImage);
 
+//Order Management 
+router.get('/orders',orderController.orderInfo);
+router.get('/orderDetails/:orderId/:userId',orderController.orderDetail);
+router.post('/orderDetais/updateStatus',orderController.updateStatus);
 
 module.exports = router;
