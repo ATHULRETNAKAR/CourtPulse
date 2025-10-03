@@ -10,7 +10,7 @@ const { userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatu
 const upload = require('../helpers/multer');
 
 //Login Management
-router.get('/login',  adminController.loadLogin);
+router.get('/login', adminController.loadLogin);
 router.post('/login', adminController.login);
 router.get('/errorpage', adminController.errorpage);
 router.get('/logout', adminController.logout);
@@ -41,13 +41,15 @@ router.get('/addProduct', productController.addProduct);
 router.post('/addProduct', upload, productController.addProductpost);
 router.delete('/deleteProduct/:id', productController.productDelete);
 router.patch('/undoProduct/:id', productController.productUndo);
-router.put('/editProduct/:id',upload, productController.productEditPut);
-router.get('/editProduct/:id',upload, productController.editProduct);
+router.put('/editProduct/:id', upload, productController.productEditPut);
+router.get('/editProduct/:id', upload, productController.editProduct);
 router.post('/removeProductImage', productController.removeProductImage);
 
 //Order Management 
-router.get('/orders',orderController.orderInfo);
-router.get('/orderDetails/:orderId/:userId',orderController.orderDetail);
-router.post('/orderDetais/updateStatus',orderController.updateStatus);
+router.get('/orders', orderController.orderInfo);
+router.get('/orderDetails/:orderId/:userId', orderController.orderDetail);
+router.post('/orderDetais/updateStatus', orderController.updateStatus);
+router.get('/returnDetails/:id', orderController.returnDetails);
+router.post('/updateReturn/:id', orderController.updateReturn);
 
 module.exports = router;

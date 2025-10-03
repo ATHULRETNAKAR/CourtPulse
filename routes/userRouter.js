@@ -79,6 +79,8 @@ router.get('/cancelTitle', orderController.loadCancelTitles);
 router.post('/cancelProduct/:id', orderController.cancelProduct);
 router.get('/cancelOrderTitle', orderController.loadCancelTitlesProduct);
 router.post('/cancelOrder/:id', orderController.cancelOrder);
+router.get('/returnTitle', orderController.loadReturnTitles);
+router.post('/returnProduct/:id', orderController.returnProduct);
 
 router.get('/cart', cartController.loadCart);
 router.post('/addToCart', cartController.addToCart);

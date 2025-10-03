@@ -2,11 +2,41 @@ const Orders = require('../../models/orderSchema');
 
 const orderInfo = async (req, res) => {
     try {
-        const orders = await Orders.find()
+        const { search, sort, filter, page = 1 } = req.query;
+        const limit = 5;
+        const skip = (parseInt(page) - 1) * limit;
+
+        let query = {};
+
+        if (filter) {
+            query.status = filter;
+        }
+        if (search) {
+            query.$or = [
+                { orderId: { $regex: search, $options: 'i' } },
+                { 'userId.name': { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        let sortObj = { createdOn: -1 };
+        if (sort === 'oldest') {
+            sortObj = { createdOn: 1 };
+        } else if (sort === 'a-z') {
+            sortObj = { 'userId.name': 1 };
+        } else if (sort === 'z-a') {
+            sortObj = { 'userId.name': -1 }
+        }
+
+        const orders = await Orders.find(query)
             .populate('orderedItems.product')
             .populate('userId')
-            .sort({ createdOn: -1 })
+            .sort(sortObj)
+            .skip(skip)
+            .limit(limit)
             .lean();
+
+        const total = await Orders.countDocuments(query);
+        const totalPages = Math.ceil(total / limit);
 
         const formattedOrders = orders.map(order => {
             const date = new Date(order.createdOn);
@@ -24,11 +54,20 @@ const orderInfo = async (req, res) => {
                 formattedDate
             }
         })
-        const limit = null;
-        const search = null;
-        return res.render('admin-orderManagement', { orders: formattedOrders, limit, search });
+
+        res.render('admin-orderManagement', {
+            orders: formattedOrders,
+            search: search || '',
+            sort: sort || 'latest',
+            filter: filter || '',
+            page: parseInt(page),
+            totalPages,
+            limit
+        });
+
     } catch (error) {
-        console.error('Failed in OrderInfo : ', error)
+        console.error('Failed in OrderInfo : ', error);
+        return res.status(500).send("Internal Server Error");
     }
 }
 
@@ -62,7 +101,7 @@ const orderDetail = async (req, res) => {
 
         order.formattedDate = formattedDate
 
-        return res.render('admin-orderDetails', { order });
+        res.render('admin-orderDetails', { order });
     } catch (error) {
         console.log('Failed admin OrderDetail : ', error);
     }
@@ -86,8 +125,14 @@ const updateStatus = async (req, res) => {
             { $set: { 'orderedItems.$.status': status } },
             { new: true }
         )
+        if (updateStatus && updateStatus.orderedItems.every(item => item.status === status)) {
+            updateStatus.status = status;
+            await updateStatus.save();
+        }
+
         if (updateStatus) {
-            return res.status(200).json({ success: true, message: "Status Updated Successfully" });
+            await updateStatus.save();
+            res.status(200).json({ success: true, message: "Status Updated Successfully" });
         }
     } catch (error) {
         console.log('Failed to updateStatus Admin', error);
@@ -95,9 +140,48 @@ const updateStatus = async (req, res) => {
     }
 }
 
+const returnDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const order = await Orders.findOne({ userId: req.session.userId, orderId: req.session.orderId, 'orderedItems._id': id }, { 'orderedItems.$': 1 });
+
+        res.status(200).json({ returnTitle: order.orderedItems[0].returnTitle, returnReason: order.orderedItems[0].returnReason });
+    } catch (error) {
+        console.error('Failed returnDetails : ', error)
+    }
+}
+
+const updateReturn = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const order = await Orders.findOne({ userId: req.session.userId, orderId: req.session.orderId, 'orderedItems._id': id });
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order Not Found' })
+        }
+        const updateReturn = await Orders.findOneAndUpdate({ userId: req.session.userId, orderId: req.session.orderId, 'orderedItems._id': id },
+            { $set: { 'orderedItems.$.status': 'Returned' } },
+            { new: true }
+        )
+        console.log('This is first : ', updateReturn)
+        if (updateReturn && updateReturn.orderedItems.every(item => item.status === 'Returned')) {
+            updateReturn.status = 'Returned'
+            console.log('This is Second : ', updateReturn)
+            await updateReturn.save();
+        }
+
+        await updateReturn.save();
+        res.status(200).json({ success: true, message: 'Return Approved Successfully' })
+    } catch (error) {
+        console.log('Failed updateReturn ', error)
+        res.status(500).send('Internal Server Error');
+    }
+}
+
 
 module.exports = {
     orderInfo,
     orderDetail,
-    updateStatus
+    updateStatus,
+    returnDetails,
+    updateReturn
 }

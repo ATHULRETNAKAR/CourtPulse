@@ -93,7 +93,7 @@ const cancelProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Ordered Item Not Found' });
         }
 
-        const product = await Product.findOne({ _id:orderedItem.product, 'variants._id': orderedItem.variantId  });
+        const product = await Product.findOne({ _id: orderedItem.product, 'variants._id': orderedItem.variantId });
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product Not Found' });
         }
@@ -103,7 +103,7 @@ const cancelProduct = async (req, res) => {
 
         if (variant) {
             variant.quantity += orderedItem.quantity;
-            if(variant.stockStatus === 'Out of Stock'){
+            if (variant.stockStatus === 'Out of Stock') {
                 variant.stockStatus = 'In Stock';
             };
             await product.save();
@@ -158,7 +158,7 @@ const cancelOrder = async (req, res) => {
         const order = Orders.findById({ _id: orderId });
 
         if (!order) {
-            return res.status(400).json({ success: false, message: 'Order Not Found' });
+            return res.status(404).json({ success: false, message: 'Order Not Found' });
         }
 
         const updateOrderCancel = await Orders.findOneAndUpdate({ _id: orderId },
@@ -181,11 +181,61 @@ const cancelOrder = async (req, res) => {
     }
 }
 
+const loadReturnTitles = async (req, res) => {
+    try {
+        const titles = await Orders.schema.path('orderedItems').schema.path('returnTitle').enumValues;
+        return res.status(200).json({ titles });
+    } catch (error) {
+        console.log('Failed to loadReturnTitles : ', error)
+    }
+}
+
+const returnProduct = async (req, res) => {
+    try {
+        const { id: itemId } = req.params;
+
+        const { selectedTitle: title, additionalReason: reason } = req.body;
+
+        if (!itemId || !title || !reason) {
+            return res.status(400).json({ success: false, message: 'Cancellation Reason Not Found' });
+        }
+
+        const order = await Orders.findOne({ orderId: req.session.orderedOrderId })
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order Not Found' });
+        }
+
+        const product = order.orderedItems.find(item => item._id.toString() === itemId);
+
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product Not Found' })
+        }
+
+        product.returnTitle = title;
+        product.returnReason = reason;
+        product.status = 'Return Request';
+
+        if (order && order.orderedItems.every(item => item.status === 'Return Request')) {
+            order.status = 'Return Request'
+        }
+        
+        await order.save();
+        return res.status(200).json({ success: true, message: 'Return Request Submitted ' });
+
+    } catch (error) {
+        console.log('Failed to returnProduct : ', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' })
+    }
+}
+
 module.exports = {
     loadOrders,
     loadOrderDetails,
     loadCancelTitles,
     cancelProduct,
     loadCancelTitlesProduct,
-    cancelOrder
+    cancelOrder,
+    loadReturnTitles,
+    returnProduct
 }
