@@ -93,8 +93,6 @@ const addToCart = async (req, res) => {
         }
 
         const { productId, variantId } = req.body;
-        console.log("Product Id : ", productId)
-        console.log("Variant Id : ", variantId)
 
         const product = await Product.findById(productId)
         if (!product) {

@@ -8,6 +8,7 @@ const addressController = require('../controllers/user/addressController');
 const cartController = require('../controllers/user/cartController');
 const checkOutController = require('../controllers/user/checkOutController');
 const orderController = require('../controllers/user/orderController');
+const wishlistController = require('../controllers/user/wishlistController');
 const { userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus } = require('../middlewares/auth');
 const profUploads = require('../helpers/Prof_multer');
 
@@ -81,6 +82,9 @@ router.get('/cancelOrderTitle', orderController.loadCancelTitlesProduct);
 router.post('/cancelOrder/:id', orderController.cancelOrder);
 router.get('/returnTitle', orderController.loadReturnTitles);
 router.post('/returnProduct/:id', orderController.returnProduct);
+
+router.get('/wishlist', wishlistController.loadWishlist);
+router.post('/addWishlist', wishlistController.addToWishlist);
 
 router.get('/cart', cartController.loadCart);
 router.post('/addToCart', cartController.addToCart);

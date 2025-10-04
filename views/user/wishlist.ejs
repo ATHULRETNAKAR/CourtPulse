@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist - CourtPulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100">
+    <!-- Header -->
+    <%- include('../../views/partials/user/header') %>
+
+        <main class="py-8 ">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
+                <!-- Wishlist Section -->
+                <section class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Discover items in your wishlist</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <% if (wishlistItems && wishlistItems.length> 0) { %>
+                            <% wishlistItems.forEach(function(item) { %>
+                                <div class="bg-white rounded-lg shadow-md overflow-hidden group">
+                                    <a href="/productDetail/<%= item.id %>">
+                                    <div class="relative">
+                                        <img src="<%= item.image %>" alt="<%= item.name %>"
+                                            class="w-full h-48 object-cover">
+                                        <div
+                                            class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity">
+                                        </div>
+                                    </div>
+                                    <div class="p-4">
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                                            <%= item.name %>
+                                        </h3>
+
+                                        <p class="text-xl font-bold text-gray-900 mb-4">₹<%= item.price %>
+                                        </p>
+                                    </a>
+                                        <button
+                                            class="w-full bg-primary text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors">+
+                                            Cart</button>
+                                    </div>
+                                </div>
+                                <% }) %>
+                                    <% } else { %>
+                                        <p class="col-span-full text-center text-gray-500">Your wishlist is empty.</p>
+                                        <% } %>
+                    </div>
+                </section>
+
+                <!-- Related Products Section -->
+                <section>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Discover more items similar to your wishlist</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <% if (relatedProducts && relatedProducts.length> 0) { %>
+                            <% relatedProducts.forEach(function(product) { %>
+                                <div class="bg-white rounded-lg shadow-md overflow-hidden group">
+                                    <div class="relative">
+                                        <img src="<%= product.image %>" alt="<%= product.name %>"
+                                            class="w-full h-48 object-cover">
+                                        <div
+                                            class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity">
+                                        </div>
+                                    </div>
+                                    <div class="p-4">
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                                            <%= product.name %>
+                                        </h3>
+                                        <p class="text-xl font-bold text-gray-900 mb-4">₹<%= product.price %>
+                                        </p>
+                                        <button
+                                            class="w-full bg-primary text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors">+
+                                            Cart</button>
+                                    </div>
+                                </div>
+                                <% }) %>
+                                    <% } else { %>
+                                        <p class="col-span-full text-center text-gray-500">No related products found.
+                                        </p>
+                                        <% } %>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <%- include('../../views/partials/user/subFooter') %>
+</body>
+
+</html>

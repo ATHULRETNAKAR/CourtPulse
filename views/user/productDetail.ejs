@@ -219,7 +219,8 @@
                                                 Add to Cart
                                             </button>
                                             <% } %>
-                                                <button
+                                                <button id="addToWishlistBtn"
+                                                    onclick="addToWishlist('<%= product._id %>', '<%= selectedVariant ? selectedVariant._id : "" %>')"
                                                     class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 font-semibold">
                                                     Add to Wishlist
                                                 </button>
@@ -413,8 +414,10 @@
                                 Swal.fire({
                                     icon: 'info',
                                     title: 'Already in Cart',
+                                    showCancelButton: true,
                                     text: data.message,
-                                    confirmButtonText: 'View Cart'
+                                    confirmButtonText: 'View Cart',
+                                    cancelButtonText: 'Close'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
                                         window.location.href = "/cart";
@@ -445,6 +448,58 @@
                                 icon: 'error',
                                 title: 'Error',
                                 text: data.message || 'Failed to add product to cart.',
+                            });
+                        });
+                }
+
+                function addToWishlist(productId, variantId) {
+                    fetch("/addWishlist", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ productId, variantId })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!data.success && data.message.includes("already")) {
+                                document.getElementById("addToWishlistBtn").textContent = "View Wishlist";
+                                document.getElementById("addToWishlistBtn").onclick = () => window.location.href = "/wishlist";
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Already in Wishlist',
+                                    showCancelButton: true,
+                                    text: data.message,
+                                    confirmButtonText: 'View Wishlist',
+                                    cancelButtonText: 'Close'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = "/wishlist";
+                                    }
+                                });
+                            } else if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Added to Wishlist',
+                                    text: data.message,
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Sorry',
+                                    text: data.message || 'Something went wrong!',
+                                    confirmButtonText: 'Login'
+                                }).then((result) => {
+                                    if(result.isConfirmed){
+                                        window.location.href = "/login"
+                                    }
+                                })
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Failed to add product to wishlist.',
                             });
                         });
                 }
@@ -494,6 +549,10 @@
                             addToCartBtn.classList.remove("bg-purple-600", "hover:bg-purple-700");
                             addToCartBtn.classList.add("bg-gray-400", "cursor-not-allowed");
                         }
+
+                        // Update Add to Wishlist button
+                        const addToWishlistBtn = document.getElementById("addToWishlistBtn");
+                        addToWishlistBtn.onclick = () => addToWishlist('<%= product._id %>', variantId);
 
                         // Update variant selectors highlights
                         document.querySelectorAll('button[onclick^="updateVariant"]').forEach(btn => {
