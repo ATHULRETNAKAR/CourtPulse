@@ -1,6 +1,7 @@
 const User = require('../../models/userSchema');
 const Orders = require('../../models/orderSchema');
 const Product = require('../../models/productSchema');
+const PDFDocument = require('pdfkit');
 
 const loadOrders = async (req, res) => {
     try {
@@ -219,13 +220,84 @@ const returnProduct = async (req, res) => {
         if (order && order.orderedItems.every(item => item.status === 'Return Request')) {
             order.status = 'Return Request'
         }
-        
+
         await order.save();
         return res.status(200).json({ success: true, message: 'Return Request Submitted ' });
 
     } catch (error) {
         console.log('Failed to returnProduct : ', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' })
+    }
+}
+
+const orderInvoice = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const order = await Orders.findById({ _id: id })
+            .populate('orderedItems.product')
+            .populate('orderedItems.variantId');
+
+        if (!order) {
+            return res.staus(404).json({ message: 'Order Not Found' })
+        };
+
+        const pdfDoc = new PDFDocument({ margin: 50 });
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename=invoice-${order.orderId}.pdf`);
+        pdfDoc.pipe(res);
+
+        pdfDoc.fontSize(22).text("CourtPulse", { align: "center" });
+        pdfDoc.moveDown(0.5);
+        pdfDoc.fontSize(14).text("Invoice", { align: "center" });
+        pdfDoc.moveDown(1);
+
+        pdfDoc.fontSize(10);
+        pdfDoc.text(`Invoice ID: ${order.orderId}`);
+        pdfDoc.text(`Invoice Date: ${order.invoiceDate.toDateString()}`);
+        pdfDoc.text(`Payment Method: ${order.paymentMethod}`);
+        pdfDoc.text(`Payment Status: ${order.paymentStatus}`);
+        pdfDoc.moveDown();
+
+        pdfDoc.fontSize(12).text("Billing Address", { underline: true });
+        const addr = order.address;
+        pdfDoc.fontSize(10).text(`${addr.name}`);
+        pdfDoc.text(`${addr.addressLine}, ${addr.locality}`);
+        pdfDoc.text(`${addr.city}, ${addr.state} - ${addr.pincode}`);
+        pdfDoc.text(`Mobile: ${addr.mobile}`);
+        pdfDoc.moveDown();
+
+        pdfDoc.fontSize(12).text("Ordered Items", { underline: true });
+        pdfDoc.moveDown(0.5);
+
+        order.orderedItems.forEach((item, index) => {
+            pdfDoc.fontSize(10).text(
+                `${index + 1}. ${item.product?.name || "Product"} (${item.status})`
+            );
+            pdfDoc.text(`   Quantity: ${item.quantity}`);
+            pdfDoc.text(`   Price: ₹${item.price.toFixed(2)}`);
+            pdfDoc.moveDown(0.3);
+        });
+
+        pdfDoc.moveDown(0.5);
+        pdfDoc.fontSize(11).text(`Subtotal: ₹${order.totalPrice.toFixed(2)}`);
+        pdfDoc.text(`Platform Fee: ₹${order.platformFee}`);
+        pdfDoc.text(`Delivery Charge: ₹${order.deliveryCharge}`);
+        pdfDoc.text(`Discount: ₹${order.discount}`);
+        pdfDoc.moveDown(0.3);
+        pdfDoc.fontSize(13).text(`Final Amount: ₹${order.finalAmount.toFixed(2)}`, {
+            align: "right",
+            underline: true,
+        });
+
+        pdfDoc.moveDown(1);
+        pdfDoc.fontSize(10).text("Thank you for shopping with CourtPulse!", {
+            align: "center",
+        });
+
+        pdfDoc.end();
+    } catch (error) {
+        console.error(' Failed orderInvoice : ', error);
+        res.status(500).send('Internal Server Error');
     }
 }
 
@@ -237,5 +309,6 @@ module.exports = {
     loadCancelTitlesProduct,
     cancelOrder,
     loadReturnTitles,
-    returnProduct
+    returnProduct,
+    orderInvoice
 }

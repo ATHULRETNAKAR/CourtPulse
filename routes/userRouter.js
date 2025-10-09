@@ -82,6 +82,7 @@ router.get('/cancelOrderTitle', orderController.loadCancelTitlesProduct);
 router.post('/cancelOrder/:id', orderController.cancelOrder);
 router.get('/returnTitle', orderController.loadReturnTitles);
 router.post('/returnProduct/:id', orderController.returnProduct);
+router.get('/orderInvoice/:id', orderController.orderInvoice);
 
 router.get('/wishlist', wishlistController.loadWishlist);
 router.post('/addWishlist', wishlistController.addToWishlist);
