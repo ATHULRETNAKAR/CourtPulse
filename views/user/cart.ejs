@@ -22,29 +22,62 @@
                             <% cartItems.forEach(item=> { %>
                                 <div id="cart-item-<%= item.variant._id %>"
                                     class="flex items-center justify-between p-4 border rounded">
+
+                                    <!-- Product Image -->
                                     <img src="/productimg/<%= item.variant.images[0] %>" alt="<%= item.product.name %>"
                                         class="w-20 h-20 object-cover rounded">
+
+                                    <!-- Product Info -->
                                     <div class="flex-1 mx-4">
                                         <h3 class="font-semibold">
                                             <%= item.product.name %>
                                         </h3>
                                         <p class="text-gray-600">₹<%= item.price.toLocaleString() %>
                                         </p>
+
+                                        <% const isOutOfStock=item.product.status==='Out of Stock' ||
+                                            item.product.status==='Discontinued' ||
+                                            item.variant.stockStatus==='Out of Stock' ; %>
+
+                                            <% if (isOutOfStock) { %>
+                                                <p class="text-red-600 font-semibold mt-1">
+                                                    <%= item.product.status==='Discontinued' ? 'Product Discontinued'
+                                                        : 'Out of Stock' %>
+                                                </p>
+                                                <% } %>
                                     </div>
+
+                                    <!-- Quantity Controls -->
                                     <div class="flex items-center space-x-2">
-                                        <button class="px-2 py-1 bg-gray-200 rounded"
-                                            onclick="updateQuantity('<%= item.product._id %>','<%= item.variant._id%>', 'decrease')">-</button>
+                                        <button
+                                            class="px-2 py-1 bg-gray-200 rounded <%= isOutOfStock ? 'opacity-50 cursor-not-allowed' : '' %>"
+                                            <%=isOutOfStock ? 'disabled' : '' %>
+                                            onclick="updateQuantity('<%= item.product._id %>','<%= item.variant._id%>
+                                                    ','decrease')">
+                                                    -
+                                        </button>
                                         <span id="quantity-<%= item.variant._id %>" class="w-8 text-center">
                                             <%= item.quantity %>
                                         </span>
-                                        <button class="px-2 py-1 bg-gray-200 rounded"
-                                            onclick="updateQuantity('<%= item.product._id %>', '<%= item.variant._id %>', 'increase')">+</button>
+                                        <button
+                                            class="px-2 py-1 bg-gray-200 rounded <%= isOutOfStock ? 'opacity-50 cursor-not-allowed' : '' %>"
+                                            <%=isOutOfStock ? 'disabled' : '' %>
+                                            onclick="updateQuantity('<%= item.product._id %>', '<%= item.variant._id %>
+                                                    ','increase')">
+                                                    +
+                                        </button>
                                     </div>
-                                    <p id="itemTotal-<%= item.variant._id %>" class="font-bold ml-4">₹<%=
-                                            item.totalPrice.toLocaleString() %>
+
+                                    <!-- Total -->
+                                    <p id="itemTotal-<%= item.variant._id %>" class="font-bold ml-4">
+                                        ₹<%= item.totalPrice.toLocaleString() %>
                                     </p>
+
+                                    <!-- Remove Button -->
                                     <button class="px-4 py-2 bg-purple-600 text-white rounded ml-4"
-                                        onclick="removeFromCart('<%= item.product._id %>','<%= item.variant._id %>')">Remove</button>
+                                        onclick="removeFromCart('<%= item.product._id %>','<%= item.variant._id %>')">
+                                        Remove
+                                    </button>
                                 </div>
                                 <% }); %>
                         </div>
@@ -88,13 +121,32 @@
                             </span>
                         </div>
                     </div>
-                    <% if (cartItems && cartItems.length> 0) { %>
-                        <a href="/checkOutAddress"><button
-                                class="w-full mt-4 px-4 py-2 bg-purple-600 text-white rounded">Continue</button></a>
-                        <% } else { %>
-                            <button
-                                class="w-full mt-4 px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">Continue</button>
-                            <% } %>
+                    <% 
+                        let isAnyOutOfStok = false;
+                        if( cartItems && cartItems.length >0 ){
+                            cartItems.forEach(item => {
+                                if(
+                                    item.product.status==='Out of Stock' ||
+                                    item.product.status==='Discontinued' ||
+                                    item.variant.stockStatus==='Out of Stock'
+                                ){
+                                    isAnyOutOfStok = true;
+                                }
+                            })
+                        }
+                    %>
+                        <% if (cartItems && cartItems.length> 0) { %>
+                            <% if(isAnyOutOfStok) { %>
+                                <button
+                                    class="w-full mt-4 px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">Some item are unavailable</button>
+                                <% } else { %>
+                                    <a href="/checkOutAddress"><button
+                                        class="w-full mt-4 px-4 py-2 bg-purple-600 text-white rounded">Continue</button></a>
+                                    <% } %> 
+                            <% } else { %>
+                                <button
+                                    class="w-full mt-4 px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">Continue</button>
+                                <% } %>
                 </div>
             </div>
             <h2 class="text-2xl font-bold mt-6 mb-4">Discover more items similar your cart</h2>
@@ -126,7 +178,7 @@
         <%- include('../../views/partials/user/subFooter') %>
 
             <script>
-                // Placeholder functions for cart actions - implement with fetch/AJAX to backend
+                // Placeholder functions for cart actions
                 function updateQuantity(productId, variantId, action) {
                     fetch('/updateCart', {
                         method: 'POST',
@@ -151,6 +203,7 @@
                 }
 
                 function removeFromCart(productId, variantId) {
+                    console.log('THE PRODUCT ID AND VARIANT ID : ', variantId)
                     fetch('/removeCart', {
                         method: 'DELETE',
                         headers: { "Content-Type": 'application/json' },
@@ -169,6 +222,7 @@
                                         `<p class="text-gray-500 text-center py-8">
                                             Your cart is empty. <a href="/shop" class="text-blue-500">Continue shopping</a>
                                         </p>`;
+                                        location.reload();
                                 }
 
                             } else {

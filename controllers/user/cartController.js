@@ -29,13 +29,15 @@ const loadCart = async (req, res) => {
                         _id: product._id,
                         name: product.productName,
                         category: product.category,
-                        brand: product.brand
+                        brand: product.brand,
+                        status: product.status,
                     },
                     variant: variant ? {
                         _id: variant._id,
                         size: variant.size,
                         color: variant.color,
-                        images: variant.images
+                        images: variant.images,
+                        stockStatus: variant.stockStatus,
                     } : {
                         _id: null,
                         size: "N/A",
@@ -52,7 +54,7 @@ const loadCart = async (req, res) => {
         let totalAmount = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
         let deliveryCharge = totalAmount > 1000 ? 0 : 100;
-        
+
         let platformFee = totalAmount > 5000 ? 0 : 30
 
         let similarItems = []

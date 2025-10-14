@@ -221,15 +221,12 @@
                                             <label class="block text-sm font-medium text-gray-700">Product
                                                 Status</label>
                                             <select name="productStatus" class="w-full p-2 border rounded mt-1">
-                                                <option value="Available" <%=isEdit &&
-                                                    product.productStatus==='Available' ? 'selected' : !isEdit
-                                                    ? 'selected' : '' %>>Available</option>
-                                                <option value="Out of Stock" <%=isEdit &&
-                                                    product.productStatus==='Out of Stock' ? 'selected' : '' %>>Out of
-                                                    Stock</option>
-                                                <option value="Discontinued" <%=isEdit &&
-                                                    product.productStatus==='Discontinued' ? 'selected' : '' %>
-                                                    >Discontinued</option>
+                                                <option value="Available" <%=product.status==='Available' ? 'selected'
+                                                    : '' %>>Available</option>
+                                                <option value="Out of Stock" <%=product.status==='Out of Stock'
+                                                    ? 'selected' : '' %>>Out of Stock</option>
+                                                <option value="Discontinued" <%=product.status==='Discontinued'
+                                                    ? 'selected' : '' %>>Discontinued</option>
                                             </select>
                                             <p id="productStatus-error" class="text-red-500 text-sm hidden"></p>
                                         </div>

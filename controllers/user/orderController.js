@@ -100,7 +100,6 @@ const cancelProduct = async (req, res) => {
         }
 
         const variant = product.variants.id(orderedItem.variantId)
-        console.log('This is matching vairant : ', variant)
 
         if (variant) {
             variant.quantity += orderedItem.quantity;

@@ -79,7 +79,6 @@ const addProductpost = async (req, res) => {
             ...vari,
             images: variantImages[index] || []
         }));
-        // console.log("This are the items in finalVarient : ", finalVariants)
         const product = new Product({
             productName,
             description,
@@ -89,8 +88,6 @@ const addProductpost = async (req, res) => {
             productStatus,
             variants: finalVariants
         })
-
-        // console.log("This are the items in the product : ", product)
 
         await product.save();
         console.log("Product Saved successfully")
@@ -181,8 +178,6 @@ const productEditPut = async (req, res) => {
         const { id } = req.params;
         const { productName, brandName, description, categories, productOffer, variants, productStatus } = req.body
         const variant = JSON.parse(variants)
-        console.log("This from req.body  :  ", req.body)
-        console.log("This from variant  :  ", variant)
 
         const variantImage = {}
         req.files.forEach(file => {
@@ -196,21 +191,21 @@ const productEditPut = async (req, res) => {
             }
         })
 
-        const existingProduct = await Product.findById(id)
+        const existingProduct = await Product.findById(id);
         if (!existingProduct) {
             res.status(404).json({ success: false, message: "Product Not Found" })
         }
 
         const finalVariants = variant.map((vari, index) => {
+            const existingVariant = existingProduct.variants[index];
             const existingImages = existingProduct.variants[index] ? existingProduct.variants[index].images : [];
             const mergedImages = [...existingImages, ...(variantImage[index] || [])];
             return {
                 ...vari,
-                images: mergedImages
+                images: mergedImages,
+                _id: existingVariant ? existingVariant._id : undefined,
             };
         });
-
-        console.log("This is items from finalVariant  :  ", finalVariants)
 
         const updateProduct = await Product.findByIdAndUpdate(id, {
             productName,
@@ -226,7 +221,7 @@ const productEditPut = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product Not Found' });
         }
 
-        console.log("Product Updated successfully");
+        await updateProduct.save();
         res.status(200).json({ success: true, message: 'Product updated successfully' });
 
     } catch (error) {
