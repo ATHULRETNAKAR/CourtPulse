@@ -1,8 +1,6 @@
 const User = require('../../models/userSchema');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-
-
 const loadLogin = async (req, res) => {
     try {
         if (req.session.admin) {
@@ -16,7 +14,6 @@ const loadLogin = async (req, res) => {
         res.status(500).send('Internal Server Error')
     }
 }
-
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -36,14 +33,12 @@ const login = async (req, res) => {
             req.session.message = "No Admin Found"
             return res.redirect('/admin/login');
         }
-
     } catch (error) {
         console.error('Admin Login Error', error)
         req.session.message = "Admin Login Failed. Please Try Again Later";
         return res.redirect('/admin/pageNotFound')
     }
 }
-
 const loadDashboard = async (req,res)=>{
     if(req.session.admin){
         try {
@@ -53,7 +48,6 @@ const loadDashboard = async (req,res)=>{
         }
     }
 }
-
 const errorpage = async (req, res) => {
     try {
         return res.status(200).render('errorpage')
@@ -62,7 +56,6 @@ const errorpage = async (req, res) => {
         res.status(500).redirect('/errorpage')
     }
 }
-
 const logout = async(req,res)=>{
     try {
         req.session.destroy((err)=>{
@@ -77,7 +70,6 @@ const logout = async(req,res)=>{
         res.redirect('/admin/errorpage')
     }
 }
-
 module.exports = {
     loadLogin,
     login,

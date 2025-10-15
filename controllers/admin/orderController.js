@@ -1,13 +1,10 @@
 const Orders = require('../../models/orderSchema');
-
 const orderInfo = async (req, res) => {
     try {
         const { search, sort, filter, page = 1 } = req.query;
         const limit = 5;
         const skip = (parseInt(page) - 1) * limit;
-
         let query = {};
-
         if (filter) {
             query.status = filter;
         }
@@ -17,7 +14,6 @@ const orderInfo = async (req, res) => {
                 { 'userId.name': { $regex: search, $options: 'i' } }
             ];
         }
-
         let sortObj = { createdOn: -1 };
         if (sort === 'oldest') {
             sortObj = { createdOn: 1 };
@@ -26,7 +22,6 @@ const orderInfo = async (req, res) => {
         } else if (sort === 'z-a') {
             sortObj = { 'userId.name': -1 }
         }
-
         const orders = await Orders.find(query)
             .populate('orderedItems.product')
             .populate('userId')
@@ -34,10 +29,8 @@ const orderInfo = async (req, res) => {
             .skip(skip)
             .limit(limit)
             .lean();
-
         const total = await Orders.countDocuments(query);
         const totalPages = Math.ceil(total / limit);
-
         const formattedOrders = orders.map(order => {
             const date = new Date(order.createdOn);
             const formattedDate = date.toLocaleString('en-GB', {
@@ -54,7 +47,6 @@ const orderInfo = async (req, res) => {
                 formattedDate
             }
         })
-
         res.render('admin-orderManagement', {
             orders: formattedOrders,
             search: search || '',
@@ -64,30 +56,24 @@ const orderInfo = async (req, res) => {
             totalPages,
             limit
         });
-
     } catch (error) {
         console.error('Failed in OrderInfo : ', error);
         return res.status(500).send("Internal Server Error");
     }
 }
-
 const orderDetail = async (req, res) => {
     try {
         const { orderId, userId } = req.params;
-
         req.session.userId = userId;
         req.session.orderId = orderId;
-
         const order = await Orders.findOne({ orderId, userId })
             .populate('orderedItems.product')
             .populate('userId')
             .populate('address')
             .lean()
-
         if (!order) {
             return res.status(404).send("Order not found");
         }
-
         const date = new Date(order.createdOn);
         const formattedDate = date.toLocaleString('en-GB', {
             timeZone: 'Asia/Kolkata',
@@ -98,29 +84,22 @@ const orderDetail = async (req, res) => {
             minute: '2-digit',
             hour12: true
         }).replace(',', '');
-
         order.formattedDate = formattedDate
-
         res.render('admin-orderDetails', { order });
     } catch (error) {
         console.log('Failed admin OrderDetail : ', error);
     }
 }
-
 const updateStatus = async (req, res) => {
     try {
         const { id, status } = req.body;
-
         if (!id || !status) {
             return res.status(400).json({ success: false, message: "No Status or Id found" });
         };
-
         const order = await Orders.findOne({ userId: req.session.userId, orderId: req.session.orderId, 'orderedItems._id': id });
-
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
-
         const updateStatus = await Orders.findOneAndUpdate({ userId: req.session.userId, orderId: req.session.orderId, 'orderedItems._id': id },
             { $set: { 'orderedItems.$.status': status } },
             { new: true }
@@ -129,7 +108,6 @@ const updateStatus = async (req, res) => {
             updateStatus.status = status;
             await updateStatus.save();
         }
-
         if (updateStatus) {
             await updateStatus.save();
             res.status(200).json({ success: true, message: "Status Updated Successfully" });
@@ -139,18 +117,15 @@ const updateStatus = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
-
 const returnDetails = async (req, res) => {
     try {
         const { id } = req.params;
         const order = await Orders.findOne({ userId: req.session.userId, orderId: req.session.orderId, 'orderedItems._id': id }, { 'orderedItems.$': 1 });
-
         res.status(200).json({ returnTitle: order.orderedItems[0].returnTitle, returnReason: order.orderedItems[0].returnReason });
     } catch (error) {
         console.error('Failed returnDetails : ', error)
     }
 }
-
 const updateReturn = async (req, res) => {
     try {
         const { id } = req.params;
@@ -168,7 +143,6 @@ const updateReturn = async (req, res) => {
             console.log('This is Second : ', updateReturn)
             await updateReturn.save();
         }
-
         await updateReturn.save();
         res.status(200).json({ success: true, message: 'Return Approved Successfully' })
     } catch (error) {
@@ -176,8 +150,6 @@ const updateReturn = async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 }
-
-
 module.exports = {
     orderInfo,
     orderDetail,

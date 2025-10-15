@@ -6,10 +6,8 @@ const mongoose = require('mongoose');
 const { search } = require('../../routes/adminRouter');
 const path = require("path");
 const fs = require("fs");
-
 const addProduct = async (req, res) => {
     try {
-
         const categories = await Category.find({ status: "Active" });
         const brands = await Brand.find({ status: "Active" });
         res.render('admin-addProduct', {
@@ -18,28 +16,22 @@ const addProduct = async (req, res) => {
             product: {},
             isEdit: false
         })
-
-
     } catch (error) {
         console.error('Error Loading addProduct :', error);
         res.status(500).send('Server Error');
     }
 }
-
 const productInfo = async (req, res) => {
     try {
         const search = req.query.search || '';
         const currentPage = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5; // Default limit
-
         const query = {};
         if (search) {
             query.name = { $regex: search, $options: 'i' };
         }
-
         const totalItems = await Category.countDocuments(query);
         const totalPages = Math.ceil(totalItems / limit);
-
         const products = await Product.find()
             .skip((currentPage - 1) * limit)
             .limit(limit)
@@ -47,25 +39,19 @@ const productInfo = async (req, res) => {
             .populate('brand')
             .populate('category')
             .exec();
-
         res.render('admin-product', { products, search, limit, currentPage, totalPages });
     } catch (error) {
         console.error(error);
         res.status(500).send('Server Error');
     }
 }
-
 const addProductpost = async (req, res) => {
     try {
-
         const { productName, brandName, description, category, productOffer, productStatus, variants } = req.body;
         const variant = JSON.parse(variants)
-
         const variantImages = {}
-
         req.files.forEach(file => {
             const match = file.fieldname.match(/variants\[(\d+)\]\[images\]/)
-
             if (match) {
                 const index = match[1]
                 if (!variantImages[index]) {
@@ -74,7 +60,6 @@ const addProductpost = async (req, res) => {
                 variantImages[index].push(file.filename)
             }
         });
-
         const finalVariants = variant.map((vari, index) => ({
             ...vari,
             images: variantImages[index] || []
@@ -88,54 +73,42 @@ const addProductpost = async (req, res) => {
             productStatus,
             variants: finalVariants
         })
-
         await product.save();
         console.log("Product Saved successfully")
         res.status(200).json({ success: true, message: 'Product added successfully' });
-
     } catch (error) {
         console.error("Error adding product:", error);
         res.status(500).json({ success: false, message: 'Error adding product' })
     }
 }
-
 const productDelete = async (req, res) => {
     try {
         const { id } = req.params
         const product = await Product.findById({ _id: id })
-
         if (!product) {
             return res.status(404).json({ success: false, message: "Product Not Found" })
         }
-
         if (product.isDeleted) {
             return res.status(400).json({ success: false, message: "Product Already deleted " })
         }
-
         product.isDeleted = true;
         await product.save();
-
         res.status(200).json({ success: true, message: "Product Deleted Successfully" })
     } catch (error) {
         console.error("Error deleting product", error)
         res.status(500).json({ success: false, message: "Server error while deleting product" })
     }
 }
-
-
 const productUndo = async (req, res) => {
     try {
         const { id } = req.params
         const product = await Product.findById({ _id: id })
-
         if (!product) {
             return res.status(404).json({ success: false, message: "Product Not Found" })
         }
-
         if (!product.isDeleted) {
             return res.status(400).json({ success: false, message: "Product is not deleted" })
         }
-
         product.isDeleted = false;
         await product.save();
         
@@ -145,8 +118,6 @@ const productUndo = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error while restoring product" });
     }
 }
-
-
 const editProduct = async (req, res) => {
     try {
         const { id } = req.params
@@ -156,11 +127,9 @@ const editProduct = async (req, res) => {
             .exec();
         const categories = await Category.find({ status: "Active" });
         const brands = await Brand.find({ status: "Active" });
-
         if (!product) {
             res.status(404).send("Product Not Found")
         }
-
         res.render('admin-addProduct', {
             product,
             categories,
@@ -172,13 +141,11 @@ const editProduct = async (req, res) => {
         res.status(500).send('Server Error');
     }
 }
-
 const productEditPut = async (req, res) => {
     try {
         const { id } = req.params;
         const { productName, brandName, description, categories, productOffer, variants, productStatus } = req.body
         const variant = JSON.parse(variants)
-
         const variantImage = {}
         req.files.forEach(file => {
             const match = file.fieldname.match(/variants\[(\d+)\]\[images\]/)
@@ -190,12 +157,10 @@ const productEditPut = async (req, res) => {
                 variantImage[index].push(file.filename)
             }
         })
-
         const existingProduct = await Product.findById(id);
         if (!existingProduct) {
             res.status(404).json({ success: false, message: "Product Not Found" })
         }
-
         const finalVariants = variant.map((vari, index) => {
             const existingVariant = existingProduct.variants[index];
             const existingImages = existingProduct.variants[index] ? existingProduct.variants[index].images : [];
@@ -206,7 +171,6 @@ const productEditPut = async (req, res) => {
                 _id: existingVariant ? existingVariant._id : undefined,
             };
         });
-
         const updateProduct = await Product.findByIdAndUpdate(id, {
             productName,
             description,
@@ -216,52 +180,42 @@ const productEditPut = async (req, res) => {
             status: productStatus,
             variants: finalVariants
         }, { new: true })
-
         if (!updateProduct) {
             return res.status(404).json({ success: false, message: 'Product Not Found' });
         }
-
         await updateProduct.save();
         res.status(200).json({ success: true, message: 'Product updated successfully' });
-
     } catch (error) {
         console.error("Error updating product:", error);
         res.status(500).json({ success: false, message: 'Error updating product' });
     }
 }
-
 const removeProductImage = async (req, res) => {
     try {
         const { productId, variantIndex, imageName } = req.body;
-
         const product = await Product.findById(productId);
         if (!product || !product.variants[variantIndex]) {
             return res.status(404).json({ success: false, message: 'Product or variant not found' });
         }
-
         const variant = product.variants[variantIndex];
         const imagePathIndex = variant.images.indexOf(imageName);
         if (imagePathIndex === -1) {
             return res.status(404).json({ success: false, message: 'Image not found in variant' });
         }
-
         // Remove image from DB
         variant.images.splice(imagePathIndex, 1);
         await product.save();
-
         // Optional: Remove image file from server
         const imagePath = path.join(__dirname, '../public/productimg', imageName);
         if (fs.existsSync(imagePath)) {
             fs.unlinkSync(imagePath);
         }
-
         return res.json({ success: true, message: 'Image removed successfully' });
     } catch (err) {
         console.error('Error removing product image:', err);
         return res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 }
-
 module.exports = {
     productInfo,
     addProduct,

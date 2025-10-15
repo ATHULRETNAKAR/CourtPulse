@@ -21,7 +21,8 @@
                     <div class="flex justify-between items-center mb-6">
                         <h1 class="text-2xl font-bold text-gray-800">My Orders</h1>
                         <div class="relative">
-                            <input type="text" placeholder="Search orders"
+                            <input value="<%= typeof orderSearch !== 'undefined' ? orderSearch : '' %>" type="text"
+                                name="search" placeholder="Search orders"
                                 class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
                             <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -33,7 +34,7 @@
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-md h-full">
 
-                        <div class="space-y-4">
+                        <div id="orderContainer" class="space-y-4">
                             <% if (orders && orders.length> 0) { %>
                                 <% orders.forEach(order=> { %>
                                     <% if (order.orderedItems && order.orderedItems.length> 0) { %>
@@ -92,6 +93,28 @@
 
         <!-- Sub-Footer -->
         <%- include("../../views/partials/user/subFooter") %>
+
+            <script>
+                const searchInput = document.querySelector('input[name="search"]');
+                searchInput.addEventListener('input', async (e) => {
+                    const search = e.target.value;
+                    try {
+                        const response = await fetch(`/orders?orderSearch=${encodeURIComponent(search)}`);
+                        if (!response.ok) throw new Error('Network error');
+                        const html = await response.text();
+                        const parser = new DOMParser();
+                        const newDoc = parser.parseFromString(html, 'text/html');
+                        const newOrderContainer = newDoc.querySelector('#orderContainer');
+                        if (newOrderContainer) {
+                            document.querySelector('#orderContainer').innerHTML = newOrderContainer.innerHTML;
+                        }
+
+                    } catch (err) {
+                        console.error('Search fetch failed:', err);
+                    }
+                });
+            </script>
+
 </body>
 
 </html>
