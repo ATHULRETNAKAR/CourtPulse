@@ -52,8 +52,7 @@
                                         <button
                                             class="px-2 py-1 bg-gray-200 rounded <%= isOutOfStock ? 'opacity-50 cursor-not-allowed' : '' %>"
                                             <%=isOutOfStock ? 'disabled' : '' %>
-                                            onclick="updateQuantity('<%= item.product._id %>','<%= item.variant._id%>
-                                                    ','decrease')">
+                                            onclick="updateQuantity('<%= item.product._id %>','<%= item.variant._id%>','decrease')">
                                                     -
                                         </button>
                                         <span id="quantity-<%= item.variant._id %>" class="w-8 text-center">
@@ -62,8 +61,7 @@
                                         <button
                                             class="px-2 py-1 bg-gray-200 rounded <%= isOutOfStock ? 'opacity-50 cursor-not-allowed' : '' %>"
                                             <%=isOutOfStock ? 'disabled' : '' %>
-                                            onclick="updateQuantity('<%= item.product._id %>', '<%= item.variant._id %>
-                                                    ','increase')">
+                                            onclick="updateQuantity('<%= item.product._id %>', '<%= item.variant._id %>','increase')">
                                                     +
                                         </button>
                                     </div>
@@ -121,32 +119,31 @@
                             </span>
                         </div>
                     </div>
-                    <% 
-                        let isAnyOutOfStok = false;
-                        if( cartItems && cartItems.length >0 ){
-                            cartItems.forEach(item => {
-                                if(
-                                    item.product.status==='Out of Stock' ||
-                                    item.product.status==='Discontinued' ||
-                                    item.variant.stockStatus==='Out of Stock'
-                                ){
-                                    isAnyOutOfStok = true;
-                                }
-                            })
+                    <% let isAnyOutOfStok=false; if( cartItems && cartItems.length>0 ){
+                        cartItems.forEach(item => {
+                        if(
+                        item.product.status==='Out of Stock' ||
+                        item.product.status==='Discontinued' ||
+                        item.variant.stockStatus==='Out of Stock'
+                        ){
+                        isAnyOutOfStok = true;
                         }
-                    %>
+                        })
+                        }
+                        %>
                         <% if (cartItems && cartItems.length> 0) { %>
                             <% if(isAnyOutOfStok) { %>
                                 <button
-                                    class="w-full mt-4 px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">Some item are unavailable</button>
+                                    class="w-full mt-4 px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">Some
+                                    item are unavailable</button>
                                 <% } else { %>
                                     <a href="/checkOutAddress"><button
-                                        class="w-full mt-4 px-4 py-2 bg-purple-600 text-white rounded">Continue</button></a>
-                                    <% } %> 
-                            <% } else { %>
-                                <button
-                                    class="w-full mt-4 px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">Continue</button>
-                                <% } %>
+                                            class="w-full mt-4 px-4 py-2 bg-purple-600 text-white rounded">Continue</button></a>
+                                    <% } %>
+                                        <% } else { %>
+                                            <button
+                                                class="w-full mt-4 px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">Continue</button>
+                                            <% } %>
                 </div>
             </div>
             <h2 class="text-2xl font-bold mt-6 mb-4">Discover more items similar your cart</h2>
@@ -222,7 +219,7 @@
                                         `<p class="text-gray-500 text-center py-8">
                                             Your cart is empty. <a href="/shop" class="text-blue-500">Continue shopping</a>
                                         </p>`;
-                                        location.reload();
+                                    location.reload();
                                 }
 
                             } else {

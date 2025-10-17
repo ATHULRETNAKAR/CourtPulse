@@ -13,7 +13,7 @@ const upload = require('../helpers/multer');
 router.get('/login', adminController.loadLogin);
 router.post('/login', adminController.login);
 router.get('/errorpage', adminController.errorpage);
-router.get('/logout', adminController.logout);
+router.get('/logout', preventCache, adminController.logout);
 
 router.use(adminAuth)
 router.get('/dashboard', adminController.loadDashboard);
