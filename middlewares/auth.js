@@ -1,41 +1,42 @@
 const User = require('../models/userSchema');
 
-const userAuth = (req, res, next) => {
-    if (req.session.user) {
-        User.findById(req.session.user)
-            .then(data => {
-                if (data && !data.isBlocked) {
-                    next()
-                } else {
-                    res.redirect('/login')
-                }
-            })
-            .catch(error => {
-                console.log('Error in userAuth Middleware', error);
-                res.status(500).send('Internal Server Error')
-            })
-    } else {
-        res.redirect('/login')
+const userAuth = async (req, res, next) => {
+    try {
+        const userId = req.session.user || req.session.userGoogleId
+        if (!userId) {
+            return res.redirect('/login');
+        }
+        const user = await User.find({
+            $or: [{ _id: userId }, { googleId: userId }]
+        })
+        if (user && !user.isBlocked) {
+            return next();
+        }
+        req.session.destroy(() => { 
+            res.redirect('/login')
+        })
+    } catch (error) {
+        console.error('Error in userAuth Middleware:', error);
+        res.status(500).render('error', { message: 'Internal Server Error' });
     }
-};
+}
 
 const adminAuth = (req, res, next) => {
-    User.findOne({ isAdmin: true })
-        .then(data => {
-            if (data) {
-                next()
-            } else {
-                res.redirect('/admin/login')
-            }
-        })
-        .catch(error => {
-            console.log('Error in adminAuth Middleware', error);
-            res.status(500).send('Internal Server Error')
-        })
+    try {
+        if (req.session && req.session.admin === true) {
+            return next();
+        }
+        return res.redirect('/admin/login');
+    } catch (error) {
+        console.log('Error in adminAuth Middleware', error);
+        return res.status(500).send('Internal Server Error');
+    }
 }
 
 const preventCache = (req, res, next) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     next();
 }
 
@@ -72,7 +73,7 @@ const checkUserStatus = async (req, res, next) => {
                 });
             }
         }
-        return next(); 
+        return next();
     } catch (error) {
         console.error("Error checking user status:", error);
         return next(error);

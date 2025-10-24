@@ -22,7 +22,6 @@ const loadWishlist = async (req, res) => {
                 const product = item.productId;
                 if (!product) return null;
                 const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
-                console.log(variant)
                 if (!variant) return null;
                 return {
                     name: product.productName,

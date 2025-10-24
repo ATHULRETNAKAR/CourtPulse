@@ -2,7 +2,6 @@ const User = require('../../models/userSchema');
 const Cart = require('../../models/cartSchema');
 const Address = require('../../models/addressSchema');
 const Order = require('../../models/orderSchema');
-const { search } = require('../../routes/userRouter');
 const Product = require('../../models/productSchema');
 const loadCheckOutAddress = async (req, res) => {
     try {
@@ -127,7 +126,6 @@ const loadCheckOutPayment = async (req, res) => {
 const checkOutPayment = async (req, res) => {
     try {
         let user;
-        let search = null
         if (req.session.user) {
             user = await User.findOne({ _id: req.session.user, isBlocked: false })
         } else if (req.session.userGoogleId) {

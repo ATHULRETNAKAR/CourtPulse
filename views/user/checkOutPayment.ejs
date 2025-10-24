@@ -36,7 +36,7 @@
                                     <span>Cash on Delivery (COD)</span>
                                 </label>
 
-                                <label
+                                <!-- <label
                                     class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
                                     <input type="radio" name="paymentMethod" value="upi" class="text-blue-600">
                                     <span>UPI</span>
@@ -46,7 +46,7 @@
                                     class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
                                     <input type="radio" name="paymentMethod" value="wallet" class="text-blue-600">
                                     <span>Wallet</span>
-                                </label>
+                                </label> -->
                             </form>
                         </div>
                     </div>
@@ -111,7 +111,7 @@
         <!-- Footer -->
         <%- include('../../views/partials/user/subFooter') %>
 
-
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
             <script>
                 async function confirmOrder() {
                     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
@@ -120,35 +120,108 @@
                         paymentMethod: paymentMethod,
                         totalAmount: <%= totalAmount %>,
                         deliveryCharge: <%= deliveryCharge %>,
-                            platformFee: <%= platformFee %>
-                };
+                        platformFee: <%= platformFee %>
+                    };
 
                 try {
-                    const response = await fetch('/confirmOrder', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        Swal.fire({
-                            title: '<h2 class="text-2xl font-bold text-green-600">🎉 Order Placed Successfully!</h2>',
-                            html: '<p class="text-gray-700">Thank you for shopping with us.<br>Your order has been placed and will be processed shortly.</p>',
-                            icon: 'success',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#16a34a', 
-                            background: '#f9fafb', 
-                            backdrop: ` rgba(5,0,0,0.4) url("/images/order-placed.gif")  center top no-repeat `
-                        })
-                            .then(() => {
-                                window.location.href = result.redirectUrl
-                            })
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Failed',
-                            text: result.message
+                    if (paymentMethod === 'razorpay') {
+                        const response = await fetch('/paymentOrderCreate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
                         });
+                        const { success, order, key } = await response.json();
+                        if (!success) throw new Error('Failed to create Razorpay Order');
+                        const options = {
+                            key,
+                            amount: order.amount,
+                            currency: 'INR',
+                            name: 'CourtPulse',
+                            description: 'Order Payment',
+                            order_id: order.id,
+                            handler: async function (response) {
+                                const verifyRes = await fetch('/paymentVerify', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        ...response,
+                                        orderData: data
+                                    })
+                                });
+                                const verifyResult = await verifyRes.json();
+                                if (verifyResult.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: '🎉 Payment Successful!',
+                                        text: 'Your order has been placed successfully!',
+                                        confirmButtonColor: '#6366f1'
+                                    }).then(() => window.location.href = verifyResult.redirectUrl)
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Payment Verification Failed',
+                                        text: verifyResult.message || 'Something went wrong!'
+                                    });
+                                }
+                            },
+                            modal: {
+                                ondismiss: function () {
+                                    Swal.fire({
+                                        icon: 'info',
+                                        title: 'Payment Cancelled',
+                                        text: 'You cancelled the payment process'
+                                    });
+                                }
+                            }
+                        };
+                        const rzp = new Razorpay(options);
+
+                        rzp.on('payment.failed', async function (response) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Payment Failed',
+                                text: response.error.description
+                            });
+                            await fetch('/paymentFailure',{
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    order_id: order.id,
+                                    reason: response.error.reason,
+                                    code: response.error.code,
+                                    description: response.error.description,
+                                    orderData: data
+                                })
+                            })
+                        })
+                        rzp.open();
+                    } else {
+                        const response = await fetch('/confirmOrder', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            Swal.fire({
+                                title: '<h2 class="text-2xl font-bold text-green-600">🎉 Order Placed Successfully!</h2>',
+                                html: '<p class="text-gray-700">Thank you for shopping with us.<br>Your order has been placed and will be processed shortly.</p>',
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#16a34a',
+                                background: '#f9fafb',
+                                backdrop: ` rgba(5,0,0,0.4) url("/images/order-placed.gif")  center top no-repeat `
+                            })
+                                .then(() => {
+                                    window.location.href = result.redirectUrl
+                                })
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Failed',
+                                text: result.message
+                            });
+                        }
                     }
                 } catch (error) {
                     console.log("Error from checkOut Payment : ", error);

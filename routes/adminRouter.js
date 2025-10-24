@@ -10,11 +10,12 @@ const { userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatu
 const upload = require('../helpers/multer');
 
 //Login Management
-router.get('/login', adminController.loadLogin);
+router.get('/login', preventCache, adminController.loadLogin);
 router.post('/login', adminController.login);
 router.get('/errorpage', adminController.errorpage);
 router.get('/logout', preventCache, adminController.logout);
 
+router.use(preventCache)
 router.use(adminAuth)
 router.get('/dashboard', adminController.loadDashboard);
 
