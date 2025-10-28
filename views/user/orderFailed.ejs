@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourtPulse</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-red-500 min-h-screen flex flex-col justify-between">
+    <!-- Header -->
+    <%- include('../../views/partials/user/header') %>
+        <main class="bg-red-500 flex items-center justify-center py-6 px-4 sm:px-4 flex-grow">
+            <div class="max-w-5xl w-full bg-white rounded-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row items-center justify-between p-6">
+                    <!-- Left side: Text and buttons -->
+                    <div class="text-center md:text-left md:w-1/2 mb-6 md:mb-0">
+                        <div class="flex justify-center md:justify-start mb-6">
+                            <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center">
+                                <svg class="w-16 h-16 text-red-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <h1 class="text-4xl font-bold text-red-500 mb-4">Oops.! Payment Failed</h1>
+                        <p class="text-xl text-gray-700 mb-2">Your order is not placed</p>
+                        <p class="text-lg text-gray-600 mb-6">Please retry the payment to get your order</p>
+                        <div
+                            class="flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
+                            <a href="/checkOutPayment"
+                                class="bg-purple-600 text-white px-6 py-3 rounded-md font-medium hover:bg-purple-700 transition">Retry
+                                Payment</a>
+                            <a href="/orders"
+                                class="border border-purple-600 text-purple-600 px-6 py-3 rounded-md font-medium hover:bg-purple-50 transition">View
+                                Orders</a>
+                        </div>
+                    </div>
+                    <!-- Right side: Illustration -->
+                    <div class="md:w-1/2 flex justify-center md:justify-end">
+                        <img src="/images/paymentFailed.jpg" alt="Delivery illustration" class="w-full max-w-md">
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Footer -->
+        <%- include('../../views/partials/user/subFooter') %>
+</body>
+
+</html>

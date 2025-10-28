@@ -8,7 +8,7 @@ const wishlistSchema = new Schema({
         required: true
     },
     products: [{
-        productId : {
+        productId: {
             type: Schema.Types.ObjectId,
             ref: "Product",
             required: true
@@ -17,14 +17,14 @@ const wishlistSchema = new Schema({
             type: Schema.Types.ObjectId,
             required: true
         },
-        addedOn : {
-            type:Date,
-            default:Date.now
+        addedOn: {
+            type: Date,
+            default: Date.now
         }
     }]
 
 })
 
-const Wishlist = mongoose.model("Wishlist",wishlistSchema)
+const Wishlist = mongoose.model("Wishlist", wishlistSchema)
 
 module.exports = Wishlist

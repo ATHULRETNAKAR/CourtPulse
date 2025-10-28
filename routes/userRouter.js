@@ -10,6 +10,7 @@ const checkOutController = require('../controllers/user/checkOutController');
 const orderController = require('../controllers/user/orderController');
 const wishlistController = require('../controllers/user/wishlistController');
 const paymentController = require('../controllers/user/paymentController');
+const walletController = require('../controllers/user/walletController');
 const { userAuth, adminAuth, preventCache, islogin, isloginAdmin, checkUserStatus } = require('../middlewares/auth');
 const profUploads = require('../helpers/Prof_multer');
 
@@ -99,9 +100,14 @@ router.post('/checkoutSelectAddress', checkOutController.checkoutSelectAddress);
 router.get('/checkOutPayment', checkOutController.loadCheckOutPayment);
 router.post('/confirmOrder', checkOutController.checkOutPayment);
 router.get('/orderSuccessPage', checkOutController.loadOrderSuccess);
+router.get('/paymentFailedPage', checkOutController.loadPaymentFailed);
 
 router.post('/paymentOrderCreate', paymentController.createOrder);
 router.post('/paymentVerify', paymentController.verifyPayment);
 router.post('/paymentFailure', paymentController.failedPayment);
+
+router.get('/wallet', walletController.loadWallet);
+router.post('/walletAddMoney', walletController.createWalletOrder);
+router.post('/walletVerifyPayment', walletController.verifyWalletPayment);
 
 module.exports = router

@@ -120,7 +120,7 @@
                         paymentMethod: paymentMethod,
                         totalAmount: <%= totalAmount %>,
                         deliveryCharge: <%= deliveryCharge %>,
-                        platformFee: <%= platformFee %>
+                            platformFee: <%= platformFee %>
                     };
 
                 try {
@@ -177,14 +177,9 @@
                         const rzp = new Razorpay(options);
 
                         rzp.on('payment.failed', async function (response) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Payment Failed',
-                                text: response.error.description
-                            });
-                            await fetch('/paymentFailure',{
+                            await fetch('/paymentFailure', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json'},
+                                headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     order_id: order.id,
                                     reason: response.error.reason,
@@ -193,7 +188,19 @@
                                     orderData: data
                                 })
                             })
-                        })
+                                .then(res => res.json())
+                                .then(result => {
+                                    if (result.success && result.redirectUrl) {
+                                        window.location.href = result.redirectUrl;
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Payment Failed',
+                                            text: 'Please try again'
+                                        })
+                                    }
+                                })
+                        });
                         rzp.open();
                     } else {
                         const response = await fetch('/confirmOrder', {

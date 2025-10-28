@@ -233,7 +233,27 @@ const loadOrderSuccess = async (req, res) => {
         }
         res.render('orderComplete', { search, user })
     } catch (error) {
-        console.error("Failed in loadOrderSuccess : ", error)
+        console.error("Failed in loadOrderSuccess : ", error);
+        res.status(500).send('Internal Server Error');
+    }
+}
+const loadPaymentFailed = async (req, res) => {
+    try {
+        let user;
+        let search = null
+        if (req.session.user) {
+            user = await User.findOne({ _id: req.session.user, isBlocked: false })
+        } else if (req.session.userGoogleId) {
+            user = await User.findOne({ googleId: req.session.userGoogleId, isBlocked: false })
+        }
+        if (!user) {
+            console.log('User Not Found');
+            return res.status(401).render('login');
+        }
+        res.render('orderFailed', { search, user })
+    } catch (error) {
+        console.error("Failed in loadOrderSuccess : ", error);
+        res.status(500).send('Internal Server Error');
     }
 }
 module.exports = {
@@ -241,5 +261,6 @@ module.exports = {
     checkoutSelectAddress,
     loadCheckOutPayment,
     checkOutPayment,
-    loadOrderSuccess
+    loadOrderSuccess,
+    loadPaymentFailed
 }

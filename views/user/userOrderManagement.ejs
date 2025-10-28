@@ -53,6 +53,16 @@
                                                                     <%= order.orderId %>
                                                                 </span>
                                                             </h2>
+                                                            <h2 class="text-l font-semibold text-gray-600">
+                                                                Payment Method: <span class="text-gray-600">
+                                                                    <%= order.paymentMethod %>
+                                                                </span>
+                                                            </h2>
+                                                            <h2 class="text-l font-semibold text-gray-600">
+                                                                Payment Status: <span class="text-gray-600">
+                                                                    <%= order.paymentStatus %>
+                                                                </span>
+                                                            </h2>
                                                             <p class="text-sm text-gray-600">Items: <%= itemCount %>
                                                                     <%= itemCount> 1 ? 'products' : 'product' %></p>
                                                             <p class="text-lg font-bold text-red-700">₹ <%=

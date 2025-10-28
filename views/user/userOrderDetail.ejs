@@ -26,6 +26,13 @@
                             <p> Order Id - <%= order.orderId %>
                             </p>
                         </div>
+                        <div class="mt-4">
+                            <% if (order.paymentStatus==='Failed' ) { %>
+                                <span class="bg-red-100 text-red-600 px-2 py-1 rounded flex items-center">
+                                    Payment Failed Order Not Placed
+                                </span>
+                                <% } %>
+                        </div>
 
                         <!-- Items -->
                         <% order.orderedItems.forEach((item, index)=> { %>
@@ -76,12 +83,21 @@
                                                     <!-- <button
                                                         class="bg-purple-600 text-white px-4 py-1 rounded add-rating"
                                                         data-id="<%= item._id %>">Add Rating</button> -->
-                                                    <% } else if (item.status !=='Cancelled' && item.status
-                                                        !=='Return Request' && item.status !=='Returned' ) { %>
+                                                    <% } else if (item.status !=='Cancelled' && order.paymentStatus==='Failed' && order.paymentMethod
+                                                        !=='COD' && order.orderedItems.length===1) { %>
+                                                        <a href="/cart"><button
+                                                                class="bg-purple-500 text-white px-4 py-1 rounded cancel-product"
+                                                                data-id="<%= item._id %>">Try again</button></a>
                                                         <button
                                                             class="bg-red-500 text-white px-4 py-1 rounded cancel-product"
                                                             data-id="<%= item._id %>">Cancel</button>
-                                                        <% } %>
+                                                        <% } else if (item.status !=='Cancelled' && item.status
+                                                            !=='Return Request' && item.status !=='Returned' &&
+                                                            order.paymentStatus !== 'Failed' ) { %>
+                                                            <button
+                                                                class="bg-red-500 text-white px-4 py-1 rounded cancel-product"
+                                                                data-id="<%= item._id %>">Cancel</button>
+                                                            <% } %>
                                         </div>
                             </div>
                             <% }); %>
@@ -90,12 +106,20 @@
                                     <% if (order.status==='Delivered' && order.orderedItems.length>= 2 ) { %>
                                         <!-- <button class="bg-yellow-500 text-white px-6 py-2 rounded return-order"
                                             data-id="<%= order._id %>">Return Order</button> -->
-                                        <% } else if (order.status !=='Cancelled' && order.status !=='Returned' &&
+                                        <% } else if (order.status !=='Cancelled' && order.paymentStatus==='Failed' && order.paymentMethod !=='COD' &&
                                             order.orderedItems.length>= 2) { %>
                                             <button class="bg-red-500 text-white px-6 py-2 rounded cancel-order"
                                                 data-id="<%= order._id %>">Cancel Order</button>
-                                            <% } %>
+                                            <a href="/cart"><button
+                                                    class="bg-purple-500 text-white px-6 py-2 rounded cancel-order">Try
+                                                    again</button></a>
+                                            <% } else if (order.status !=='Cancelled' && order.status !=='Returned' &&
+                                                order.orderedItems.length>= 2) { %>
+                                                <button class="bg-red-500 text-white px-6 py-2 rounded cancel-order"
+                                                    data-id="<%= order._id %>">Cancel Order</button>
+                                                <% } %>
                                 </div>
+
                     </div>
 
                     <!-- Right Column (Shipping + Price) -->
