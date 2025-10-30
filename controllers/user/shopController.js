@@ -1,7 +1,8 @@
+const mongoose = require('mongoose');
 const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
 const Brand = require('../../models/brandSchema');
-const User = require('../../models/userSchema')
+const User = require('../../models/userSchema');
 const productPage = async (req, res) => {
   try {
     let user = null
@@ -33,7 +34,9 @@ const productPage = async (req, res) => {
     }
     if (category) {
       const selectedCategories = Array.isArray(category) ? category : [category];
-      filter.category = { $in: selectedCategories };
+      filter.category = {
+        $in: selectedCategories.map(id => new mongoose.Types.ObjectId(id))
+      };
     }
     // Price filter
     if (minPrice || maxPrice) {
@@ -53,7 +56,9 @@ const productPage = async (req, res) => {
     // Brand filter
     if (brand) {
       const selectedBrands = Array.isArray(brand) ? brand : [brand];
-      filter.brand = { $in: selectedBrands };
+      filter.brand = {
+        $in: selectedBrands.map(id => new mongoose.Types.ObjectId(id))
+      };
     }
     // Availability filter
     if (inStock) {

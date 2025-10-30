@@ -59,7 +59,6 @@ const loadCheckOutAddress = async (req, res) => {
 }
 const checkoutSelectAddress = async (req, res) => {
     try {
-        console.log(req.body)
         const { addressId, discount, deliveryCharge, platformFee } = req.body
         req.session.addressId = addressId;
         req.session.discount = discount;

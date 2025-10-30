@@ -1,6 +1,8 @@
 const User = require('../../models/userSchema');
 const Orders = require('../../models/orderSchema');
 const Product = require('../../models/productSchema');
+const Wallet = require('../../models/walletSchema');
+const crypto = require('crypto')
 const PDFDocument = require('pdfkit');
 const loadOrders = async (req, res) => {
     try {
@@ -16,45 +18,52 @@ const loadOrders = async (req, res) => {
             console.log('User Not Found');
             return res.status(401).render('login');
         }
+        req.session.userId = user._id;
         let orders;
         if (orderSearch) {
             orders = await Orders.aggregate([
                 { $match: { userId: user._id } },
-                { $lookup: {
-                    from: 'products',
-                    localField: 'orderedItems.product',
-                    foreignField: '_id',
-                    as: 'populatedProducts'
-                }},
-                { $addFields: {
-                    orderedItems: {
-                        $map: {
-                            input: '$orderedItems',
-                            as: 'item',
-                            in: {
-                                $mergeObjects: [
-                                    '$$item',
-                                    {
-                                        product: {
-                                            $arrayElemAt: [
-                                                '$populatedProducts',
-                                                {
-                                                    $indexOfArray: ['$populatedProducts._id', '$$item.product']
-                                                }
-                                            ]
+                {
+                    $lookup: {
+                        from: 'products',
+                        localField: 'orderedItems.product',
+                        foreignField: '_id',
+                        as: 'populatedProducts'
+                    }
+                },
+                {
+                    $addFields: {
+                        orderedItems: {
+                            $map: {
+                                input: '$orderedItems',
+                                as: 'item',
+                                in: {
+                                    $mergeObjects: [
+                                        '$$item',
+                                        {
+                                            product: {
+                                                $arrayElemAt: [
+                                                    '$populatedProducts',
+                                                    {
+                                                        $indexOfArray: ['$populatedProducts._id', '$$item.product']
+                                                    }
+                                                ]
+                                            }
                                         }
-                                    }
-                                ]
+                                    ]
+                                }
                             }
                         }
                     }
-                }},
-                { $match: {
-                    $or: [
-                        { orderId: { $regex: orderSearch, $options: 'i' } },
-                        { 'orderedItems.product.productName': { $regex: orderSearch, $options: 'i' } }
-                    ]
-                }},
+                },
+                {
+                    $match: {
+                        $or: [
+                            { orderId: { $regex: orderSearch, $options: 'i' } },
+                            { 'orderedItems.product.productName': { $regex: orderSearch, $options: 'i' } }
+                        ]
+                    }
+                },
                 { $sort: { createdOn: -1 } }
             ]);
         } else {
@@ -129,6 +138,22 @@ const cancelProduct = async (req, res) => {
             };
             await product.save();
         }
+        if (orderedItem.status !== 'Delivered' && order.paymentMethod !== 'COD' && order.paymentStatus === 'Paid' && order.status !== 'Delivered') {
+            const userId = req.session.userId;
+            const wallet = await Wallet.findOne({ userId });
+            if (!wallet) {
+                wallet = new Wallet({ userId, balance: 0, transactions: [] })
+            }
+            wallet.balance += parseFloat(orderedItem.price);
+            wallet.transactions.push({
+                transactionId: crypto.randomBytes(8).toString('hex'),
+                type: 'credit',
+                amount: orderedItem.price,
+                status: 'Completed',
+                date: new Date()
+            })
+            await wallet.save();
+        }
         const updatePrductCancel = await Orders.findOneAndUpdate(
             { orderId: req.session.orderedOrderId, 'orderedItems._id': itemId },
             {
@@ -163,24 +188,59 @@ const cancelOrder = async (req, res) => {
     try {
         const { id: orderId } = req.params;
         const { selectedTitle: title, additionalReason: reason } = req.body;
+        const userId = req.session.userId;
         if (!orderId || !title || !reason) {
             return res.status(400).json({ success: false, message: 'Cancellation Reason Not Found' });
         }
-        const order = Orders.findById({ _id: orderId });
+        const order = await Orders.findOne({ _id: orderId, userId }).populate('orderedItems.product')
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order Not Found' });
         }
-        const updateOrderCancel = await Orders.findOneAndUpdate({ _id: orderId },
-            {
-                $set: {
-                    status: "Cancelled",
-                    cancelletionTitle: title,
-                    cancelletionReason: reason,
-                    'orderedItems.$[].status': 'Cancelled'
+        if (order.status === 'Cancelled') {
+            return res.status(400).json({ success: false, message: 'Order Already Cancelled' })
+        }
+        if (order.paymentMethod !== 'COD' && order.paymentStatus === 'Paid') {
+            let wallet = await Wallet.findOne({ userId });
+            if (!wallet) {
+                wallet = new Wallet({ userId, balance: 0, transactions: [] })
+            }
+            let refundAmount = 0
+            order.orderedItems.forEach(items => {
+                if (items.status !== 'Cancelled') {
+                    refundAmount += items.price
                 }
-            }, { new: true }
-        );
-        await updateOrderCancel.save();
+            })
+            const transactionId = crypto.randomBytes(8).toString('hex');
+            wallet.balance += refundAmount;
+            wallet.transactions.push({
+                transactionId,
+                type: 'credit',
+                amount: refundAmount,
+                status: 'Completed'
+            })
+            order.paymentStatus = 'Refunded'
+            await wallet.save();
+        }
+        order.status = 'Cancelled';
+        order.cancelletionTitle = title;
+        order.cancelletionReason = reason;
+        order.orderedItems.forEach(item => {
+            item.status = 'Cancelled';
+            item.cancelletionTitle = title;
+            item.cancelletionReason = reason;
+        })
+        await order.save();
+        for (const item of order.orderedItems) {
+            const product = await Product.findById(item.product);
+            if (product) {
+                const variant = product.variants.id(item.variantId);
+                if (variant) {
+                    variant.quantity += item.quantity;
+                    variant.stockStatus = 'In Stock'
+                }
+                await product.save();
+            }
+        }
         return res.status(200).json({ success: true, message: 'Order Cancelled Successfuly' })
     } catch (error) {
         console.error("Failed to Cancel Product", error);

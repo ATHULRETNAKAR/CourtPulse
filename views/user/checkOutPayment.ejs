@@ -32,6 +32,11 @@
                                 </label>
                                 <label
                                     class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
+                                    <input type="radio" name="paymentMethod" value="wallet" class="text-blue-600">
+                                    <span>Wallet</span>
+                                </label>
+                                <label
+                                    class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
                                     <input type="radio" name="paymentMethod" value="cod" class="text-blue-600">
                                     <span>Cash on Delivery (COD)</span>
                                 </label>
@@ -40,13 +45,8 @@
                                     class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
                                     <input type="radio" name="paymentMethod" value="upi" class="text-blue-600">
                                     <span>UPI</span>
-                                </label>
-
-                                <label
-                                    class="font-bold bg-gray-100 flex items-center space-x-2 p-3 border rounded-lg cursor-pointer">
-                                    <input type="radio" name="paymentMethod" value="wallet" class="text-blue-600">
-                                    <span>Wallet</span>
                                 </label> -->
+
                             </form>
                         </div>
                     </div>
@@ -202,6 +202,44 @@
                                 })
                         });
                         rzp.open();
+                    } else if (paymentMethod === 'wallet') {
+                        try {
+                            const response = await fetch('/walletPayment', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(data)
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                Swal.fire({
+                                    title: '<h2 class="text-2xl font-bold text-green-600">Wallet Payment Successful 🎉</h2>',
+                                    html: `<p class="text-gray-700">₹${result.amount} has been deducted from your wallet balance.</p>`,
+                                    icon: 'success',
+                                    confirmButtonText: 'Go to My Orders',
+                                    confirmButtonColor: '#16a34a',
+                                    background: '#f9fafb'
+                                }).then(() => {
+                                    window.location.href = result.redirectUrl;
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: '<h2 class="text-2xl font-bold text-red-600">Wallet Payment Failed ❌</h2>',
+                                    html: `<p class="text-gray-700">${result.message}</p>`,
+                                    icon: 'error',
+                                    confirmButtonText: 'Go Back to Checkout',
+                                    confirmButtonColor: '#dc2626'
+                                }).then(() => {
+                                    window.location.href = '/checkOutPayment';
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Wallet payment error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Something went wrong',
+                                text: 'Please try again later.'
+                            });
+                        }
                     } else {
                         const response = await fetch('/confirmOrder', {
                             method: 'POST',

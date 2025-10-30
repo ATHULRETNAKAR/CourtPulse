@@ -115,7 +115,6 @@ const addToCart = async (req, res) => {
             price: variant.sellingPrice,
             totalPrice: variant.sellingPrice
         })
-        console.log("Product Added to cart")
         await cart.save()
         res.status(200).json({ success: true, message: "Product added to cart", cart })
     } catch (error) {

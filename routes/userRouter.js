@@ -105,9 +105,12 @@ router.get('/paymentFailedPage', checkOutController.loadPaymentFailed);
 router.post('/paymentOrderCreate', paymentController.createOrder);
 router.post('/paymentVerify', paymentController.verifyPayment);
 router.post('/paymentFailure', paymentController.failedPayment);
+router.post('/walletPayment', paymentController.walletPayment)
 
 router.get('/wallet', walletController.loadWallet);
 router.post('/walletAddMoney', walletController.createWalletOrder);
 router.post('/walletVerifyPayment', walletController.verifyWalletPayment);
+router.post('/walletPaymentFailure', walletController.failedWalletPayment);
+router.get('/walletHistory', walletController.loadWalletHistory);
 
 module.exports = router
