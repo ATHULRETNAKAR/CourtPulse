@@ -104,7 +104,7 @@
                                                         <%= item.status %>
                                                     </span>
                                                     <% if (item.status !=='Cancelled' && item.status !=='Returned' &&
-                                                        item.status !=='Delivered' && item.status !=='Return Request' )
+                                                        item.status !=='Delivered' && item.status !=='Return Request' && item.status !== 'Rejected')
                                                         { %>
                                                         <select
                                                             class="product-status bg-white border border-gray-300 px-2 py-1 rounded"
@@ -340,6 +340,8 @@
                         `,
                         focusConfirm: false,
                         showCancelButton: true,
+                        showDenyButton: true,
+                        denyButtonText: 'Reject',
                         confirmButtonText: 'Approve',
                         cancelButtonText: 'Close',
                         customClass: {
@@ -366,13 +368,31 @@
                                 text: response.message || 'Return Approved',
                                 confirmButtonText: 'OK'
                             }).then(() => {
-                                window.location.reload();
+                                location.reload();
                             });
                         } else {
                             Swal.fire('Error', response.message || 'Retrun Failed')
                         }
                     }
+                    if (result.isDenied) {
+                        const rejectReq = await fetch(`/admin/rejectReturn/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id })
+                        });
 
+                        const rejectRes = await rejectReq.json();
+                        if (rejectRes.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Rejected',
+                                text: rejectRes.message || 'Return request rejected',
+                                confirmButtonText: 'OK'
+                            }).then(() => window.location.reload());
+                        } else {
+                            Swal.fire('Error', rejectRes.message || 'Rejection failed')
+                        }
+                    }
                 } catch (error) {
                     console.error('Error From Backend : ', error);
                     Swal.fire('Error', 'Something went wrong.', 'error');

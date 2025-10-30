@@ -1,5 +1,8 @@
 const { pipeline } = require('nodemailer/lib/xoauth2');
 const Orders = require('../../models/orderSchema');
+const Product = require('../../models/productSchema');
+const Wallet = require('../../models/walletSchema');
+const crypto = require('crypto');
 const orderInfo = async (req, res) => {
     try {
         const { search, sort, filter, page = 1 } = req.query;
@@ -190,25 +193,70 @@ const returnDetails = async (req, res) => {
 const updateReturn = async (req, res) => {
     try {
         const { id } = req.params;
+        const { userId, orderId } = req.session
+        const order = await Orders.findOne({ userId: req.session.userId, orderId: req.session.orderId, 'orderedItems._id': id });
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order Not Found' });
+        }
+        const item = order.orderedItems.find(i => i._id.toString() === id);
+        if (!item) {
+            return res.status(404).json({ success: false, message: 'Item not found in order ' });
+        }
+        const refundAmount = item.price;
+        item.status = 'Returned';
+        await order.save();
+        if (order && order.orderedItems.every(item => item.status === 'Returned')) {
+            order.status = 'Returned'
+            await order.save();
+        }
+        let wallet = await Wallet.findOne({ userId });
+        if (!wallet) {
+            wallet = new Wallet({ userId, balance: 0, transactions: [] });
+        }
+        wallet.transactions.push({
+            transactionId: crypto.randomBytes(8).toString('hex'),
+            type: 'credit',
+            amount: refundAmount,
+            status: 'Completed',
+            date: new Date()
+        });
+        wallet.balance += refundAmount;
+        await wallet.save();
+        const product = await Product.findById(item.product);
+        if (product) {
+            const variant = product.variants.id(item.variantId);
+            if (variant) {
+                variant.quantity += item.quantity;
+                variant.stockStatus = variant.quantity > 0 ? "In Stock" : 'Out of Stock';
+                await product.save();
+            }
+        }
+        res.status(200).json({ success: true, message: `Return approved & ₹${refundAmount} refunded to wallet` })
+    } catch (error) {
+        console.log('Failed updateReturn ', error)
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+}
+const rejectReturn = async (req, res) => {
+    try {
+        const { id } = req.params
         const order = await Orders.findOne({ userId: req.session.userId, orderId: req.session.orderId, 'orderedItems._id': id });
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order Not Found' })
         }
         const updateReturn = await Orders.findOneAndUpdate({ userId: req.session.userId, orderId: req.session.orderId, 'orderedItems._id': id },
-            { $set: { 'orderedItems.$.status': 'Returned' } },
+            { $set: { 'orderedItems.$.status': 'Rejected' } },
             { new: true }
         )
-        console.log('This is first : ', updateReturn)
-        if (updateReturn && updateReturn.orderedItems.every(item => item.status === 'Returned')) {
-            updateReturn.status = 'Returned'
-            console.log('This is Second : ', updateReturn)
+        if (updateReturn && updateReturn.orderedItems.every(item => item.status === 'Rejected')) {
+            updateReturn.status = 'Rejected'
             await updateReturn.save();
         }
         await updateReturn.save();
-        res.status(200).json({ success: true, message: 'Return Approved Successfully' })
+        res.status(200).json({ success: true, message: 'Return Rejected Successfully' })
     } catch (error) {
-        console.log('Failed updateReturn ', error)
-        res.status(500).send('Internal Server Error');
+        console.error('Failed to rejectReturn : ', error)
+        return res.status(500).json({ success: false, message: 'Server error' });
     }
 }
 module.exports = {
@@ -216,5 +264,6 @@ module.exports = {
     orderDetail,
     updateStatus,
     returnDetails,
-    updateReturn
+    updateReturn,
+    rejectReturn
 }

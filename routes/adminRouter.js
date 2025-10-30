@@ -52,5 +52,6 @@ router.get('/orderDetails/:orderId/:userId', orderController.orderDetail);
 router.post('/orderDetais/updateStatus', orderController.updateStatus);
 router.get('/returnDetails/:id', orderController.returnDetails);
 router.post('/updateReturn/:id', orderController.updateReturn);
+router.post('/rejectReturn/:id', orderController.rejectReturn);
 
 module.exports = router;

@@ -91,7 +91,7 @@
                                                         <button
                                                             class="bg-red-500 text-white px-4 py-1 rounded cancel-product"
                                                             data-id="<%= item._id %>">Cancel</button>
-                                                        <% } else if (item.status !=='Cancelled' && item.status
+                                                        <% } else if (item.status !=='Cancelled' && item.status !== 'Rejected' && item.status
                                                             !=='Return Request' && item.status !=='Returned' &&
                                                             order.paymentStatus !== 'Failed' ) { %>
                                                             <button
@@ -113,7 +113,7 @@
                                             <a href="/cart"><button
                                                     class="bg-purple-500 text-white px-6 py-2 rounded cancel-order">Try
                                                     again</button></a>
-                                            <% } else if (order.status !=='Cancelled' && order.status !=='Returned' &&
+                                            <% } else if (order.status !=='Cancelled' && order.status !=='Returned'&& order.status !== 'Return Request' && order.status != 'Rejected' &&
                                                 order.orderedItems.length>= 2) { %>
                                                 <button class="bg-red-500 text-white px-6 py-2 rounded cancel-order"
                                                     data-id="<%= order._id %>">Cancel Order</button>
